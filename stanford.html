@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stanford Educational Centre – Nukus</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --yellow: #FFD000;
+      --yellow-dark: #E6BB00;
+      --yellow-light: #FFF4B3;
+      --black: #0A0A0A;
+      --black-soft: #1A1A1A;
+      --gray: #2E2E2E;
+      --gray-mid: #555555;
+      --white: #FAFAFA;
+      --white-pure: #FFFFFF;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black);
+      color: var(--white);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--yellow);
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor.expand {
+      width: 48px;
+      height: 48px;
+    }
+
+    /* ─── NAVBAR ─────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 60px;
+      background: transparent;
+      transition: background 0.4s;
+    }
+
+    nav.scrolled {
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--yellow);
+      letter-spacing: 0.12em;
+      text-decoration: none;
+    }
+
+    .nav-logo span {
+      color: var(--white);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      position: relative;
+      padding-bottom: 4px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background: var(--yellow);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--yellow);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta {
+      background: var(--yellow);
+      color: var(--black) !important;
+      padding: 10px 24px;
+      border-radius: 2px;
+      font-weight: 700 !important;
+      letter-spacing: 0.1em;
+      transition: background 0.2s, transform 0.2s !important;
+    }
+
+    .nav-cta:hover {
+      background: var(--yellow-dark) !important;
+      transform: translateY(-2px);
+    }
+
+    .nav-cta::after {
+      display: none !important;
+    }
+
+    /* ─── HERO ───────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 140px 60px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 208, 0, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 208, 0, 0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+
+    .hero-accent-circle {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 208, 0, 0.12) 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      pointer-events: none;
+      animation: pulse 6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: 0.7;
+      }
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 208, 0, 0.1);
+      border: 1px solid rgba(255, 208, 0, 0.3);
+      color: var(--yellow);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border-radius: 100px;
+      width: fit-content;
+      margin-bottom: 36px;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--yellow);
+      animation: blink 1.4s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    .hero-headline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 10rem);
+      line-height: 0.9;
+      letter-spacing: 0.02em;
+      color: var(--white);
+      animation: fadeUp 0.9s 0.15s ease both;
+    }
+
+    .hero-headline .yellow {
+      color: var(--yellow);
+    }
+
+    .hero-headline .stroke {
+      -webkit-text-stroke: 2px var(--white);
+      color: transparent;
+    }
+
+    .hero-sub {
+      max-width: 500px;
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(250, 250, 250, 0.65);
+      margin-top: 32px;
+      animation: fadeUp 0.9s 0.3s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-top: 48px;
+      animation: fadeUp 0.9s 0.45s ease both;
+    }
+
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--black);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--yellow-dark);
+      transform: translateY(-3px);
+    }
+
+    .btn-ghost {
+      color: var(--white);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 2px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--yellow);
+      border-color: var(--yellow);
+    }
+
+    .btn-ghost svg {
+      transition: transform 0.2s;
+    }
+
+    .btn-ghost:hover svg {
+      transform: translateX(5px);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 60px;
+      margin-top: 80px;
+      padding-top: 48px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      animation: fadeUp 0.9s 0.6s ease both;
+    }
+
+    .stat-item {}
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem;
+      color: var(--yellow);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: rgba(250, 250, 250, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 6px;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ─── MARQUEE ─────────────────────────────────── */
+    .marquee-section {
+      background: var(--yellow);
+      padding: 18px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .marquee-track {
+      display: inline-flex;
+      gap: 0;
+      animation: marquee 20s linear infinite;
+    }
+
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.12em;
+      color: var(--black);
+      padding: 0 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .marquee-item::after {
+      content: '★';
+      font-size: 0.7rem;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* ─── SECTION COMMON ──────────────────────────── */
+    section {
+      padding: 120px 60px;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 5rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      color: var(--white);
+    }
+
+    /* ─── COURSES ─────────────────────────────────── */
+    #courses {
+      background: var(--black-soft);
+    }
+
+    .courses-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 72px;
+    }
+
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .course-card {
+      background: var(--black);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .course-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--yellow);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+      z-index: 0;
+    }
+
+    .course-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .course-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .course-card:hover * {
+      color: var(--black) !important;
+    }
+
+    .course-card:hover .course-tag {
+      background: rgba(0, 0, 0, 0.15);
+      border-color: rgba(0, 0, 0, 0.2);
+      color: var(--black) !important;
+    }
+
+    .course-card:hover .course-icon {
+      color: var(--black) !important;
+    }
+
+    .course-card>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .course-icon {
+      font-size: 2.2rem;
+      margin-bottom: 28px;
+      display: block;
+      transition: transform 0.3s;
+    }
+
+    .course-card:hover .course-icon {
+      transform: rotate(-5deg) scale(1.1);
+    }
+
+    .course-tag {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      border: 1px solid rgba(255, 208, 0, 0.3);
+      background: rgba(255, 208, 0, 0.08);
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+
+    .course-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 14px;
+      line-height: 1.05;
+      transition: color 0.3s;
+    }
+
+    .course-desc {
+      font-size: 0.88rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: rgba(250, 250, 250, 0.55);
+      margin-bottom: 30px;
+      transition: color 0.3s;
+    }
+
+    .course-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .course-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      color: var(--yellow);
+      letter-spacing: 0.04em;
+      transition: color 0.3s;
+    }
+
+    .course-price sub {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      vertical-align: middle;
+    }
+
+    .course-duration {
+      font-size: 0.78rem;
+      color: rgba(250, 250, 250, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: color 0.3s;
+    }
+
+    /* ─── ABOUT ───────────────────────────────────── */
+    #about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: center;
+    }
+
+    .about-visual {
+      position: relative;
+    }
+
+    .about-big-letter {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20rem;
+      color: rgba(255, 208, 0, 0.06);
+      line-height: 1;
+      position: absolute;
+      top: -60px;
+      left: -40px;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .about-card {
+      background: var(--black-soft);
+      border: 1px solid rgba(255, 208, 0, 0.1);
+      padding: 48px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: var(--yellow);
+    }
+
+    .about-quote {
+      font-size: 1.4rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--white);
+      font-style: italic;
+      margin-bottom: 32px;
+    }
+
+    .about-quote strong {
+      color: var(--yellow);
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    .about-attr {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(250, 250, 250, 0.4);
+    }
+
+    .about-location {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 40px;
+      padding: 14px 20px;
+      background: rgba(255, 208, 0, 0.06);
+      border-left: 3px solid var(--yellow);
+      font-size: 0.85rem;
+      color: rgba(250, 250, 250, 0.7);
+    }
+
+    .about-location strong {
+      color: var(--yellow);
+    }
+
+    .about-text .section-label {
+      display: block;
+    }
+
+    .about-text .section-title {
+      margin-bottom: 28px;
+    }
+
+    .about-body {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: rgba(250, 250, 250, 0.6);
+      font-weight: 300;
+      margin-bottom: 24px;
+    }
+
+    .about-pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .pillar {
+      padding: 22px;
+      background: var(--black-soft);
+      border-top: 2px solid var(--yellow);
+    }
+
+    .pillar-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--white);
+    }
+
+    .pillar-text {
+      font-size: 0.8rem;
+      color: rgba(250, 250, 250, 0.45);
+      line-height: 1.5;
+    }
+
+    /* ─── RESULTS ─────────────────────────────────── */
+    #results {
+      background: var(--yellow);
+      color: var(--black);
+      padding: 120px 60px;
+    }
+
+    #results .section-label {
+      color: var(--black);
+      opacity: 0.5;
+    }
+
+    #results .section-title {
+      color: var(--black);
+    }
+
+    .results-header {
+      margin-bottom: 72px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 2px solid var(--black);
+    }
+
+    .result-item {
+      padding: 52px 36px;
+      border-right: 2px solid var(--black);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-item:last-child {
+      border-right: none;
+    }
+
+    .result-item::before {
+      content: attr(data-num);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 8rem;
+      color: rgba(0, 0, 0, 0.06);
+      position: absolute;
+      bottom: -20px;
+      right: 10px;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .result-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4.5rem;
+      line-height: 1;
+      color: var(--black);
+      letter-spacing: 0.02em;
+    }
+
+    .result-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(0, 0, 0, 0.55);
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    /* ─── TESTIMONIALS ────────────────────────────── */
+    #testimonials {
+      background: var(--black);
+    }
+
+    .testimonials-header {
+      margin-bottom: 64px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .testi-card {
+      background: var(--black-soft);
+      padding: 42px 36px;
+      position: relative;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.3s;
+    }
+
+    .testi-card:hover {
+      border-color: var(--yellow);
+    }
+
+    .testi-quote {
+      font-size: 3rem;
+      font-family: 'Bebas Neue', sans-serif;
+      color: var(--yellow);
+      line-height: 1;
+      margin-bottom: 18px;
+    }
+
+    .testi-text {
+      font-size: 0.92rem;
+      line-height: 1.8;
+      color: rgba(250, 250, 250, 0.65);
+      font-weight: 300;
+      margin-bottom: 32px;
+      font-style: italic;
+    }
+
+    .testi-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .testi-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      color: var(--black);
+    }
+
+    .testi-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--white);
+    }
+
+    .testi-role {
+      font-size: 0.75rem;
+      color: rgba(250, 250, 250, 0.4);
+      margin-top: 2px;
+    }
+
+    /* ─── CTA BANNER ──────────────────────────────── */
+    #cta {
+      background: var(--black-soft);
+      text-align: center;
+      padding: 120px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #cta::before {
+      content: 'STANFORD';
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22vw;
+      color: rgba(255, 208, 0, 0.03);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 0.06em;
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 6vw, 6rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+
+    .cta-title span {
+      color: var(--yellow);
+    }
+
+    .cta-sub {
+      font-size: 1rem;
+      color: rgba(250, 250, 250, 0.55);
+      max-width: 480px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ─── FOOTER ──────────────────────────────────── */
+    footer {
+      background: var(--black);
+      border-top: 1px solid rgba(255, 208, 0, 0.08);
+      padding: 72px 60px 40px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 60px;
+    }
+
+    .footer-brand .nav-logo {
+      font-size: 2.4rem;
+      display: block;
+      margin-bottom: 18px;
+    }
+
+    .footer-desc {
+      font-size: 0.85rem;
+      line-height: 1.75;
+      color: rgba(250, 250, 250, 0.4);
+      font-weight: 300;
+      max-width: 280px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 22px;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-col li a {
+      font-size: 0.85rem;
+      color: rgba(250, 250, 250, 0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+      font-weight: 300;
+    }
+
+    .footer-col li a:hover {
+      color: var(--yellow);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(250, 250, 250, 0.25);
+    }
+
+    .footer-copy span {
+      color: var(--yellow);
+    }
+
+    /* ─── SCROLL REVEAL ───────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 {
+      transition-delay: 0.1s;
+    }
+
+    .reveal-delay-2 {
+      transition-delay: 0.2s;
+    }
+
+    .reveal-delay-3 {
+      transition-delay: 0.3s;
+    }
+
+    /* ─── HAMBURGER (mobile) ──────────────────────── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .hamburger span {
+      width: 26px;
+      height: 2px;
+      background: var(--white);
+      transition: all 0.3s;
+    }
+
+    @media (max-width: 900px) {
+      nav {
+        padding: 20px 28px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      #hero {
+        padding: 120px 28px 60px;
+      }
+
+      .hero-stats {
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+
+      section {
+        padding: 80px 28px;
+      }
+
+      .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .courses-header {
+        flex-direction: column;
+        gap: 24px;
+        align-items: flex-start;
+      }
+
+      #about {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .about-big-letter {
+        font-size: 10rem;
+      }
+
+      .results-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .result-item {
+        border-right: none;
+        border-bottom: 2px solid var(--black);
+      }
+
+      .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        gap: 14px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- CUSTOM CURSOR -->
+  <div class="cursor" id="cursor"></div>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">STAN<span>FORD</span></a>
+    <ul class="nav-links">
+      <li><a href="#courses">Courses</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+      <li><a href="#cta" class="nav-cta">Enroll Now</a></li>
+    </ul>
+    <div class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-accent-circle"></div>
+
+    <div class="hero-tag">📍 Nukus, Karakalpakstan</div>
+
+    <h1 class="hero-headline">
+      BUILD YOUR<br>
+      <span class="yellow">FUTURE</span><br>
+      <span class="stroke">TODAY</span>
+    </h1>
+
+    <p class="hero-sub">
+      Stanford Educational Centre is Nukus's leading institution for English, IT, and professional skills. We turn
+      potential into performance.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#courses" class="btn-primary">Explore Courses</a>
+      <a href="#about" class="btn-ghost">
+        Learn More
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-num">1,400+</div>
+        <div class="stat-label">Graduates</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Expert Teachers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Course Tracks</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">96%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <span class="marquee-item">English Language</span>
+      <span class="marquee-item">Web Development</span>
+      <span class="marquee-item">IELTS Preparation</span>
+      <span class="marquee-item">Python Programming</span>
+      <span class="marquee-item">Mathematics</span>
+      <span class="marquee-item">Graphic Design</span>
+      <span class="marquee-item">English Language</span>
+      <span class="marquee-item">Web Development</span>
+      <span class="marquee-item">IELTS Preparation</span>
+      <span class="marquee-item">Python Programming</span>
+      <span class="marquee-item">Mathematics</span>
+      <span class="marquee-item">Graphic Design</span>
+    </div>
+  </div>
+
+  <!-- COURSES -->
+  <section id="courses">
+    <div class="courses-header reveal">
+      <div>
+        <div class="section-label">What We Offer</div>
+        <h2 class="section-title">Our Courses</h2>
+      </div>
+      <a href="#cta" class="btn-ghost">
+        View All
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </a>
+    </div>
+
+    <div class="courses-grid">
+
+      <div class="course-card reveal">
+        <span class="course-icon">🇬🇧</span>
+        <span class="course-tag">Most Popular</span>
+        <div class="course-name">General English</div>
+        <p class="course-desc">From beginner to advanced — develop real speaking, writing, and listening skills used in
+          everyday life and work.</p>
+        <div class="course-meta">
+          <div class="course-price">250,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">3 months</div>
+        </div>
+      </div>
+
+      <div class="course-card reveal reveal-delay-1">
+        <span class="course-icon">🎓</span>
+        <span class="course-tag">Exam Prep</span>
+        <div class="course-name">IELTS Intensive</div>
+        <p class="course-desc">Targeted preparation for all four IELTS modules with mock tests, feedback sessions, and
+          proven band-score strategies.</p>
+        <div class="course-meta">
+          <div class="course-price">350,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">2 months</div>
+        </div>
+      </div>
+
+      <div class="course-card reveal reveal-delay-2">
+        <span class="course-icon">💻</span>
+        <span class="course-tag">Technology</span>
+        <div class="course-name">Web Development</div>
+        <p class="course-desc">HTML, CSS, JavaScript, and beyond. Build real-world projects and launch your career in
+          tech from day one.</p>
+        <div class="course-meta">
+          <div class="course-price">400,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">6 months</div>
+        </div>
+      </div>
+
+      <div class="course-card reveal">
+        <span class="course-icon">🐍</span>
+        <span class="course-tag">Technology</span>
+        <div class="course-name">Python & Data</div>
+        <p class="course-desc">Learn Python from scratch, dive into data analysis, and build automation scripts that
+          solve real problems.</p>
+        <div class="course-meta">
+          <div class="course-price">380,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">5 months</div>
+        </div>
+      </div>
+
+      <div class="course-card reveal reveal-delay-1">
+        <span class="course-icon">🎨</span>
+        <span class="course-tag">Creative</span>
+        <div class="course-name">Graphic Design</div>
+        <p class="course-desc">Master Adobe tools, typography, and brand identity. Build a stunning portfolio that gets
+          you hired.</p>
+        <div class="course-meta">
+          <div class="course-price">300,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">4 months</div>
+        </div>
+      </div>
+
+      <div class="course-card reveal reveal-delay-2">
+        <span class="course-icon">📐</span>
+        <span class="course-tag">Academic</span>
+        <div class="course-name">Mathematics</div>
+        <p class="course-desc">Strong foundations and advanced problem-solving for school pupils and university entrance
+          exam candidates.</p>
+        <div class="course-meta">
+          <div class="course-price">220,000 <sub>UZS/mo</sub></div>
+          <div class="course-duration">Ongoing</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-visual reveal">
+      <div class="about-big-letter">S</div>
+      <div class="about-card">
+        <p class="about-quote">
+          "Education is not the filling of a pail, but the <strong>lighting of a fire</strong>. At Stanford, we light
+          that fire every single day."
+        </p>
+        <div class="about-attr">— Stanford Educational Centre, Nukus</div>
+        <div class="about-location">
+          📍 &nbsp;<span><strong>Nukus</strong>, Karakalpakstan, Uzbekistan</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-text reveal reveal-delay-1">
+      <div class="section-label">Who We Are</div>
+      <h2 class="section-title">Shaping<br>Tomorrow's<br>Leaders</h2>
+      <p class="about-body">
+        Stanford Educational Centre was founded with a single mission: to give every student in Karakalpakstan access to
+        world-class education. Located in the heart of Nukus, we've built a community of curious minds, dedicated
+        teachers, and ambitious learners.
+      </p>
+      <p class="about-body">
+        Our programmes are designed not just to pass exams — but to build skills that last a lifetime and open doors to
+        global opportunities.
+      </p>
+
+      <div class="about-pillars">
+        <div class="pillar">
+          <div class="pillar-title">Expert Instructors</div>
+          <div class="pillar-text">Certified, experienced, passionate about teaching.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Modern Methods</div>
+          <div class="pillar-text">Interactive, practical, and project-based learning.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Small Groups</div>
+          <div class="pillar-text">Maximum 12 students per class for real attention.</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Proven Results</div>
+          <div class="pillar-text">96% of our students achieve their target goals.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results">
+    <div class="results-header reveal">
+      <div class="section-label">By The Numbers</div>
+      <h2 class="section-title">Real Results,<br>Real Impact</h2>
+    </div>
+
+    <div class="results-grid">
+      <div class="result-item reveal" data-num="01">
+        <div class="result-num">1,400+</div>
+        <div class="result-label">Students Graduated</div>
+      </div>
+      <div class="result-item reveal reveal-delay-1" data-num="02">
+        <div class="result-num">96%</div>
+        <div class="result-label">Goal Achievement Rate</div>
+      </div>
+      <div class="result-item reveal reveal-delay-2" data-num="03">
+        <div class="result-num">7.5</div>
+        <div class="result-label">Average IELTS Band Score</div>
+      </div>
+      <div class="result-item reveal reveal-delay-3" data-num="04">
+        <div class="result-num">5+</div>
+        <div class="result-label">Years in Nukus</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="testimonials-header reveal">
+      <div class="section-label">Student Stories</div>
+      <h2 class="section-title">What Our Students Say</h2>
+    </div>
+
+    <div class="testimonials-grid">
+
+      <div class="testi-card reveal">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Stanford's IELTS course changed everything for me. My band score went from 5.0 to 7.5 in
+          just two months. The teachers actually care about your progress.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">AJ</div>
+          <div>
+            <div class="testi-name">Aziz Jurayev</div>
+            <div class="testi-role">IELTS Graduate · Band 7.5</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-delay-1">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">I had zero coding knowledge before joining the Web Development course. Six months later I
+          built my own website and landed my first freelance client.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">MK</div>
+          <div>
+            <div class="testi-name">Malika Karimova</div>
+            <div class="testi-role">Web Dev Graduate · Now Freelancing</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi-card reveal reveal-delay-2">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">The General English course at Stanford is not like other centres. The lessons are fun, the
+          environment is welcoming, and I actually speak English now with confidence.</p>
+        <div class="testi-author">
+          <div class="testi-avatar">SR</div>
+          <div>
+            <div class="testi-name">Sabohat Rajabova</div>
+            <div class="testi-role">English Graduate · B2 Level</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-content reveal">
+      <h2 class="cta-title">Ready to Start<br><span>Your Journey?</span></h2>
+      <p class="cta-sub">Join hundreds of students who chose Stanford Educational Centre. Your first step towards
+        success starts here — in Nukus.</p>
+      <a href="tel:+998907051711" class="btn-primary" style="font-size:1rem; padding: 18px 52px;">
+        📞 &nbsp; Call Us Now
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">STAN<span>FORD</span></a>
+        <p class="footer-desc">Stanford Educational Centre — Nukus, Karakalpakstan. Where ambition meets knowledge and
+          futures are built.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Courses</h4>
+        <ul>
+          <li><a href="#">General English</a></li>
+          <li><a href="#">IELTS Intensive</a></li>
+          <li><a href="#">Web Development</a></li>
+          <li><a href="#">Python & Data</a></li>
+          <li><a href="#">Graphic Design</a></li>
+          <li><a href="#">Mathematics</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Centre</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Our Teachers</a></li>
+          <li><a href="#">Results</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="#">📍 Nukus, Karakalpakstan</a></li>
+          <li><a href="tel:+998000000000">📞 +998 (00) 000-00-00</a></li>
+          <li><a href="#">📱 Telegram</a></li>
+          <li><a href="#">📸 Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 <span>Stanford Educational Centre</span>. All rights reserved. Nukus,
+        Karakalpakstan.</p>
+      <p class="footer-copy">Designed with <span>♥</span> for our students</p>
+    </div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button, .course-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('expand'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('expand'));
+    });
+
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Animated counters
+    function animateCounter(el, target, duration = 1800) {
+      const isFloat = target.toString().includes('.');
+      let start = 0;
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = eased * parseFloat(target);
+        el.textContent = isFloat ? current.toFixed(1) : Math.floor(current).toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = isFloat ? parseFloat(target).toFixed(1) : parseInt(target).toLocaleString() + (el.dataset.suffix || '');
+      };
+      requestAnimationFrame(step);
+    }
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const nums = e.target.querySelectorAll('.result-num');
+          const targets = ['1400', '96', '7.5', '5'];
+          const suffixes = ['+', '%', '', '+'];
+          nums.forEach((num, i) => {
+            num.dataset.suffix = suffixes[i];
+            animateCounter(num, targets[i]);
+          });
+          counterObserver.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const resultsSection = document.getElementById('results');
+    if (resultsSection) counterObserver.observe(resultsSection);
+  </script>
+</body>
+
+</html>
+
+echo "# stanford.nukus" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/tak7774/stanford.nukus.git
+git push -u origin main
