@@ -3,8 +3,8 @@
 // Find these in Supabase: Project Settings > API
 // The page will not work until both of these are real values.
 // ============================================================
-const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
-const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_PUBLIC_KEY_HERE";
+const SUPABASE_URL = "https://nzbravxsxttloyicwcyq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56YnJhdnhzeHR0bG95aWN3Y3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTg3NzAsImV4cCI6MjEwMTgzNDc3MH0.YFZfZRWHTAvxTYRDcmokgpvmjT9iflpA4KGJMcnMrFY";
 
 if (SUPABASE_URL.includes("PASTE_YOUR") || SUPABASE_ANON_KEY.includes("PASTE_YOUR")) {
   document.getElementById('app').innerHTML =
