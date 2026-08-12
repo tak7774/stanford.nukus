@@ -16,19 +16,22 @@ if (SUPABASE_URL.includes("PASTE_YOUR") || SUPABASE_ANON_KEY.includes("PASTE_YOU
   throw new Error("Supabase credentials not configured yet — see admin.js");
 }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// NOTE: named supabaseClient (not "supabase") because the Supabase CDN
+// script already defines a global called "supabase" — reusing that name
+// causes "Identifier 'supabase' has already been declared".
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const app = document.getElementById('app');
 
 let session = null; // { email, role }
 
 async function login(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) {
     alert("Login failed: " + error.message);
     return;
   }
   // Look up this person's role in the staff_roles table
-  const { data: roleRow, error: roleError } = await supabase
+  const { data: roleRow, error: roleError } = await supabaseClient
     .from('staff_roles')
     .select('role')
     .eq('email', email)
@@ -36,7 +39,7 @@ async function login(email, password) {
 
   if (roleError || !roleRow) {
     alert("You logged in, but you're not listed in staff_roles. Ask the owner to add you.");
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     return;
   }
 
@@ -45,13 +48,13 @@ async function login(email, password) {
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   session = null;
   render();
 }
 
 async function loadNews() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('news')
     .select('*')
     .order('created_at', { ascending: false });
@@ -59,12 +62,12 @@ async function loadNews() {
 }
 
 async function addNews(title, body) {
-  await supabase.from('news').insert([{ title, body }]);
+  await supabaseClient.from('news').insert([{ title, body }]);
   render();
 }
 
 async function deleteNews(id) {
-  await supabase.from('news').delete().eq('id', id);
+  await supabaseClient.from('news').delete().eq('id', id);
   render();
 }
 
