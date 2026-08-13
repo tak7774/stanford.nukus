@@ -281,11 +281,33 @@ async function viewExamRegs(examId) {
 
   openModal(`
     <div class="modal-title">${esc(exam?.title || 'Exam')} — Registrations (${regsList.length})<button class="modal-close" onclick="closeModal()">✕</button></div>
-    ${regsList.length ? '<table><thead><tr><th>Name</th><th>Phone</th><th>Registered</th></tr></thead><tbody>' +
-      regsList.map(r => `<tr><td style="color:var(--text)">${esc(r.full_name)}</td><td><a href="tel:${r.phone}" style="color:var(--gold)">${esc(r.phone)}</a></td><td>${fmtDate(r.registered_at)}</td></tr>`).join('') +
-      '</tbody></table>' : '<div class="empty-state"><div class="icon">👥</div><h3>No registrations yet</h3><p>Students can register from the public site</p></div>'}
+    ${regsList.length ? '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr style="text-align:left; border-bottom:1px solid var(--border)"><th>Candidate Name</th><th>Passport/ID</th><th>Phone</th><th>Gender / DOB</th><th>Payment</th><th>Method</th><th>Action</th></tr></thead><tbody>' +
+      regsList.map(r => `
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="color:var(--text); font-weight:600; padding:10px 4px;">${esc(r.full_name || ((r.first_name || '') + ' ' + (r.last_name || '')))}</td>
+          <td><code style="background:var(--bg3); padding:2px 6px; border-radius:4px; font-size:0.82rem;">${esc(r.passport_id || 'N/A')}</code></td>
+          <td><a href="tel:${r.phone}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
+          <td style="font-size:0.84rem; color:var(--text2);">${esc(r.gender || '-')} / ${r.birth_date ? esc(r.birth_date) : '-'}</td>
+          <td>
+            <span class="badge badge-${r.payment_status === 'paid' ? 'green' : (r.payment_status === 'verified' ? 'purple' : 'gold')}">
+              ${r.payment_status ? r.payment_status.toUpperCase() : 'PENDING'}
+            </span>
+          </td>
+          <td style="font-size:0.82rem; font-weight:600;">${esc((r.payment_method || 'Click').toUpperCase())}</td>
+          <td>
+            ${r.payment_status !== 'verified' ? `<button class="btn btn-sm btn-primary" onclick="togglePayStatus(${r.id}, 'verified', ${examId})">Verify 🟢</button>` : `<button class="btn btn-sm btn-secondary" onclick="togglePayStatus(${r.id}, 'pending', ${examId})">Reset 🟡</button>`}
+          </td>
+        </tr>
+      `).join('') +
+      '</tbody></table></div>' : '<div class="empty-state"><div class="icon">👥</div><h3>No registrations yet</h3><p>Students can register from the public site</p></div>'}
   `);
 }
+
+window.togglePayStatus = async function(regId, newStatus, examId) {
+  await sb.from('exam_registrations').update({ payment_status: newStatus }).eq('id', regId);
+  toast('Payment status updated');
+  if (examId) viewExamRegs(examId);
+};
 
 // ════════════════════════════════════════════
 // STUDENTS (Trial Registrations)
