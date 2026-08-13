@@ -1,30 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Stanford Educational Centre — Staff Admin</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<!-- Loads Supabase's toolkit so this page can talk to your project -->
+<meta charset="UTF-8"/>
+<title>Stanford Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-  body { font-family: system-ui, sans-serif; background:#111; color:#eee; max-width:640px; margin:40px auto; padding:0 16px; }
-  input, textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:6px; border:1px solid #333; background:#1a1a1a; color:#eee; box-sizing:border-box; }
-  button { padding:10px 16px; border-radius:6px; border:none; background:#C9A227; color:#111; font-weight:600; cursor:pointer; }
-  .card { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:10px; padding:20px; margin-bottom:16px; }
-  .post { border-top:1px solid #2a2a2a; padding:12px 0; }
-  .muted { color:#999; font-size:13px; }
-  #logoutBtn { background:none; text-decoration:underline; color:#999; font-weight:400; padding:0; }
+:root{
+  --bg:#0B0F1A;--bg2:#111827;--bg3:#1F2937;--bg4:#374151;
+  --border:#2A3141;--border2:#3B4A61;
+  --text:#F3F4F6;--text2:#9CA3AF;--text3:#6B7280;
+  --gold:#C9A227;--gold-soft:rgba(201,162,39,.12);--gold-border:rgba(201,162,39,.3);
+  --red:#EF4444;--red-soft:rgba(239,68,68,.1);
+  --green:#22C55E;--green-soft:rgba(34,197,94,.1);
+  --blue:#3B82F6;--blue-soft:rgba(59,130,246,.1);
+  --purple:#A855F7;--purple-soft:rgba(168,85,247,.1);
+  --navy:#14213D;
+  --sidebar-w:260px;
+  --radius:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+
+/* ── LOGIN ── */
+#loginWrap{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:400px;text-align:center}
+.login-card .logo{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:700;margin-bottom:6px}
+.login-card .logo span{color:var(--gold)}
+.login-card .subtitle{color:var(--text3);font-size:.82rem;margin-bottom:32px}
+.login-card label{display:block;text-align:left;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:6px}
+.login-card input{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;margin-bottom:16px;outline:none;transition:border-color .2s}
+.login-card input:focus{border-color:var(--gold)}
+.login-card .btn-login{width:100%;padding:13px;background:var(--gold);color:var(--navy);font-weight:700;font-size:.88rem;border:none;border-radius:8px;transition:background .2s,transform .15s}
+.login-card .btn-login:hover{background:#B99420;transform:translateY(-1px)}
+.login-error{color:var(--red);font-size:.8rem;margin-bottom:12px;display:none}
+
+/* ── LAYOUT ── */
+.app-layout{display:flex;height:100vh;overflow:hidden}
+
+/* sidebar */
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform .3s}
+.sidebar-logo{padding:24px 22px;border-bottom:1px solid var(--border);font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700}
+.sidebar-logo span{color:var(--gold)}
+.sidebar-logo small{display:block;font-family:'Inter',sans-serif;font-size:.65rem;color:var(--text3);font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.sidebar-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;font-size:.86rem;font-weight:500;color:var(--text2);transition:all .2s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-border)}
+.nav-item .icon{width:20px;text-align:center;font-size:1rem}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.user-info{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:var(--bg3)}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-soft);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--gold)}
+.user-email{font-size:.75rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.user-role{font-size:.62rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.btn-logout{width:100%;margin-top:10px;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:.78rem;font-weight:500;transition:all .2s}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+/* main content */
+.main-content{flex:1;overflow-y:auto;padding:32px 36px;background:var(--bg)}
+.main-content::-webkit-scrollbar{width:6px}
+.main-content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* page header */
+.page-header{margin-bottom:32px}
+.page-header h1{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;margin-bottom:4px}
+.page-header p{color:var(--text3);font-size:.88rem}
+
+/* stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px 20px}
+.stat-card .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:14px}
+.stat-card .stat-num{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:600}
+.stat-card .stat-label{font-size:.76rem;color:var(--text3);margin-top:2px}
+.stat-icon.gold{background:var(--gold-soft);border:1px solid var(--gold-border)}
+.stat-icon.blue{background:var(--blue-soft);border:1px solid rgba(59,130,246,.3)}
+.stat-icon.green{background:var(--green-soft);border:1px solid rgba(34,197,94,.3)}
+.stat-icon.purple{background:var(--purple-soft);border:1px solid rgba(168,85,247,.3)}
+
+/* cards & tables */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card-title{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:12px 14px;border-bottom:1px solid var(--border)}
+td{padding:14px;border-bottom:1px solid var(--border);font-size:.88rem;color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* badges */
+.badge{display:inline-block;font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;letter-spacing:.02em}
+.badge-gold{background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-border)}
+.badge-green{background:var(--green-soft);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.badge-red{background:var(--red-soft);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.badge-blue{background:var(--blue-soft);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+.badge-purple{background:var(--purple-soft);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
+.badge-gray{background:rgba(107,114,128,.1);color:var(--text3);border:1px solid rgba(107,114,128,.3)}
+
+/* buttons */
+.btn{padding:9px 18px;border-radius:8px;font-size:.82rem;font-weight:600;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--gold);color:var(--navy)}
+.btn-primary:hover{background:#B99420;transform:translateY(-1px)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--text3)}
+.btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:6px 12px;font-size:.75rem}
+
+/* forms */
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:6px}
+.form-control{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.88rem;outline:none;transition:border-color .2s}
+.form-control:focus{border-color:var(--gold)}
+textarea.form-control{resize:vertical;min-height:80px}
+select.form-control{cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.active{opacity:1;pointer-events:auto}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:540px;max-height:85vh;overflow-y:auto;padding:32px}
+.modal-title{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;color:var(--text3);font-size:1.3rem;cursor:pointer;padding:4px}
+.modal-close:hover{color:var(--text)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+
+/* empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state .icon{font-size:2.4rem;margin-bottom:14px}
+.empty-state h3{font-family:'Fraunces',serif;color:var(--text2);margin-bottom:6px}
+.empty-state p{font-size:.86rem;margin-bottom:20px}
+
+/* activity list */
+.activity-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.activity-text{font-size:.85rem;color:var(--text2);line-height:1.5}
+.activity-text strong{color:var(--text)}
+.activity-time{font-size:.72rem;color:var(--text3);margin-top:2px}
+
+/* filter bar */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-bar select{padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;outline:none}
+.filter-bar select:focus{border-color:var(--gold)}
+
+/* hamburger */
+.hamburger-admin{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;position:fixed;top:16px;left:16px;z-index:600;padding:8px}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--green);border-radius:10px;padding:14px 22px;color:var(--green);font-size:.86rem;font-weight:500;z-index:700;transform:translateY(100px);opacity:0;transition:all .35s;display:flex;align-items:center;gap:8px}
+.toast.active{transform:translateY(0);opacity:1}
+
+@media(max-width:900px){
+  .sidebar{position:fixed;left:0;top:0;height:100%;z-index:500;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .hamburger-admin{display:block}
+  .main-content{padding:24px 18px;padding-top:60px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stats-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<h2>Stanford Educational Centre — Staff Admin</h2>
-<div id="app"></div>
+<!-- Login Screen -->
+<div id="loginWrap">
+  <div class="login-card">
+    <div class="logo">STAN<span>FORD</span></div>
+    <div class="subtitle">Staff Admin Panel</div>
+    <div class="login-error" id="loginError"></div>
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="you@stanfordnukus.uz"/>
+    <label>Password</label>
+    <input id="loginPassword" type="password" placeholder="••••••••"/>
+    <button class="btn-login" id="loginBtn">Sign In</button>
+  </div>
+</div>
 
-<!-- IMPORTANT: this script must load AFTER the supabase-js CDN script above,
-     and admin.js must be next to this file, not in a subfolder -->
+<!-- App Shell (hidden until login) -->
+<div class="app-layout" id="appLayout" style="display:none">
+  <button class="hamburger-admin" id="hamburgerAdmin">☰</button>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">STAN<span>FORD</span><small>Admin Panel</small></div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <button class="nav-item active" data-page="dashboard"><span class="icon">📊</span> Dashboard</button>
+      <button class="nav-item" data-page="exams"><span class="icon">📝</span> Mock Exams</button>
+      <button class="nav-item" data-page="students"><span class="icon">👥</span> Students</button>
+      <button class="nav-item" data-page="news"><span class="icon">📰</span> News</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div>
+          <div class="user-email" id="userEmail">admin@stanford.uz</div>
+          <div class="user-role" id="userRole">owner</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logoutBtn">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main-content" id="mainContent"></main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script src="admin.js"></script>
 </body>
 </html>
