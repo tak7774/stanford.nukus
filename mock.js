@@ -244,8 +244,8 @@ window.submitRegistration = async function() {
 
   // Save to Supabase exam_registrations
   if (publicSb) {
-    try {
-      await publicSb.from('exam_registrations').insert([{
+    {
+      const { error } = await publicSb.from('exam_registrations').insert([{
         exam_id: selectedSession ? selectedSession.id : null,
         full_name: `${fname} ${lname}`,
         phone: phone,
@@ -258,8 +258,14 @@ window.submitRegistration = async function() {
         payment_method: selectedPayMethod,
         amount_paid: selectedSession ? selectedSession.price : 150000
       }]);
-    } catch(err) {
-      console.warn('Could not insert exam registration into DB:', err);
+      if (error) {
+        console.warn('Could not insert exam registration into DB:', error);
+        const msg = error.message || '';
+        if (msg.includes('EXAM_FULL')) alert('К сожалению, все места на этот экзамен заняты. Выберите другую дату.');
+        else if (msg.includes('EXAM_CLOSED')) alert('Запись на этот экзамен закрыта. Выберите другую дату.');
+        else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+        return;
+      }
     }
   }
 

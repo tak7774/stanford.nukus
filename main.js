@@ -138,14 +138,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Save to Supabase trial_registrations
       if (publicSb) {
-        try {
-          await publicSb.from('trial_registrations').insert([{
-            full_name: nameInput.value.trim(),
-            phone: phoneInput.value.trim(),
-            course: courseInput.value
-          }]);
-        } catch(err) {
-          console.warn('Could not save trial registration to DB:', err);
+        const { error } = await publicSb.from('trial_registrations').insert([{
+          full_name: nameInput.value.trim(),
+          phone: phoneInput.value.trim(),
+          course: courseInput.value
+        }]);
+        if (error) {
+          console.warn('Could not save trial registration to DB:', error);
+          alert('Не удалось отправить заявку. Позвоните нам: +998 91 303-60-01');
+          return;
         }
       }
 
@@ -173,23 +174,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!name || !phone) return;
 
       if (publicSb) {
-        try {
-          if (examId && !isNaN(parseInt(examId))) {
-            await publicSb.from('exam_registrations').insert([{
-              exam_id: parseInt(examId),
-              full_name: name,
-              phone: phone
-            }]);
-          } else {
-            // Also insert into trial_registrations with mock exam tag if exam_id not provided
-            await publicSb.from('trial_registrations').insert([{
-              full_name: `${name} [Mock: ${examTitle}]`,
-              phone: phone,
-              course: 'ielts'
-            }]);
-          }
-        } catch(err) {
-          console.warn('Could not save exam registration:', err);
+        let error;
+        if (examId && !isNaN(parseInt(examId))) {
+          ({ error } = await publicSb.from('exam_registrations').insert([{
+            exam_id: parseInt(examId),
+            full_name: name,
+            phone: phone
+          }]));
+        } else {
+          // Also insert into trial_registrations with mock exam tag if exam_id not provided
+          ({ error } = await publicSb.from('trial_registrations').insert([{
+            full_name: `${name} [Mock: ${examTitle}]`,
+            phone: phone,
+            course: 'ielts'
+          }]));
+        }
+        if (error) {
+          console.warn('Could not save exam registration:', error);
+          const msg = error.message || '';
+          if (msg.includes('EXAM_FULL')) alert('К сожалению, все места на этот экзамен заняты.');
+          else if (msg.includes('EXAM_CLOSED')) alert('Запись на этот экзамен закрыта.');
+          else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+          loadPublicMockExams();
+          return;
         }
       }
 
@@ -218,9 +225,9 @@ async function loadPublicMockExams() {
     if (error || !exams || exams.length === 0) return;
 
     // Fetch counts
-    const { data: regCounts } = await publicSb.from('exam_registrations').select('exam_id');
+    const { data: regCounts } = await publicSb.rpc('get_exam_seat_counts');
     const counts = {};
-    (regCounts || []).forEach(r => { counts[r.exam_id] = (counts[r.exam_id] || 0) + 1; });
+    (regCounts || []).forEach(r => { counts[r.exam_id] = r.registered; });
 
     const html = exams.map(e => {
       const registered = counts[e.id] || 0;
