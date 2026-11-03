@@ -120,7 +120,6 @@ class ExamRegistration(models.Model):
     last_name = models.TextField(null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.TextField(null=True, blank=True)
-    passport_id = models.TextField(null=True, blank=True)
     payment_status = models.TextField(
         choices=PAYMENT_STATUS_CHOICES, default="pending", null=True, blank=True
     )

@@ -44,14 +44,13 @@ class PublicExamRegistrationSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
     last_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
     gender = serializers.CharField(max_length=20, required=False, allow_blank=True)
-    passport_id = serializers.CharField(max_length=40, required=False, allow_blank=True)
     payment_method = serializers.CharField(max_length=30, required=False, allow_blank=True)
 
     class Meta:
         model = ExamRegistration
         fields = [
             "id", "exam_id", "full_name", "phone", "first_name", "last_name",
-            "birth_date", "gender", "passport_id", "payment_method",
+            "birth_date", "gender", "payment_method",
             "payment_status", "amount_paid", "registered_at",
         ]
         read_only_fields = ["id", "payment_status", "amount_paid", "registered_at"]
@@ -87,7 +86,7 @@ class AdminExamRegistrationSerializer(serializers.ModelSerializer):
         model = ExamRegistration
         fields = [
             "id", "exam_id", "full_name", "phone", "first_name", "last_name",
-            "birth_date", "gender", "passport_id", "payment_status",
+            "birth_date", "gender", "payment_status",
             "payment_method", "amount_paid", "registered_at",
         ]
         # The admin panel only changes the payment status.

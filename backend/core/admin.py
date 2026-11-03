@@ -27,7 +27,7 @@ class TrialRegistrationAdmin(admin.ModelAdmin):
 class ExamRegistrationInline(admin.TabularInline):
     model = ExamRegistration
     extra = 0
-    fields = ["full_name", "phone", "passport_id", "payment_method", "payment_status"]
+    fields = ["full_name", "phone", "payment_method", "payment_status"]
 
 
 @admin.register(MockExam)
@@ -41,7 +41,7 @@ class MockExamAdmin(admin.ModelAdmin):
 class ExamRegistrationAdmin(admin.ModelAdmin):
     list_display = ["full_name", "phone", "exam", "payment_method", "payment_status", "registered_at"]
     list_filter = ["payment_status", "payment_method", "exam"]
-    search_fields = ["full_name", "phone", "passport_id"]
+    search_fields = ["full_name", "phone"]
 
 
 @admin.register(GalleryPhoto)

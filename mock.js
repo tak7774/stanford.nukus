@@ -72,10 +72,9 @@ function validateCurrentStep() {
     const lname = document.getElementById('regLastName').value.trim();
     const dob = document.getElementById('regBirthDate').value;
     const phone = document.getElementById('regPhone').value.trim();
-    const passport = document.getElementById('regPassport').value.trim();
 
-    if (!fname || !lname || !dob || !phone || !passport) {
-      alert('Пожалуйста, заполните все обязательные поля (Имя, Фамилия, Дата рождения, Телефон, Паспорт/ID).');
+    if (!fname || !lname || !dob || !phone) {
+      alert('Пожалуйста, заполните все обязательные поля (Имя, Фамилия, Дата рождения, Телефон).');
       return false;
     }
     const phoneDigits = phone.replace(/\D/g, '');
@@ -233,7 +232,6 @@ window.submitRegistration = async function() {
   const lname = document.getElementById('regLastName').value.trim();
   const dob = document.getElementById('regBirthDate').value;
   const phone = document.getElementById('regPhone').value.trim();
-  const passport = document.getElementById('regPassport').value.trim();
 
   // Save registration. Payment status and amount are decided by the server
   // (always 'pending' until an admin verifies it in the admin panel).
@@ -245,7 +243,6 @@ window.submitRegistration = async function() {
     last_name: lname,
     birth_date: dob || null,
     gender: selectedGender,
-    passport_id: passport,
     payment_method: selectedPayMethod
   });
   if (error) {
@@ -262,14 +259,12 @@ window.submitRegistration = async function() {
   // Populate Digital Ticket (Step 4)
   const tNoEl = document.getElementById('tNo');
   const tNameEl = document.getElementById('tName');
-  const tPassEl = document.getElementById('tPassport');
   const tExamEl = document.getElementById('tExam');
   const tDateEl = document.getElementById('tDate');
   const tStatusEl = document.getElementById('tPayStatus');
 
   if (tNoEl) tNoEl.textContent = ticketNo;
   if (tNameEl) tNameEl.textContent = `${fname} ${lname}`;
-  if (tPassEl) tPassEl.textContent = passport;
   if (tExamEl && selectedSession) tExamEl.textContent = selectedSession.title;
   if (tDateEl && selectedSession) tDateEl.textContent = selectedSession.dateStr;
   if (tStatusEl) {

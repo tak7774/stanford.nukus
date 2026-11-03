@@ -304,11 +304,10 @@ async function viewExamRegs(examId) {
 
   openModal(`
     <div class="modal-title">${esc(exam?.title || 'Exam')} — Registrations (${regsList.length})<button class="modal-close" onclick="closeModal()">✕</button></div>
-    ${regsList.length ? '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr style="text-align:left; border-bottom:1px solid var(--border)"><th>Candidate Name</th><th>Passport/ID</th><th>Phone</th><th>Gender / DOB</th><th>Payment</th><th>Method</th><th>Action</th></tr></thead><tbody>' +
+    ${regsList.length ? '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr style="text-align:left; border-bottom:1px solid var(--border)"><th>Candidate Name</th><th>Phone</th><th>Gender / DOB</th><th>Payment</th><th>Method</th><th>Action</th></tr></thead><tbody>' +
       regsList.map(r => `
         <tr style="border-bottom:1px solid var(--border)">
           <td style="color:var(--text); font-weight:600; padding:10px 4px;">${esc(r.full_name || ((r.first_name || '') + ' ' + (r.last_name || '')))}</td>
-          <td><code style="background:var(--bg3); padding:2px 6px; border-radius:4px; font-size:0.82rem;">${esc(r.passport_id || 'N/A')}</code></td>
           <td><a href="tel:${r.phone}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
           <td style="font-size:0.84rem; color:var(--text2);">${esc(r.gender || '-')} / ${r.birth_date ? esc(r.birth_date) : '-'}</td>
           <td>
