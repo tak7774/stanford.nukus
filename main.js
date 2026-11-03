@@ -90,8 +90,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navbar scroll state
   const navbar = document.getElementById('navbar');
   if (navbar) {
-    window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+    const updateNav = () => navbar.classList.toggle('scrolled', window.scrollY > 50);
+    window.addEventListener('scroll', updateNav, { passive: true });
+    updateNav(); // correct state when the page opens mid-scroll (e.g. reload or #anchor)
   }
+
+  // +998 phone mask on the trial form and the mock exam modal
+  ['trialPhone', 'pmStudentPhone'].forEach(id => attachUzPhoneMask(document.getElementById(id)));
+
+  // Count-up for the stats in "О нас" (numbers are already in the HTML, so nothing can stay hidden)
+  initCountUp();
 
   // Mobile menu
   const hamburger = document.getElementById('hamburger');
@@ -122,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const phoneField = document.getElementById('trialFieldPhone');
       const phoneInput = document.getElementById('trialPhone');
       const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-      if (phoneDigits.length < 9){ if(phoneField) phoneField.classList.add('invalid'); valid = false; }
+      if (phoneDigits.length < 12){ // +998 + 9 digits if(phoneField) phoneField.classList.add('invalid'); valid = false; }
       else if(phoneField) phoneField.classList.remove('invalid');
 
       const courseField = document.getElementById('trialFieldCourse');
@@ -210,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const MOCK_COURSE_LABELS = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English' };
-const NO_SESSIONS_HTML = '<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Сейчас нет открытых сессий. Позвоните: <a href="tel:+998913036001" style="color: var(--gold); font-weight: 600;">+998 91 303-60-01</a></div>';
+const NO_SESSIONS_HTML = '<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Сейчас нет открытых сессий. Позвоните: <a href="tel:+998913036001" style="color: var(--text); font-weight: 700;">+998 91 303-60-01</a></div>';
 
 async function loadPublicMockExams() {
   const container = document.getElementById('publicMockExamsGrid');
@@ -303,155 +311,213 @@ function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Formats input as "+998 90 123-45-67" while typing. Keeps the +998 prefix.
+function formatUzPhone(value) {
+  let d = String(value).replace(/\D/g, '');
+  if (d.startsWith('998')) d = d.slice(3);
+  d = d.slice(0, 9);
+  let out = '+998';
+  if (d.length > 0) out += ' ' + d.slice(0, 2);
+  if (d.length > 2) out += ' ' + d.slice(2, 5);
+  if (d.length > 5) out += '-' + d.slice(5, 7);
+  if (d.length > 7) out += '-' + d.slice(7, 9);
+  return out;
+}
+
+function attachUzPhoneMask(input) {
+  if (!input) return;
+  input.addEventListener('focus', () => { if (!input.value) input.value = '+998 '; });
+  input.addEventListener('input', () => {
+    const formatted = formatUzPhone(input.value);
+    input.value = formatted === '+998' ? '+998 ' : formatted;
+  });
+  input.addEventListener('blur', () => { if (input.value.replace(/\D/g, '') === '998') input.value = ''; });
+}
+
+// Animates .stat-num[data-count] from 0 to its value once it scrolls into view.
+// The final value is in the HTML, so without JS / IntersectionObserver the number simply shows.
+function initCountUp() {
+  const nums = document.querySelectorAll('.stat-num[data-count]');
+  if (!nums.length || !('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const run = el => {
+    const target = parseFloat(el.dataset.count);
+    const decimals = parseInt(el.dataset.decimals || '0', 10);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1200;
+    const start = performance.now();
+    const step = now => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = (target * eased).toFixed(decimals) + suffix;
+      if (t < 1) requestAnimationFrame(step);
+      else el.textContent = target.toFixed(decimals) + suffix;
+    };
+    requestAnimationFrame(step);
+  };
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { observer.unobserve(entry.target); run(entry.target); }
+    });
+  }, { threshold: 0.4 });
+  nums.forEach(el => observer.observe(el));
+}
+
 // ── i18n Translation Engine ──
 const translations = {
   ru: {
     'nav-courses':'Курсы','nav-mock-exams':'Mock Exam','nav-results':'Результаты','nav-instructors':'Преподаватели','nav-testimonials':'Отзывы','nav-faq':'Вопросы','nav-contact':'Контакты','nav-enroll':'Записаться',
-    'hero-eyebrow':'Центр английского языка в г. Нукус',
-    'hero-title-1':'Говорите по‑английски','hero-title-2':'уверенно',
-    'hero-sub':'IELTS, General English и курсы для детей — с преподавателем, который сам сдал IELTS на 9.0. Небольшие группы, разговорная практика и понятный путь к результату.',
-    'hero-btn1':'Записаться сейчас','hero-btn2':'Смотреть курсы',
-    'hero-daily':'ежедневно','hero-instructor':'Инструктор','hero-address-short':'ул. Н. Сараева 34,','hero-rating':'· Google отзывы',
-    'why-eyebrow':'Почему мы','why-title':'Что отличает Stanford',
+    'hero-title-2':'Английский язык и IELTS',
+    'hero-sub':'IELTS, General English и курсы для детей — с преподавателем IELTS 9.0 в Нукусе.',
+    'hero-btn1':'Первый бесплатный урок',
+    'about-title':'О нас',
+    'rstat1-label':'Средний балл IELTS','rstat2-label':'Студентов подготовлено к экзамену','rstat3-label':'Достигли цели','rstat4-label':'Лет в Нукусе','rstat5-label':'Балл IELTS нашего преподавателя',
+    'why-title':'Почему Stanford',
     'why1-title':'Преподаватель IELTS 9.0','why1-text':'Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.',
     'why2-title':'Небольшие группы','why2-text':'До 10–12 человек в группе — каждому достаётся время на разговорную практику.',
     'why3-title':'Понятный прогресс','why3-text':'Регулярные пробные тесты показывают реальный уровень и что подтянуть.',
     'why4-title':'Гибкое расписание','why4-text':'Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.',
-    'courses-eyebrow':'Что мы преподаём','courses-title':'Курсы для любого уровня',
+    'courses-title':'Курсы',
     'courses-desc':'От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.',
     'course1-level':'Kids · 6–12 лет','course1-name':'Kids English','course1-desc':'Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.',
+    'course1-f1':'Игры, песни и картинки','course1-f2':'Первые слова и фразы',
     'course1-price':'250 000 <sub>сум/мес</sub>','course1-duration':'2 занятия в неделю',
     'course2-level':'General · Intermediate','course2-name':'General English','course2-desc':'Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.',
+    'course2-f1':'Грамматика и лексика','course2-f2':'Разговорная практика',
     'course2-price':'280 000 <sub>сум/мес</sub>','course2-duration':'3 занятия в неделю',
     'course3-level':'Upper‑Intermediate','course3-name':'Advanced English','course3-desc':'Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.',
+    'course3-f1':'Свободная речь','course3-f2':'Академическая лексика',
     'course3-price':'320 000 <sub>сум/мес</sub>','course3-duration':'3 занятия в неделю',
     'course4-level':'Exam Prep','course4-name':'IELTS Preparation','course4-desc':'Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.',
+    'course4-f1':'Все 4 модуля экзамена','course4-f2':'Пробные тесты и стратегии',
     'course4-price':'380 000 <sub>сум/мес</sub>','course4-duration':'4 занятия в неделю',
     'course-btn':'Записаться',
-    'mock-eyebrow':'IELTS Mock Testing','mock-title':'Ближайшие сессии Mock Exam','mock-desc':'Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.',
+    'mock-title':'Mock Exam','mock-desc':'Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.',
     'pm-modal-title':'Запись на Mock Exam','pm-name-label':'Ваше Имя и Фамилия','pm-phone-label':'Номер телефона','pm-submit-btn':'Подтвердить запись',
     'pm-success-head':'Заявка принята!','pm-success-sub':'Вы успешно зарегистрировались на Mock Exam. Наш администратор свяжется с вами по указанному номеру для подтверждения места.',
-    'quiz-eyebrow':'Не знаете, с чего начать?','quiz-title':'Подберите свой курс за 20 секунд','quiz-desc':'Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.',
+    'quiz-title':'Подбор курса','quiz-desc':'Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.',
     'quiz-q1':'Кому нужен курс?','quiz-q1-opt1':'Ребёнку, 6–12 лет','quiz-q1-opt2':'Взрослому или подростку',
     'quiz-q2':'Какая у вас цель?','quiz-q2-opt1':'Заговорить увереннее в жизни и на работе','quiz-q2-opt2':'Сдать международный экзамен IELTS','quiz-q2-opt3':'Уже говорю свободно, хочу углубить знания',
     'quiz-result-label':'Вам подходит','quiz-cta':'Смотреть курс →','quiz-restart':'Пройти заново',
-    'schedule-eyebrow':'Расписание','schedule-title':'Когда проходят занятия',
+    'schedule-title':'Расписание',
     'schedule-th1':'Курс','schedule-th2':'Дни','schedule-th3':'Время',
     'sched1-days':'Пн, Чт','sched2-days':'Пн, Ср, Пт','sched3-days':'Вт, Чт, Сб','sched4-days':'Пн, Вт, Чт, Сб',
     'schedule-note':'Расписание может отличаться в зависимости от набора группы — уточняйте актуальное время по телефону.',
-    'results-eyebrow':'Наши результаты','results-title':'Баллы, которыми мы гордимся','results-desc':'Реальные результаты студентов Stanford на международном экзамене IELTS.',
-    'rstat1-label':'Средний балл IELTS','rstat2-label':'Подготовлено к экзамену','rstat3-label':'Достигли цели','rstat4-label':'Лет в Нукусе',
+    'results-title':'Результаты','results-desc':'Реальные результаты студентов Stanford на международном экзамене IELTS.',
     'result-course':'Курс IELTS Preparation',
     'story-badge-label':'Итоговый<br>балл IELTS',
-    'story-eyebrow':'История успеха','story-title':'От 5.5 до 7.5 за 4 месяца',
+    'story-title':'От 5.5 до 7.5 за 4 месяца',
     'story-quote':'«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».',
     'story-meta':'Курс IELTS Preparation · поступила в университет по гранту',
     'story-m1':'Месяц 1','story-m1-text':'Диагностика — пробный тест показал балл 5.5, определили слабые модули.',
     'story-m2':'Месяц 2','story-m2-text':'Плотная работа над Listening и Reading, расширение академической лексики.',
     'story-m3':'Месяц 3','story-m3-text':'Стратегии Writing Task 2 и разбор структуры эссе на реальных темах.',
     'story-m4':'Месяц 4','story-m4-text':'Финальные пробные тесты и день экзамена — результат 7.5.',
-    'team-eyebrow':'Наша команда','team-title':'Преподаватели, которым доверяют','team-desc':'Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.',
+    'team-title':'Преподаватели','team-desc':'Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.',
     'team1-role':'IELTS 9.0 · 7 лет опыта','team2-role':'General English · 5 лет опыта','team3-role':'Kids English · 4 года опыта',
-    'gallery-eyebrow':'Загляните к нам','gallery-title':'Жизнь центра изнутри',
-    'testi-eyebrow':'Отзывы','testi-title':'Что говорят наши студенты',
+    'gallery-title':'Галерея',
+    'testi-title':'Отзывы',
     'testi1-text':'Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.','testi1-role':'General English',
     'testi2-text':'Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.','testi2-role':'IELTS Preparation',
     'testi3-text':'Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.','testi3-role':'Родитель, Kids English',
-    'faq-eyebrow':'Вопросы и ответы','faq-title':'Частые вопросы',
+    'faq-title':'FAQ',
     'faq1-q':'Как понять, на какой уровень записаться?','faq1-a':'Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.',
     'faq2-q':'Сколько длится подготовка к IELTS?','faq2-a':'В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.',
     'faq3-q':'Можно ли перейти в другую группу, если не подошло время?','faq3-a':'Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.',
     'faq4-q':'С какого возраста можно записать ребёнка?','faq4-a':'Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.',
     'faq5-q':'Что если я пропущу занятие?','faq5-a':'Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.',
     'faq6-q':'Как оплачивать занятия?','faq6-a':'Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.',
-    'ctabanner-title':'Готовы начать говорить по‑английски?','ctabanner-sub':'Запишитесь на бесплатное вступительное занятие — определим ваш уровень и подберём группу.',
+    'ctabanner-title':'Остались вопросы? Свяжитесь с нами!','ctabanner-sub':'Оставьте имя и телефон — запишем на бесплатный пробный урок и ответим на все вопросы.',
     'trial-name-label':'Имя','trial-name-ph':'Ваше имя','trial-name-error':'Укажите имя',
-    'trial-phone-label':'Телефон','trial-phone-error':'Введите номер телефона',
+    'trial-phone-label':'Телефон','trial-phone-error':'Введите номер телефона полностью',
     'trial-course-label':'Курс','trial-course-opt0':'Выберите курс','trial-course-error':'Выберите курс',
-    'trial-submit':'Записаться',
+    'trial-submit':'Отправить',
     'trial-success-title':'Заявка отправлена!','trial-success-text':'Мы свяжемся с вами в ближайшее время, чтобы подтвердить бесплатное пробное занятие.',
     'trial-privacy':'Мы свяжемся только по поводу вашей записи. Никакого спама.',
-    'contact-eyebrow':'Контакты','contact-title':'Приходите к нам в гости',
+    'contact-title':'Контакты',
     'contact-address-label':'Адрес','contact-address-value':'ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан',
     'contact-phones-label':'Телефоны','contact-hours-label':'Часы работы','contact-hours-value':'Ежедневно, 09:00–19:00',
     'contact-status':'Открыто · Закроется в 19:00','contact-map-btn':'Открыть в Google Maps →',
-    'footer-desc':'Языковой центр в Нукусе: IELTS Preparation, General English и курсы для детей. Учим говорить по‑английски уверенно.',
-    'footer-courses-h4':'Курсы','footer-contact-h4':'Контакты',
-    'footer-copy':'© 2026 Stanford Educational Centre · Нукус, Каракалпакстан','footer-hours':'09:00–19:00 · Ежедневно'
+    'footer-desc':'Языковой центр в Нукусе: IELTS, General English и курсы для детей.',
+    'footer-copy':'© 2026 Stanford Educational Centre · Нукус, Каракалпакстан'
   },
   en: {
-    'nav-courses':'Courses','nav-mock-exams':'Mock Exam','nav-results':'Results','nav-instructors':'Instructors','nav-testimonials':'Reviews','nav-faq':'FAQ','nav-contact':'Contact','nav-enroll':'Enroll Now',
-    'hero-eyebrow':'English Language Centre in Nukus',
-    'hero-title-1':'Speak English with','hero-title-2':'confidence',
-    'hero-sub':'IELTS, General English, and courses for kids — taught by an instructor who scored IELTS 9.0 himself. Small groups, real conversation practice, and a clear path to results.',
-    'hero-btn1':'Enroll Now','hero-btn2':'View Courses',
-    'hero-daily':'daily','hero-instructor':'Instructor','hero-address-short':'34 N. Sarayev St.,','hero-rating':'· Google reviews',
-    'why-eyebrow':'Why Us','why-title':'What Sets Stanford Apart',
+    'nav-courses':'Courses','nav-mock-exams':'Mock Exam','nav-results':'Results','nav-instructors':'Teachers','nav-testimonials':'Reviews','nav-faq':'FAQ','nav-contact':'Contact','nav-enroll':'Enroll',
+    'hero-title-2':'English & IELTS',
+    'hero-sub':'IELTS, General English and kids\' courses — with an IELTS 9.0 instructor in Nukus.',
+    'hero-btn1':'First lesson free',
+    'about-title':'About us',
+    'rstat1-label':'Average IELTS score','rstat2-label':'Students prepared for the exam','rstat3-label':'Reached their goal','rstat4-label':'Years in Nukus','rstat5-label':'Our instructor\'s IELTS score',
+    'why-title':'Why Stanford',
     'why1-title':'IELTS 9.0 Instructor','why1-text':'Classes are led by an instructor with a top IELTS score — who knows the exam inside out.',
     'why2-title':'Small Groups','why2-text':'Up to 10–12 students per group, so everyone gets real speaking practice.',
     'why3-title':'Clear Progress','why3-text':'Regular mock tests show your real level and exactly what to work on.',
     'why4-title':'Flexible Schedule','why4-text':'Open daily from 9 AM to 7 PM — we\'ll find a time that fits your study and work.',
-    'courses-eyebrow':'What We Teach','courses-title':'Courses for Every Level',
+    'courses-title':'Courses',
     'courses-desc':'From first words to IELTS band scores — pick the track that matches your goal.',
     'course1-level':'Kids · Ages 6–12','course1-name':'Kids English','course1-desc':'English through games, songs, and pictures. First words, phrases, and confidence in communication.',
+    'course1-f1':'Games, songs and pictures','course1-f2':'First words and phrases',
     'course1-price':'250,000 <sub>UZS/mo</sub>','course1-duration':'2 lessons a week',
     'course2-level':'General · Intermediate','course2-name':'General English','course2-desc':'Grammar, vocabulary, and speaking practice for confident everyday and workplace communication.',
+    'course2-f1':'Grammar and vocabulary','course2-f2':'Speaking practice',
     'course2-price':'280,000 <sub>UZS/mo</sub>','course2-duration':'3 lessons a week',
     'course3-level':'Upper‑Intermediate','course3-name':'Advanced English','course3-desc':'Fluent speech, advanced grammar, and academic vocabulary for advanced students.',
+    'course3-f1':'Fluent speaking','course3-f2':'Academic vocabulary',
     'course3-price':'320,000 <sub>UZS/mo</sub>','course3-duration':'3 lessons a week',
     'course4-level':'Exam Prep','course4-name':'IELTS Preparation','course4-desc':'All 4 exam modules, mock tests, and high-score strategies with an IELTS 9.0 instructor.',
+    'course4-f1':'All 4 exam modules','course4-f2':'Mock tests and strategies',
     'course4-price':'380,000 <sub>UZS/mo</sub>','course4-duration':'4 lessons a week',
-    'course-btn':'Enroll Now',
-    'mock-eyebrow':'IELTS Mock Testing','mock-title':'Upcoming Mock Exam Sessions','mock-desc':'Experience real IELTS exam conditions with expert evaluation across all modules.',
+    'course-btn':'Enroll',
+    'mock-title':'Mock Exam','mock-desc':'Experience real IELTS exam conditions with expert evaluation across all modules.',
     'pm-modal-title':'Mock Exam Registration','pm-name-label':'Full Name','pm-phone-label':'Phone Number','pm-submit-btn':'Confirm Registration',
     'pm-success-head':'Registration Received!','pm-success-sub':'You have successfully registered for the Mock Exam. Our administrator will contact you shortly.',
-    'quiz-eyebrow':'Not Sure Where to Start?','quiz-title':'Find Your Course in 20 Seconds','quiz-desc':'Answer a couple of questions and we\'ll point you to the right program.',
+    'quiz-title':'Find your course','quiz-desc':'Answer a couple of questions and we\'ll point you to the right program.',
     'quiz-q1':'Who is this course for?','quiz-q1-opt1':'A child, aged 6–12','quiz-q1-opt2':'An adult or teenager',
     'quiz-q2':'What\'s your goal?','quiz-q2-opt1':'Speak more confidently in life and at work','quiz-q2-opt2':'Pass the international IELTS exam','quiz-q2-opt3':'Already fluent, want to go deeper',
     'quiz-result-label':'You\'d be a great fit for','quiz-cta':'View Course →','quiz-restart':'Start Over',
-    'schedule-eyebrow':'Schedule','schedule-title':'When Classes Meet',
+    'schedule-title':'Schedule',
     'schedule-th1':'Course','schedule-th2':'Days','schedule-th3':'Time',
     'sched1-days':'Mon, Thu','sched2-days':'Mon, Wed, Fri','sched3-days':'Tue, Thu, Sat','sched4-days':'Mon, Tue, Thu, Sat',
     'schedule-note':'Schedule may vary depending on group formation — please confirm the current time by phone.',
-    'results-eyebrow':'Our Results','results-title':'Scores We\'re Proud Of','results-desc':'Real results from Stanford students on the international IELTS exam.',
-    'rstat1-label':'Average IELTS Score','rstat2-label':'Students Prepped','rstat3-label':'Reached Their Goal','rstat4-label':'Years in Nukus',
+    'results-title':'Results','results-desc':'Real results from Stanford students on the international IELTS exam.',
     'result-course':'IELTS Preparation Course',
     'story-badge-label':'Final<br>IELTS Score',
-    'story-eyebrow':'Success Story','story-title':'From 5.5 to 7.5 in 4 Months',
+    'story-title':'From 5.5 to 7.5 in 4 Months',
     'story-quote':'"I thought 6.0 was my ceiling. But once we broke down my Writing mistakes point by point, everything clicked."',
     'story-meta':'IELTS Preparation Course · admitted to university on a grant',
     'story-m1':'Month 1','story-m1-text':'Diagnostic mock test showed a 5.5 — we identified the weak modules.',
     'story-m2':'Month 2','story-m2-text':'Focused work on Listening and Reading, building academic vocabulary.',
     'story-m3':'Month 3','story-m3-text':'Writing Task 2 strategies and essay structure practice on real topics.',
     'story-m4':'Month 4','story-m4-text':'Final mock tests and exam day — a 7.5 result.',
-    'team-eyebrow':'Our Team','team-title':'Instructors Students Trust','team-desc':'Experienced instructors who don\'t just know English — they know how to get you results.',
+    'team-title':'Teachers','team-desc':'Experienced instructors who don\'t just know English — they know how to get you results.',
     'team1-role':'IELTS 9.0 · 7 years experience','team2-role':'General English · 5 years experience','team3-role':'Kids English · 4 years experience',
-    'gallery-eyebrow':'Take a Look Inside','gallery-title':'Life at the Centre',
-    'testi-eyebrow':'Reviews','testi-title':'What Our Students Say',
+    'gallery-title':'Gallery',
+    'testi-title':'Reviews',
     'testi1-text':'I started from zero, and six months later I speak comfortably about everyday things. The classes feel relaxed — you\'re not afraid to make mistakes.','testi1-role':'General English',
     'testi2-text':'I prepped for IELTS for two months — we broke down every weak spot and got a clear Writing strategy. My score went from 5.5 to 7.0.','testi2-role':'IELTS Preparation',
     'testi3-text':'My son has been going to Kids English for a year and looks forward to every class. The teachers find a way to reach even the shyest kids.','testi3-role':'Parent, Kids English',
-    'faq-eyebrow':'FAQ','faq-title':'Frequently Asked Questions',
+    'faq-title':'FAQ',
     'faq1-q':'How do I know which level to join?','faq1-a':'Before you start, we run a free placement test to assess your real level and match you with the right group — Kids, General English, or IELTS Preparation.',
     'faq2-q':'How long does IELTS prep take?','faq2-a':'On average 2–4 months, depending on your starting level and target score. Your placement test will give you a more precise estimate.',
     'faq3-q':'Can I switch groups if the schedule doesn\'t work?','faq3-a':'Yes — if another group at the same level has open seats, we\'ll help you transfer without losing any paid lessons.',
     'faq4-q':'What age can a child start Kids English?','faq4-a':'Kids English is designed for children aged 6 to 12. Groups are formed by age and level so lessons stay engaging and easy to follow.',
     'faq5-q':'What if I miss a lesson?','faq5-a':'No problem — your teacher will briefly catch you up at the next class. If you miss several in a row, we recommend a short one-on-one review.',
     'faq6-q':'How do I pay for classes?','faq6-a':'Payment is monthly, by cash or transfer at the centre. We\'ll confirm the details when you register by phone or in person.',
-    'ctabanner-title':'Ready to Start Speaking English?','ctabanner-sub':'Book a free placement lesson — we\'ll assess your level and find the right group.',
+    'ctabanner-title':'Still have questions? Get in touch!','ctabanner-sub':'Leave your name and phone — we\'ll book your free trial lesson and answer any questions.',
     'trial-name-label':'Name','trial-name-ph':'Your name','trial-name-error':'Please enter your name',
-    'trial-phone-label':'Phone','trial-phone-error':'Please enter a valid phone number',
+    'trial-phone-label':'Phone','trial-phone-error':'Please enter the full phone number',
     'trial-course-label':'Course','trial-course-opt0':'Select a course','trial-course-error':'Please select a course',
-    'trial-submit':'Enroll Now',
+    'trial-submit':'Send',
     'trial-success-title':'Application Sent!','trial-success-text':'We\'ll be in touch shortly to confirm your free trial lesson.',
     'trial-privacy':'We\'ll only contact you about your booking. No spam.',
-    'contact-eyebrow':'Contact','contact-title':'Come Visit Us',
+    'contact-title':'Contacts',
     'contact-address-label':'Address','contact-address-value':'34 N. Sarayev St., 230100, Nukus, Republic of Karakalpakstan, Uzbekistan',
     'contact-phones-label':'Phone Numbers','contact-hours-label':'Working Hours','contact-hours-value':'Daily, 9:00 AM–7:00 PM',
     'contact-status':'Open · Closes at 7:00 PM','contact-map-btn':'Open in Google Maps →',
-    'footer-desc':'English language centre in Nukus: IELTS Preparation, General English, and courses for kids. Helping you speak English with confidence.',
-    'footer-courses-h4':'Courses','footer-contact-h4':'Contact',
-    'footer-copy':'© 2026 Stanford Educational Centre · Nukus, Karakalpakstan','footer-hours':'9:00 AM–7:00 PM · Daily'
+    'footer-desc':'English language centre in Nukus: IELTS, General English and courses for kids.',
+    'footer-copy':'© 2026 Stanford Educational Centre · Nukus, Karakalpakstan'
   }
 };
 
@@ -469,5 +535,7 @@ window.setLanguage = function(lang) {
       el.setAttribute('placeholder', translations[lang][key]);
     }
   });
-  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === lang));
+  // Round switcher shows the current language
+  const toggle = document.getElementById('langToggle');
+  if (toggle) toggle.textContent = lang.toUpperCase();
 };
