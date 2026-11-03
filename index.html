@@ -3,753 +3,617 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Stanford — Языковой центр в Нукусе | IELTS, General English, Kids</title>
-<meta name="description" content="Языковой центр Stanford в Нукусе. IELTS Preparation, General English, курсы для детей. Преподаватель с IELTS 9.0. Ул. Н.Сараева 34, Нукус."/>
-<meta name="author" content="Stanford Educational Centre"/>
-
+<title>Stanford Language Center — английский и IELTS в Нукусе</title>
+<meta name="description" content="Языковой центр Stanford в Нукусе: IELTS, General English, курсы для детей и IELTS CD Mock Exam. Бесплатный пробный урок."/>
+<link rel="icon" type="image/png" href="favicon.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="theme-color" content="#FFB703"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Stanford Language Center"/>
+<meta property="og:title" content="Stanford Language Center — английский и IELTS в Нукусе"/>
+<meta property="og:description" content="IELTS, General English и курсы для детей. Бесплатный пробный урок и IELTS CD Mock Exam."/>
+<meta property="og:image" content="https://stanford-nukus.vercel.app/images/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta name="twitter:card" content="summary_large_image"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+<link rel="preload" as="image" href="images/hero.jpg" fetchpriority="high">
 <style>
-  /* ============ DESIGN SYSTEM ============ */
   :root{
-    --bg:#FFFFFF;
-    --bg-2:#F4F5F6;
-    --dark:#141416;
-    --dark-2:#1F2025;
-    --text:#141416;
-    --text-2:#777E90;
-    --text-soft:var(--text-2);           /* used by inline styles in main.js */
-    --gold:#F5B800;
-    --gold-hover:#E0A800;
-    --gold-soft:#FFF3CC;
-    --red:#A8342A;                        /* only for "FORD" in the logo */
-    --error:#D33A3A;
-
-    --radius:24px;
-    --radius-sm:16px;
-    --pill:100px;
-    --btn-h:48px;
-    --shadow:0 8px 30px rgba(20,20,22,0.06);
-    --shadow-nav:0 10px 40px rgba(20,20,22,0.10);
+    --ink:#141416;
+    --ink-2:#2A2B30;
+    --paper:#FFFFFF;
+    --mist:#F5F5F6;
+    --line:#E9E9EC;
+    --muted:#6B6E78;
+    --yellow:#FFB703;
+    --yellow-deep:#EBA600;
+    --yellow-soft:#FFF4D6;
+    --warn:#B54708;
+    --r-lg:28px;
+    --r-md:20px;
+    --r-sm:14px;
+    --pill:999px;
     --max:1200px;
-    --gutter:24px;
-    --section-y:96px;
-    --title-size:28px;
+    --gutter:32px;
+    --section-y:104px;
+    --nav-h:72px;
+    --ease:cubic-bezier(.2,.8,.2,1);
   }
-  @media (max-width:767px){
-    :root{ --gutter:16px; --section-y:64px; --title-size:22px; }
-  }
-
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
-  html{ scroll-behavior:smooth; }
-  @media (prefers-reduced-motion: reduce){
-    html{ scroll-behavior:auto; }
-    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
-  }
-  body{ font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.55; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
-  a{ color:inherit; }
+  html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   img{ display:block; max-width:100%; }
-  button,input,select{ font-family:inherit; }
-  .icon{ width:20px; height:20px; flex-shrink:0; }
+  a{ color:inherit; }
+  button,input,select,textarea{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  :focus-visible{ outline:2.5px solid var(--ink); outline-offset:3px; border-radius:6px; }
+  [hidden]{ display:none !important; }
   .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .icon{ width:20px; height:20px; flex-shrink:0; }
+  .wrap{ max-width:var(--max); margin:0 auto; padding:0 var(--gutter); }
+  section{ scroll-margin-top:calc(var(--nav-h) + 12px); }
+  .section{ padding:var(--section-y) 0; }
+  .section.white + .section.white{ padding-top:0; }
 
-  /* ============ LAYOUT ============ */
-  section{ padding:var(--section-y) var(--gutter); scroll-margin-top:84px; }
-  .container{ max-width:var(--max); margin:0 auto; }
-  .bg-white{ background:var(--bg); }
-  .bg-grey{ background:var(--bg-2); }
-  .sec-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
-  .sec-title{ font-size:var(--title-size); font-weight:800; text-transform:uppercase; letter-spacing:0.02em; line-height:1.2; color:var(--text); }
-  .sec-desc{ color:var(--text-2); font-size:1rem; margin-top:12px; }
-  @media (max-width:767px){ .sec-head{ margin-bottom:32px; } }
+  /* ── Type ── */
+  h1,h2,h3{ font-weight:800; letter-spacing:-0.03em; line-height:1.05; }
+  .sec-head{ display:grid; grid-template-columns:1fr minmax(0,420px); gap:24px 48px; align-items:end; margin-bottom:48px; }
+  .sec-title{ font-size:clamp(2rem,3.8vw,3rem); }
+  .sec-desc{ color:var(--muted); font-size:1.05rem; line-height:1.55; }
 
-  /* ============ BUTTONS ============ */
-  .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:10px;
-    height:var(--btn-h); padding:0 28px; border-radius:var(--pill); border:none; cursor:pointer;
-    font-size:0.95rem; font-weight:600; text-decoration:none; white-space:nowrap;
-    transition:background .2s, color .2s, transform .2s;
+  /* ── Buttons ── */
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px; height:52px; padding:0 28px; border-radius:var(--pill); border:1.5px solid transparent; font-weight:700; font-size:0.98rem; text-decoration:none; white-space:nowrap; transition:background-color .2s, color .2s, border-color .2s, transform .2s var(--ease); }
+  .btn:active{ transform:scale(.98); }
+  .btn-yellow{ background:var(--yellow); color:var(--ink); }
+  .btn-yellow:hover{ background:var(--yellow-deep); }
+  .btn-ink{ background:var(--ink); color:#fff; }
+  .btn-ink:hover{ background:var(--ink-2); }
+  .btn-line{ border-color:currentColor; background:transparent; }
+  .btn-line:hover{ background:rgba(255,255,255,.12); }
+  .btn-sm{ height:44px; padding:0 20px; font-size:0.9rem; }
+  .link-under{ font-weight:700; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:5px; text-decoration-color:var(--yellow); transition:text-decoration-color .2s; }
+  .link-under:hover{ text-decoration-color:var(--ink); }
+
+  /* ════════ HEADER ════════ */
+  #navbar{ position:fixed; top:0; left:0; right:0; z-index:200; height:var(--nav-h); color:#fff; transition:background-color .3s, color .3s, box-shadow .3s; }
+  #navbar.scrolled, body.menu-open #navbar{ background:rgba(255,255,255,.94); color:var(--ink); box-shadow:0 1px 0 var(--line); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); }
+  .nav-inner{ height:100%; display:flex; align-items:center; gap:28px; }
+  .logo{ display:block; flex-shrink:0; position:relative; height:36px; width:167px; }
+  .logo img{ position:absolute; inset:0; height:36px; width:auto; transition:opacity .3s; }
+  .logo .logo-dark{ opacity:0; }
+  #navbar.scrolled .logo .logo-dark, body.menu-open .logo .logo-dark{ opacity:1; }
+  #navbar.scrolled .logo .logo-light, body.menu-open .logo .logo-light{ opacity:0; }
+  .nav-links{ display:flex; align-items:center; gap:4px; list-style:none; margin-left:auto; }
+  .nav-links a{ display:block; padding:8px 12px; border-radius:var(--pill); text-decoration:none; font-weight:600; font-size:0.93rem; transition:background-color .2s; }
+  .nav-links a:hover{ background:rgba(127,127,127,.14); }
+  .nav-links a.nav-mock{ background:var(--yellow); color:var(--ink); padding:8px 16px; }
+  .nav-links a.nav-mock:hover{ background:var(--yellow-deep); }
+  .nav-actions{ display:flex; align-items:center; gap:12px; }
+  .lang-switch{ display:inline-flex; padding:3px; gap:2px; border-radius:var(--pill); border:1.5px solid currentColor; border-color:rgba(127,127,127,.45); }
+  .lang-switch button{ width:36px; height:30px; border:none; background:none; border-radius:var(--pill); font-weight:700; font-size:0.74rem; letter-spacing:0.02em; color:inherit; transition:background-color .2s, color .2s; }
+  .lang-switch button:hover{ background:rgba(127,127,127,.16); }
+  .lang-switch button.active{ background:var(--yellow); color:var(--ink); }
+  .hamburger{ display:none; width:44px; height:44px; border:none; background:none; border-radius:50%; position:relative; }
+  .hamburger span{ position:absolute; left:12px; right:12px; height:2px; background:currentColor; border-radius:2px; transition:transform .3s var(--ease), opacity .2s; }
+  .hamburger span:nth-child(1){ top:16px; } .hamburger span:nth-child(2){ top:21px; } .hamburger span:nth-child(3){ top:26px; }
+  body.menu-open .hamburger span:nth-child(1){ transform:translateY(5px) rotate(45deg); }
+  body.menu-open .hamburger span:nth-child(2){ opacity:0; }
+  body.menu-open .hamburger span:nth-child(3){ transform:translateY(-5px) rotate(-45deg); }
+
+  /* ════════ HERO ════════ */
+  #hero{ position:relative; min-height:max(640px, 100svh); display:flex; align-items:flex-end; color:#fff; background:var(--ink); overflow:hidden; isolation:isolate; }
+  .hero-photo{ position:absolute; inset:0; z-index:-2; }
+  .hero-photo img{ width:100%; height:100%; object-fit:cover; object-position:center 35%; }
+  #hero::before{ content:''; position:absolute; inset:0; z-index:-1;
+    background:linear-gradient(180deg, rgba(20,20,22,.55) 0%, rgba(20,20,22,0) 26%, rgba(20,20,22,0) 48%, rgba(20,20,22,.72) 100%); }
+  .hero-content{ width:100%; padding-top:calc(var(--nav-h) + 48px); padding-bottom:56px; }
+  /* The speech bubble from the logo: the one bold shape on the page */
+  .bubble{ position:relative; background:var(--yellow); color:var(--ink); border-radius:40px; padding:44px 48px 40px; max-width:680px; transform-origin:0% 100%; }
+  .bubble::after{ content:''; position:absolute; left:40px; bottom:-30px; width:58px; height:40px; background:var(--yellow); clip-path:polygon(18% 0, 100% 0, 0 100%); }
+  .hero-title{ font-size:clamp(2.6rem,5.4vw,4.4rem); letter-spacing:-0.04em; line-height:1; margin-bottom:18px; }
+  .hero-sub{ font-size:1.12rem; line-height:1.5; max-width:34em; color:#3A3B40; margin-bottom:28px; }
+  .hero-btns{ display:flex; flex-wrap:wrap; gap:12px; }
+  .hero-btns .btn-line{ color:var(--ink); }
+  .hero-btns .btn-line:hover{ background:rgba(20,20,22,.07); }
+  .hero-facts{ display:flex; flex-wrap:wrap; gap:14px 0; margin-top:58px; list-style:none; }
+  .hero-facts li{ display:flex; align-items:baseline; gap:8px; padding:0 22px; border-left:1.5px solid rgba(255,255,255,.35); font-size:0.95rem; color:rgba(255,255,255,.88); }
+  .hero-facts li:first-child{ padding-left:0; border-left:none; }
+  .hero-facts b{ font-size:1.35rem; font-weight:800; color:#fff; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  /* One page-load moment: the bubble pops from its tail, then its content settles */
+  @media (prefers-reduced-motion:no-preference){
+    .bubble{ animation:bubble-pop .7s var(--ease) .1s both; }
+    .bubble > *{ animation:rise .6s var(--ease) both; }
+    .bubble > :nth-child(1){ animation-delay:.32s; } .bubble > :nth-child(2){ animation-delay:.4s; } .bubble > :nth-child(3){ animation-delay:.48s; }
+    .hero-facts{ animation:fade .8s ease .7s both; }
   }
-  .btn:hover{ transform:translateY(-1px); }
-  .btn-gold{ background:var(--gold); color:var(--text); }
-  .btn-gold:hover{ background:var(--gold-hover); }
-  .btn-dark{ background:var(--dark); color:#fff; }
-  .btn-dark:hover{ background:var(--gold); color:var(--text); }
-  .btn-ghost{ background:transparent; color:var(--text-2); }
-  .btn-ghost:hover{ color:var(--text); }
+  @keyframes bubble-pop{ from{ opacity:0; transform:scale(.86); } to{ opacity:1; transform:none; } }
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+  @keyframes fade{ from{ opacity:0; } to{ opacity:1; } }
 
-  /* ============ HEADER ============ */
-  nav{
-    /* No transform here: it would make the fixed mobile drawer position itself inside the bar */
-    position:fixed; z-index:200; top:16px; left:0; right:0; margin:0 auto;
-    width:calc(100% - 32px); max-width:1280px;
-    display:flex; align-items:center; justify-content:space-between; gap:20px;
-    padding:10px 10px 10px 28px; border-radius:var(--pill);
-    transition:top .3s;
+  /* ════════ WHY ════════ */
+  .why-list{ display:grid; grid-template-columns:repeat(4,1fr); gap:40px; list-style:none; }
+  .why-item{ border-top:2px solid var(--ink); padding-top:24px; }
+  .why-mark{ width:48px; height:42px; position:relative; margin-bottom:22px; }
+  .why-mark span{ position:absolute; inset:0 0 6px 0; background:var(--yellow); border-radius:14px; display:flex; align-items:center; justify-content:center; }
+  .why-mark::after{ content:''; position:absolute; left:6px; bottom:0; width:13px; height:10px; background:var(--yellow); clip-path:polygon(20% 0,100% 0,0 100%); }
+  .why-item h3{ font-size:1.2rem; letter-spacing:-0.02em; margin-bottom:10px; }
+  .why-item p{ color:var(--muted); font-size:0.97rem; }
+
+  /* ════════ COURSES (price list) ════════ */
+  .course-list{ list-style:none; background:var(--mist); border-radius:var(--r-lg); padding:8px 36px; }
+  .course{ display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1.5fr) minmax(0,.9fr) auto; gap:28px; align-items:center; padding:30px 0; border-top:1px solid var(--line); }
+  .course:first-child{ border-top:none; }
+  .course-level{ display:block; font-size:0.85rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .course-name{ font-size:1.55rem; letter-spacing:-0.03em; }
+  .course-feats{ list-style:none; display:grid; gap:6px; font-size:0.95rem; }
+  .course-feats li{ display:flex; gap:10px; align-items:center; }
+  .course-feats .icon{ width:18px; height:18px; color:var(--ink); background:var(--yellow); border-radius:50%; padding:3px; }
+  .course-price strong{ display:block; font-size:1.7rem; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .course-price span{ font-size:0.85rem; color:var(--muted); }
+
+  /* ════════ MOCK ════════ */
+  .mock-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .mock-card{ display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:start; background:var(--mist); border-radius:var(--r-md); padding:24px; text-decoration:none; transition:background-color .2s; }
+  a.mock-card:hover{ background:#EDEDEF; }
+  .mock-date{ width:76px; border-radius:16px; background:var(--paper); text-align:center; padding:10px 0 12px; }
+  .mock-day{ display:block; font-size:2rem; font-weight:800; letter-spacing:-0.04em; line-height:1.05; font-variant-numeric:tabular-nums; }
+  .mock-month{ display:block; font-size:0.82rem; font-weight:700; color:var(--muted); text-transform:lowercase; }
+  .mock-name{ font-weight:800; font-size:1.12rem; letter-spacing:-0.02em; line-height:1.3; margin-bottom:6px; }
+  .mock-meta{ font-size:0.9rem; color:var(--muted); line-height:1.5; }
+  .mock-foot{ grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-top:16px; border-top:1px solid #E2E2E6; }
+  .mock-price{ font-weight:800; font-size:1.05rem; font-variant-numeric:tabular-nums; }
+  .mock-seats{ display:flex; align-items:center; gap:10px; font-size:0.85rem; color:var(--muted); }
+  .bar{ width:84px; height:6px; border-radius:var(--pill); background:#DEDEE2; overflow:hidden; }
+  .bar i{ display:block; height:100%; background:var(--yellow); border-radius:var(--pill); }
+  .mock-go{ display:inline-flex; align-items:center; height:40px; padding:0 18px; border-radius:var(--pill); background:var(--ink); color:#fff; font-weight:700; font-size:0.88rem; }
+  .mock-card.full{ opacity:.6; }
+  .mock-card.full .mock-go{ background:#C9CAD0; color:var(--ink); }
+  .mock-empty{ grid-column:1 / -1; color:var(--muted); padding:8px 0; }
+  .mock-empty a{ color:var(--ink); font-weight:700; }
+  .mock-links{ display:flex; flex-wrap:wrap; gap:14px 32px; margin-top:32px; }
+
+  /* ════════ RESULTS (the one dark section) ════════ */
+  #results{ background:var(--ink); color:#fff; overflow:hidden; }
+  #results .sec-desc{ color:rgba(255,255,255,.65); }
+  .marquee{ position:relative; overflow:hidden; padding:4px 0; -webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+  .marquee-track{ display:flex; gap:20px; width:max-content; animation:marquee var(--marquee-duration, 28s) linear infinite; }
+  .marquee:hover .marquee-track, .marquee.paused .marquee-track{ animation-play-state:paused; }
+  @keyframes marquee{ from{ transform:translateX(0); } to{ transform:translateX(calc(-50% - 10px)); } }
+  @media (prefers-reduced-motion:reduce){
+    .marquee{ overflow-x:auto; scroll-snap-type:x mandatory; -webkit-mask-image:none; mask-image:none; }
+    .marquee-track{ animation:none; padding:0 var(--gutter); }
+    .marquee-track [aria-hidden="true"]{ display:none; }
+    .r-card{ scroll-snap-align:start; }
   }
-  /* The bar's background lives on a pseudo-element so the blur cannot trap the fixed mobile drawer */
-  nav::before{
-    content:''; position:absolute; inset:0; z-index:-1; border-radius:inherit;
-    background:rgba(255,255,255,0); transition:background .3s, box-shadow .3s;
-  }
-  nav.scrolled{ top:10px; }
-  nav.scrolled::before{ background:rgba(255,255,255,0.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:var(--shadow-nav); }
+  .r-card{ position:relative; flex:0 0 auto; width:236px; aspect-ratio:9/16; border-radius:var(--r-md); overflow:hidden; background:linear-gradient(165deg,#FFD15C 0%,#FFB703 55%,#F29F05 100%); color:var(--ink); display:flex; flex-direction:column; justify-content:space-between; }
+  .r-card img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .r-card.has-photo{ color:#fff; }
+  .r-card.has-photo::before{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(20,20,22,.55) 0%, rgba(20,20,22,0) 32%, rgba(20,20,22,0) 50%, rgba(20,20,22,.85) 100%); z-index:1; }
+  .r-top, .r-bottom{ position:relative; z-index:2; padding:18px; }
+  .r-overall{ font-size:3.4rem; font-weight:800; letter-spacing:-0.05em; line-height:.95; font-variant-numeric:tabular-nums; }
+  .r-label{ font-size:0.78rem; font-weight:700; opacity:.8; }
+  .r-bands{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid currentColor; border-color:rgba(127,127,127,.4); }
+  .r-bands span{ display:flex; flex-direction:column; font-size:0.7rem; font-weight:600; opacity:.85; }
+  .r-bands b{ font-size:1rem; font-weight:800; opacity:1; font-variant-numeric:tabular-nums; }
+  .r-name{ font-weight:800; font-size:1.1rem; letter-spacing:-0.02em; }
+  .r-course{ font-size:0.82rem; opacity:.8; }
 
-  .logo{ display:flex; flex-direction:column; text-decoration:none; line-height:1; color:#fff; transition:color .3s; }
-  nav.scrolled .logo{ color:var(--text); }
-  .logo-mark{ font-weight:800; font-size:1.45rem; letter-spacing:0.02em; }
-  .logo-mark span{ color:var(--red); }
-  .logo-sub{ font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase; font-weight:600; opacity:0.7; margin-top:4px; }
+  /* ════════ TEACHERS ════════ */
+  .team-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:28px 20px; }
+  .team-photo{ aspect-ratio:4/5; border-radius:var(--r-md); overflow:hidden; background:var(--yellow); margin-bottom:16px; display:flex; align-items:center; justify-content:center; }
+  .team-photo img{ width:100%; height:100%; object-fit:cover; }
+  .team-initials{ font-size:3rem; font-weight:800; letter-spacing:-0.04em; }
+  .team-name{ font-size:1.15rem; letter-spacing:-0.02em; margin-bottom:4px; }
+  .team-role{ color:var(--muted); font-size:0.93rem; margin-bottom:12px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ font-size:0.78rem; font-weight:600; padding:4px 10px; border-radius:var(--pill); background:var(--mist); }
+  .chip.ink{ background:var(--ink); color:#fff; }
 
-  .nav-links{ display:flex; align-items:center; gap:26px; list-style:none; }
-  .nav-links a{ text-decoration:none; font-size:0.9rem; font-weight:500; transition:color .2s; }
-  .nav-links a:not(.nav-mock):not(.btn):hover{ color:var(--gold); }
-  .nav-links a.nav-mock{
-    display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 18px; border-radius:var(--pill);
-    background:var(--gold); color:var(--text); font-weight:700; white-space:nowrap;
-  }
-  .nav-links a.nav-mock::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--text); }
-  .nav-links a.nav-mock:hover{ background:var(--gold-hover); }
-  .nav-right{ display:flex; align-items:center; gap:10px; }
-
-  .lang-toggle{
-    width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
-    font-size:0.75rem; font-weight:700; letter-spacing:0.04em;
-    background:rgba(255,255,255,0.16); color:#fff; transition:background .2s, color .2s;
-  }
-  .lang-toggle:hover{ background:var(--gold); color:var(--text); }
-  nav.scrolled .lang-toggle{ background:var(--bg-2); color:var(--text); }
-  nav.scrolled .lang-toggle:hover{ background:var(--gold); }
-
-  .hamburger{ display:none; width:44px; height:44px; border-radius:50%; border:none; background:transparent; cursor:pointer;
-    flex-direction:column; align-items:center; justify-content:center; gap:5px; z-index:220; position:relative; }
-  .hamburger span{ width:22px; height:2px; border-radius:2px; background:#fff; transition:transform .3s, opacity .3s, background .3s; }
-  nav.scrolled .hamburger span, .hamburger.open span{ background:var(--text); }
-  .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
-  .hamburger.open span:nth-child(2){ opacity:0; }
-  .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
-
-  /* Desktop: white text while the bar floats over the hero */
-  @media (min-width:1025px){
-    nav:not(.scrolled) .nav-links a:not(.nav-mock):not(.btn){ color:#fff; }
-  }
-  @media (min-width:1025px) and (max-width:1240px){
-    nav{ padding-left:20px; gap:12px; }
-    .nav-links{ gap:16px; }
-    .nav-links a{ font-size:0.84rem; }
-    .nav-links a.nav-mock{ padding:0 14px; }
-    .nav-right .btn{ padding:0 18px; }
-  }
-  /* Tablet + mobile: hamburger with a slide-in drawer */
-  @media (max-width:1024px){
-    nav{ padding:8px 8px 8px 20px; }
-    .hamburger{ display:flex; }
-    .nav-links{
-      position:fixed; top:0; right:0; height:100vh; height:100dvh; width:min(86vw,340px);
-      background:#fff; box-shadow:-20px 0 50px rgba(20,20,22,0.14);
-      flex-direction:column; align-items:flex-start; gap:6px; padding:96px 24px 32px;
-      transform:translateX(110%); transition:transform .35s ease; overflow-y:auto;
-    }
-    .nav-links.open{ transform:translateX(0); }
-    .nav-links li{ width:100%; }
-    .nav-links a:not(.nav-mock):not(.btn){ display:block; padding:12px 4px; font-size:1.05rem; font-weight:600; color:var(--text); }
-    .nav-links a.nav-mock{ margin:8px 0; height:var(--btn-h); padding:0 22px; }
-    .nav-right{ margin-top:auto; padding-top:24px; width:100%; }
-    .nav-right .btn{ flex:1; }
-    .nav-right .lang-toggle{ background:var(--bg-2); color:var(--text); }
-  }
-
-  /* ============ HERO ============ */
-  #hero{
-    position:relative; min-height:100vh; min-height:100svh; display:flex; align-items:flex-end;
-    padding:140px var(--gutter) 96px; overflow:hidden; color:#fff; background:var(--dark);
-  }
-  .hero-bg{ position:absolute; inset:0; z-index:0; }
-  .hero-bg img{ width:100%; height:100%; object-fit:cover; }
-  .hero-bg::after{
-    content:''; position:absolute; inset:0;
-    background:
-      linear-gradient(to top, rgba(20,20,22,0.92) 0%, rgba(20,20,22,0.35) 55%, rgba(20,20,22,0.25) 100%),
-      linear-gradient(to right, rgba(20,20,22,0.70) 0%, rgba(20,20,22,0) 70%);
-  }
-  .hero-content{ position:relative; z-index:1; width:100%; max-width:var(--max); margin:0 auto; }
-  .hero-title{ font-size:clamp(2.5rem, 5vw, 3.5rem); font-weight:800; line-height:1.05; text-transform:uppercase; letter-spacing:0.01em; }
-  .hero-title .t1{ display:block; color:var(--gold); }
-  .hero-title .t2{ display:block; color:#fff; max-width:14ch; }
-  .hero-sub{ font-size:1.05rem; color:rgba(255,255,255,0.82); max-width:520px; margin:22px 0 32px; }
-  .hero-content .btn .icon{ width:18px; height:18px; }
-
-  /* ============ ABOUT / STATS ============ */
-  .stats-grid{
-    display:grid; gap:16px;
-    grid-template-columns:repeat(4,1fr);
-    grid-template-areas:"a a b c" "a a d e";
-  }
-  .stat-card{
-    position:relative; overflow:hidden; background:var(--bg-2); border-radius:var(--radius);
-    padding:28px; min-height:180px; display:flex; flex-direction:column; justify-content:flex-end;
-  }
-  .stat-card:nth-child(1){ grid-area:a; min-height:376px; }
-  .stat-card:nth-child(2){ grid-area:b; }
-  .stat-card:nth-child(3){ grid-area:c; }
-  .stat-card:nth-child(4){ grid-area:d; }
-  .stat-card:nth-child(5){ grid-area:e; }
-  .stat-num{ position:relative; z-index:1; font-size:clamp(2.4rem, 4vw, 3.4rem); font-weight:800; line-height:1; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
-  .stat-card:nth-child(1) .stat-num{ font-size:clamp(4rem, 9vw, 7.5rem); }
-  .stat-label{ position:relative; z-index:1; color:var(--text-2); font-weight:500; margin-top:10px; font-size:0.95rem; }
-  /* Gold corner shapes */
-  .stat-card::after{ content:''; position:absolute; background:var(--gold); border-radius:50%; }
-  .stat-card:nth-child(1)::after{ width:260px; height:260px; top:-90px; right:-90px; }
-  .stat-card:nth-child(2)::after{ width:110px; height:110px; top:-55px; right:-55px; }
-  .stat-card:nth-child(3)::after{ width:56px; height:56px; top:24px; right:24px; }
-  .stat-card:nth-child(4)::after{ width:110px; height:110px; top:-55px; left:-55px; }
-  .stat-card:nth-child(5)::after{ width:90px; height:90px; top:20px; right:20px; background:transparent; border:14px solid var(--gold); }
-
-  /* ============ WHY ============ */
-  .why-grid{ display:grid; gap:16px; grid-template-columns:1.2fr 1fr 1fr; grid-template-areas:"a b b" "a c d"; }
-  .why-card{ border-radius:var(--radius); padding:32px; background:var(--bg); display:flex; flex-direction:column; gap:12px; }
-  .why-card:nth-child(1){ grid-area:a; background:var(--dark); color:#fff; min-height:340px; }
-  .why-card:nth-child(2){ grid-area:b; background:var(--gold); }
-  .why-card:nth-child(3){ grid-area:c; }
-  .why-card:nth-child(4){ grid-area:d; }
-  .why-icon{ width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--bg-2); color:var(--text); margin-bottom:auto; }
-  .why-card:nth-child(1) .why-icon{ background:var(--gold); }
-  .why-card:nth-child(2) .why-icon{ background:rgba(255,255,255,0.55); }
-  .why-title{ font-size:1.25rem; font-weight:700; margin-top:24px; }
-  .why-card:nth-child(1) .why-title{ font-size:1.6rem; }
-  .why-text{ font-size:0.95rem; color:var(--text-2); }
-  .why-card:nth-child(1) .why-text{ color:rgba(255,255,255,0.7); }
-  .why-card:nth-child(2) .why-text{ color:rgba(20,20,22,0.72); }
-
-  /* ============ COURSES ============ */
-  .courses-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  .course-card{ background:var(--bg-2); border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; }
-  .course-level{ align-self:flex-start; font-size:0.75rem; font-weight:600; background:#fff; padding:6px 12px; border-radius:var(--pill); margin-bottom:18px; }
-  .course-name{ font-size:1.35rem; font-weight:800; line-height:1.2; margin-bottom:18px; }
-  .course-list{ list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
-  .course-list li{ display:flex; gap:10px; align-items:flex-start; font-size:0.92rem; }
-  .check{ width:22px; height:22px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .check svg{ width:13px; height:13px; }
-  .course-bottom{ margin-top:auto; }
-  .course-price{ font-size:1.9rem; font-weight:800; letter-spacing:-0.01em; margin-bottom:16px; line-height:1.1; }
-  .course-price sub{ font-size:0.8rem; font-weight:500; color:var(--text-2); vertical-align:baseline; margin-left:4px; }
-  .course-card .btn{ width:100%; }
-
-  /* ============ MOCK EXAMS (cards built by main.js) ============ */
-  .mock-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  .mock-card{ background:#fff; border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow); }
-  .mock-tag-bar{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-  .mock-badge{ display:inline-flex; align-items:center; padding:6px 12px; border-radius:var(--pill); font-size:0.75rem; font-weight:600; }
-  .mock-badge.badge-ielts{ background:var(--gold-soft); color:var(--text); }
-  .mock-badge.badge-general{ background:var(--bg-2); color:var(--text); }
-  .mock-title{ font-size:1.3rem; font-weight:800; line-height:1.25; margin-bottom:8px; }
-  .mock-desc{ font-size:0.9rem; color:var(--text-2); margin-bottom:20px; }
-  .mock-details{ display:flex; flex-direction:column; gap:10px; background:var(--bg-2); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
-  .mock-detail-item{ display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; }
-  .mock-detail-icon{ width:22px; text-align:center; }
-  .mock-seats-wrap{ margin-bottom:18px; }
-  .mock-seats-info{ display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600; color:var(--text-2); margin-bottom:8px; }
-  .mock-progress-bar{ height:8px; background:var(--bg-2); border-radius:var(--pill); overflow:hidden; }
-  .mock-progress-fill{ height:100%; background:var(--gold); border-radius:var(--pill); transition:width .4s ease; }
-  .mock-btn{ width:100%; height:var(--btn-h); border:none; border-radius:var(--pill); background:var(--dark); color:#fff; font-weight:600; font-size:0.95rem; cursor:pointer; transition:background .2s, color .2s; }
-  .mock-btn:hover:not(:disabled){ background:var(--gold); color:var(--text); }
-  .mock-empty{ background:#fff; border-radius:var(--radius); padding:32px 24px !important; }
-  .mock-empty a{ color:var(--text) !important; }
-
-  /* ============ QUIZ ============ */
-  .quiz-box{ max-width:720px; margin:0 auto; background:var(--bg-2); border-radius:var(--radius); padding:40px; }
+  /* ════════ QUIZ ════════ */
+  .quiz-box{ background:var(--mist); border-radius:var(--r-lg); padding:48px; }
   .quiz-step, .quiz-result{ display:none; }
-  .quiz-step.active, .quiz-result.active{ display:block; }
-  .quiz-q{ font-size:1.25rem; font-weight:700; margin-bottom:20px; text-align:center; }
-  .quiz-options{ display:flex; flex-direction:column; gap:10px; }
-  .quiz-opt{
-    min-height:var(--btn-h); padding:12px 24px; border:none; border-radius:var(--pill); background:#fff; color:var(--text);
-    font-size:0.95rem; font-weight:500; text-align:left; cursor:pointer; transition:background .2s;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-  }
-  .quiz-opt::after{ content:'→'; color:var(--text-2); }
-  .quiz-opt:hover{ background:var(--gold); }
-  .quiz-opt:hover::after{ color:var(--text); }
-  .quiz-result{ text-align:center; }
-  .quiz-result-label{ font-size:0.85rem; font-weight:600; color:var(--text-2); margin-bottom:8px; }
-  .quiz-result-name{ font-size:1.8rem; font-weight:800; margin-bottom:10px; }
-  .quiz-result-desc{ color:var(--text-2); max-width:480px; margin:0 auto 24px; }
-  .quiz-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .quiz-step.active, .quiz-result.active{ display:block; animation:rise .4s var(--ease) both; }
+  .quiz-q{ font-size:1.6rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:24px; }
+  .quiz-options{ display:flex; flex-wrap:wrap; gap:12px; }
+  .quiz-opt{ min-height:52px; padding:12px 24px; border-radius:var(--pill); border:1.5px solid var(--ink); background:var(--paper); font-weight:600; text-align:left; transition:background-color .2s; }
+  .quiz-opt:hover{ background:var(--yellow); border-color:var(--yellow); }
+  .quiz-result-label{ font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .quiz-result-name{ font-size:clamp(1.8rem,3.4vw,2.6rem); font-weight:800; letter-spacing:-0.035em; margin-bottom:12px; }
+  .quiz-result-desc{ color:var(--muted); max-width:36em; margin-bottom:28px; }
+  .quiz-actions{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+  .btn-text{ background:none; border:none; font-weight:700; padding:12px 8px; text-decoration:underline; text-underline-offset:5px; text-decoration-color:var(--line); text-decoration-thickness:2px; }
+  .btn-text:hover{ text-decoration-color:var(--ink); }
 
-  /* ============ SCHEDULE ============ */
-  .schedule-wrap{ max-width:860px; margin:0 auto; overflow-x:auto; }
-  .schedule-table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
-  .schedule-table th{ text-align:left; font-size:0.78rem; font-weight:600; color:var(--text-2); padding:0 24px; }
-  .schedule-table td{ background:#fff; padding:20px 24px; font-size:0.95rem; }
-  .schedule-table td:first-child{ border-radius:var(--radius-sm) 0 0 var(--radius-sm); font-weight:700; }
-  .schedule-table td:last-child{ border-radius:0 var(--radius-sm) var(--radius-sm) 0; font-weight:600; white-space:nowrap; }
-  .schedule-days{ display:inline-block; background:var(--gold-soft); padding:5px 12px; border-radius:var(--pill); font-size:0.85rem; font-weight:600; white-space:nowrap; }
-  .schedule-note{ text-align:center; font-size:0.88rem; color:var(--text-2); margin-top:16px; }
+  /* ════════ SCHEDULE ════════ */
+  .schedule-table{ width:100%; border-collapse:collapse; }
+  .schedule-table th{ text-align:left; font-size:0.85rem; font-weight:600; color:var(--muted); padding:0 0 14px; border-bottom:2px solid var(--ink); }
+  .schedule-table td{ padding:22px 0; border-bottom:1px solid var(--line); font-size:1.02rem; }
+  .schedule-table td:first-child{ font-weight:800; letter-spacing:-0.02em; font-size:1.12rem; }
+  .schedule-table td:last-child{ font-variant-numeric:tabular-nums; font-weight:600; }
+  .schedule-note{ color:var(--muted); font-size:0.93rem; margin-top:20px; }
 
-  /* ============ RESULTS (the single dark section) ============ */
-  #results{ background:var(--dark); color:#fff; }
-  #results .sec-title{ color:#fff; }
-  #results .sec-desc{ color:rgba(255,255,255,0.6); }
-  .results-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
-  .result-card{ background:var(--dark-2); border-radius:var(--radius); padding:28px 24px; display:flex; flex-direction:column; align-items:flex-start; gap:4px; position:relative; }
-  .result-band{ font-size:3rem; font-weight:800; color:var(--gold); line-height:1; margin-bottom:20px; }
-  .result-card .avatar{ position:absolute; top:24px; right:24px; }
-  .result-name{ font-weight:700; }
-  .result-course{ font-size:0.85rem; color:rgba(255,255,255,0.55); }
-
-  .story{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:40px; align-items:center; background:var(--dark-2); border-radius:var(--radius); padding:24px; }
-  .story-photo-wrap{ position:relative; }
-  .story-photo{ width:100%; height:420px; object-fit:cover; border-radius:var(--radius-sm); }
-  .story-badge{ position:absolute; left:16px; bottom:16px; display:flex; align-items:center; gap:12px; background:var(--gold); color:var(--text); padding:10px 20px 10px 16px; border-radius:var(--pill); }
-  .story-badge-band{ font-size:1.6rem; font-weight:800; }
-  .story-badge-label{ font-size:0.7rem; font-weight:700; line-height:1.25; text-transform:uppercase; }
-  .story-body{ padding:16px 16px 16px 0; }
-  .story-title{ font-size:1.6rem; font-weight:800; line-height:1.2; }
-  .story-quote{ font-size:1.05rem; color:rgba(255,255,255,0.85); margin:18px 0 20px; }
-  .story-name{ font-weight:700; }
-  .story-meta{ font-size:0.85rem; color:rgba(255,255,255,0.55); margin-bottom:24px; }
-  .story-timeline{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .story-tl-item{ background:rgba(255,255,255,0.05); border-radius:var(--radius-sm); padding:14px 16px; }
-  .story-tl-month{ font-size:0.75rem; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
-  .story-tl-text{ font-size:0.85rem; color:rgba(255,255,255,0.7); }
-
-  /* ============ AVATARS (initials) ============ */
-  .avatar{ width:44px; height:44px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#fff; flex-shrink:0; }
-  .av-gold{ background:var(--gold); color:var(--text); }
-  .av-blue{ background:#3772FF; }
-  .av-green{ background:#2E9E5B; }
-  .av-pink{ background:#E4446C; }
-  .av-purple{ background:#8A55D1; }
-
-  /* ============ TEACHERS ============ */
-  .team-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  .team-card{ background:var(--bg-2); border-radius:var(--radius); padding:12px; }
-  .team-photo{ width:100%; height:300px; object-fit:cover; border-radius:var(--radius-sm); }
-  .team-body{ padding:18px 12px 12px; }
-  .team-name{ font-size:1.15rem; font-weight:800; }
-  .team-role{ font-size:0.9rem; color:var(--text-2); font-weight:500; margin:4px 0 14px; }
-  .team-tags{ display:flex; gap:6px; flex-wrap:wrap; }
-  .team-tag{ font-size:0.75rem; font-weight:600; background:#fff; padding:6px 12px; border-radius:var(--pill); }
-
-  /* ============ GALLERY ============ */
-  .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:200px; grid-auto-flow:dense; gap:16px; }
-  .gallery-item{ overflow:hidden; border-radius:var(--radius); background:#e6e7e9; }
-  .gallery-item img{ width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
-  .gallery-item:hover img{ transform:scale(1.05); }
+  /* ════════ GALLERY ════════ */
+  .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:220px; grid-auto-flow:dense; gap:16px; }
+  .gallery-item{ border-radius:var(--r-md); overflow:hidden; background:var(--mist); }
   .gallery-item.tall{ grid-row:span 2; }
   .gallery-item.wide{ grid-column:span 2; }
+  .gallery-item img{ width:100%; height:100%; object-fit:cover; }
 
-  /* ============ TESTIMONIALS ============ */
-  .testi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-  .testi-card{ background:var(--bg-2); border-radius:var(--radius); padding:32px 28px; display:flex; flex-direction:column; }
-  .testi-mark{ font-size:3rem; font-weight:800; color:var(--gold); line-height:0.8; height:28px; }
-  .testi-text{ font-size:0.95rem; margin:12px 0 24px; flex:1; }
-  .testi-person{ display:flex; align-items:center; gap:12px; }
-  .testi-name{ font-weight:700; font-size:0.92rem; }
-  .testi-role{ font-size:0.8rem; color:var(--text-2); }
+  /* ════════ FAQ ════════ */
+  .faq-layout{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.7fr); gap:48px; align-items:start; }
+  .faq-layout .sec-head{ display:block; margin:0; position:sticky; top:calc(var(--nav-h) + 32px); }
+  .faq-layout .sec-desc{ margin-top:16px; }
+  .faq-layout .sec-desc a{ color:var(--ink); }
+  .faq-list{ display:grid; gap:10px; }
+  .faq-item{ background:var(--mist); border-radius:var(--r-sm); }
+  .faq-question{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:20px; padding:22px 24px; background:none; border:none; text-align:left; font-weight:700; font-size:1.02rem; line-height:1.4; }
+  .faq-icon{ flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--paper); position:relative; transition:background-color .2s, transform .3s var(--ease); }
+  .faq-icon::before, .faq-icon::after{ content:''; position:absolute; left:50%; top:50%; width:12px; height:2px; background:var(--ink); border-radius:2px; transform:translate(-50%,-50%); }
+  .faq-icon::after{ transform:translate(-50%,-50%) rotate(90deg); }
+  .faq-item.open .faq-icon{ background:var(--yellow); transform:rotate(45deg); }
+  .faq-answer{ overflow:hidden; max-height:0; transition:max-height .35s var(--ease); }
+  .faq-answer-inner{ padding:0 24px 22px; color:var(--muted); max-width:62ch; }
 
-  /* ============ FAQ ============ */
-  .faq-list{ max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
-  .faq-item{ background:#fff; border-radius:var(--radius-sm); }
-  .faq-question{
-    width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px;
-    padding:20px 20px 20px 24px; background:none; border:none; cursor:pointer; text-align:left;
-    font-size:1rem; font-weight:600; color:var(--text);
-  }
-  .faq-icon{ width:32px; height:32px; border-radius:50%; background:var(--bg-2); display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:500; flex-shrink:0; transition:transform .3s, background .2s; }
-  .faq-item.open .faq-icon{ transform:rotate(45deg); background:var(--gold); }
-  .faq-answer{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
-  .faq-answer-inner{ padding:0 24px 22px; color:var(--text-2); font-size:0.95rem; }
+  /* ════════ APPLY (yellow block) ════════ */
+  #apply{ background:var(--yellow); }
+  .apply-layout{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:56px; align-items:start; }
+  .apply-title{ font-size:clamp(2.4rem,5vw,4rem); letter-spacing:-0.045em; line-height:.98; margin-bottom:20px; }
+  .apply-sub{ font-size:1.08rem; max-width:30em; margin-bottom:32px; color:#3A2E05; }
+  .apply-points{ list-style:none; display:grid; gap:12px; }
+  .apply-points li{ display:flex; gap:12px; align-items:center; font-weight:700; }
+  .apply-points .icon{ width:26px; height:26px; padding:5px; border-radius:50%; background:var(--ink); color:var(--yellow); }
+  .form-card{ background:var(--paper); border-radius:var(--r-lg); padding:36px; }
+  .field{ margin-bottom:18px; }
+  .field-label{ display:flex; justify-content:space-between; gap:8px; font-size:0.88rem; font-weight:700; margin-bottom:8px; }
+  .field-label small{ font-weight:500; color:var(--muted); font-size:0.82rem; }
+  .input{ width:100%; height:52px; padding:0 18px; border-radius:var(--r-sm); border:1.5px solid transparent; background:var(--mist); font-size:1rem; outline:none; transition:border-color .2s, background-color .2s; }
+  .input:focus{ border-color:var(--ink); background:var(--paper); }
+  select.input{ appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23141416' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 18px center; padding-right:44px; cursor:pointer; }
+  textarea.input{ height:auto; min-height:96px; padding:14px 18px; resize:vertical; line-height:1.5; }
+  .field-error{ display:none; font-size:0.82rem; color:var(--warn); margin-top:6px; font-weight:600; }
+  .field.invalid .input{ border-color:var(--warn); background:#FFF8F3; }
+  .field.invalid .field-error{ display:block; }
+  .seg{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; background:var(--mist); padding:5px; border-radius:var(--r-sm); }
+  .seg label{ position:relative; }
+  .seg input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+  .seg span{ display:flex; align-items:center; justify-content:center; height:42px; border-radius:10px; font-weight:600; font-size:0.93rem; transition:background-color .2s, color .2s; text-align:center; padding:0 6px; }
+  .seg input:checked + span{ background:var(--ink); color:#fff; }
+  .seg input:focus-visible + span{ outline:2.5px solid var(--ink); outline-offset:2px; }
+  .field.invalid .seg{ box-shadow:inset 0 0 0 1.5px var(--warn); }
+  .form-submit{ width:100%; height:56px; margin-top:6px; }
+  .form-submit:disabled{ opacity:.6; cursor:progress; }
+  .form-privacy{ font-size:0.82rem; color:var(--muted); margin-top:14px; text-align:center; }
+  .form-success{ text-align:left; padding:8px 0; }
+  .ok-mark{ width:56px; height:56px; border-radius:50%; background:var(--yellow); display:flex; align-items:center; justify-content:center; margin-bottom:18px; }
+  .ok-mark .icon{ width:26px; height:26px; }
+  .form-success h3{ font-size:1.6rem; margin-bottom:10px; }
+  .form-success p{ color:var(--muted); margin-bottom:20px; }
 
-  /* ============ QUESTIONS BOX (trial form) ============ */
-  .trial-wrap{ max-width:var(--max); margin:0 auto; background:var(--bg-2); border-radius:var(--radius); padding:40px; text-align:center; }
-  .cta-banner-title{ font-size:var(--title-size); font-weight:800; line-height:1.2; }
-  .cta-banner-sub{ color:var(--text-2); margin:10px auto 28px; max-width:560px; }
-  .trial-form{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:start; max-width:960px; margin:0 auto; }
-  .trial-field{ display:flex; flex-direction:column; gap:6px; text-align:left; }
-  .trial-field input, .trial-field select{
-    height:var(--btn-h); padding:0 22px; border:1.5px solid transparent; border-radius:var(--pill);
-    background:#fff; color:var(--text); font-size:0.95rem; outline:none; width:100%; transition:border-color .2s;
-  }
-  .trial-field select{ appearance:none; -webkit-appearance:none; cursor:pointer;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777E90' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 20px center; padding-right:44px; }
-  .trial-field input:focus, .trial-field select:focus{ border-color:var(--gold); }
-  .trial-error{ display:none; font-size:0.78rem; color:var(--error); padding-left:22px; }
-  .trial-field.invalid input, .trial-field.invalid select{ border-color:var(--error); }
-  .trial-field.invalid .trial-error{ display:block; }
-  .trial-submit{ height:var(--btn-h); padding:0 32px; border:none; border-radius:var(--pill); background:var(--gold); color:var(--text); font-weight:700; font-size:0.95rem; cursor:pointer; transition:background .2s; }
-  .trial-submit:hover{ background:var(--gold-hover); }
-  .trial-privacy{ font-size:0.8rem; color:var(--text-2); margin-top:16px; }
-  .trial-success{ display:none; background:#fff; border-radius:var(--radius-sm); padding:28px; max-width:560px; margin:0 auto; }
-  .trial-success.active{ display:block; }
-  .trial-success .icon-ok{ width:48px; height:48px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; }
-  .trial-success h3{ font-size:1.3rem; font-weight:800; margin-bottom:6px; }
-  .trial-success p{ color:var(--text-2); }
+  /* ════════ CONTACT ════════ */
+  .contact-layout{ display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:40px; align-items:stretch; }
+  .map{ border-radius:var(--r-lg); overflow:hidden; background:var(--mist); min-height:420px; }
+  .map iframe{ width:100%; height:100%; min-height:420px; border:0; display:block; }
+  .contact-list{ display:grid; align-content:start; }
+  .contact-row{ padding:22px 0; border-top:1px solid var(--line); }
+  .contact-row:first-child{ border-top:2px solid var(--ink); }
+  .contact-label{ font-size:0.85rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .contact-value{ font-size:1.08rem; font-weight:700; line-height:1.45; text-decoration:none; display:block; }
+  a.contact-value:hover{ text-decoration:underline; text-decoration-color:var(--yellow); text-decoration-thickness:2px; text-underline-offset:4px; }
+  .contact-row .link-under{ display:inline-block; margin-top:6px; font-size:0.95rem; }
 
-  /* ============ CONTACT ============ */
-  .contact-wrap{ display:grid; grid-template-columns:1.1fr 1fr; gap:16px; align-items:stretch; }
-  .map-wrap{ border-radius:var(--radius); overflow:hidden; background:#e6e7e9; display:flex; flex-direction:column; min-height:420px; }
-  .map-wrap iframe{ width:100%; flex:1; min-height:340px; border:none; display:block; }
-  .map-link{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fff; padding:16px 22px; font-size:0.88rem; font-weight:600; text-decoration:none; }
-  .map-link:hover{ color:var(--gold-hover); }
-  .contact-cards{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .contact-card{ background:#fff; border-radius:var(--radius); padding:24px; display:flex; flex-direction:column; gap:6px; }
-  .contact-card.wide{ grid-column:span 2; }
-  .contact-icon{ width:44px; height:44px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
-  .contact-label{ font-size:0.8rem; font-weight:600; color:var(--text-2); }
-  .contact-value{ font-weight:600; text-decoration:none; line-height:1.45; }
-  a.contact-value:hover{ color:var(--gold-hover); }
-  .status-badge{ display:inline-flex; align-items:center; gap:8px; align-self:flex-start; background:#E8F7EE; color:#1F7A45; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:var(--pill); margin-top:6px; }
-  .status-dot{ width:7px; height:7px; border-radius:50%; background:#2E9E5B; }
-
-  /* ============ FOOTER ============ */
-  footer{ padding:40px var(--gutter) 32px; background:var(--bg); }
-  .footer-inner{ max-width:var(--max); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; padding-bottom:24px; border-bottom:1px solid #E6E8EC; }
-  .footer-brand{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
-  .footer-logo{ font-weight:800; font-size:1.3rem; }
-  .footer-logo span{ color:var(--red); }
-  .footer-desc{ color:var(--text-2); font-size:0.9rem; max-width:420px; }
+  /* ════════ FOOTER ════════ */
+  footer{ border-top:1px solid var(--line); padding:40px 0 32px; }
+  .footer-inner{ display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap; }
+  .footer-brand{ display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  .footer-brand img{ height:34px; width:auto; }
+  .footer-desc{ color:var(--muted); font-size:0.92rem; max-width:34em; }
   .footer-icons{ display:flex; gap:10px; }
-  .footer-icon{ width:44px; height:44px; border-radius:50%; background:var(--bg-2); display:flex; align-items:center; justify-content:center; text-decoration:none; transition:background .2s; }
-  .footer-icon:hover{ background:var(--gold); }
-  .footer-copy{ max-width:var(--max); margin:20px auto 0; font-size:0.8rem; color:var(--text-2); }
+  .footer-icon{ width:44px; height:44px; border-radius:50%; background:var(--mist); display:flex; align-items:center; justify-content:center; transition:background-color .2s; }
+  .footer-icon:hover{ background:var(--yellow); }
+  .footer-copy{ margin-top:24px; font-size:0.82rem; color:var(--muted); }
 
-  /* ============ FLOATING CALL BUTTON ============ */
-  .fb-call{
-    position:fixed; right:20px; bottom:20px; z-index:150; width:56px; height:56px; border-radius:50%;
-    background:var(--gold); color:var(--text); display:flex; align-items:center; justify-content:center;
-    box-shadow:0 12px 30px rgba(20,20,22,0.22); transition:transform .2s, background .2s;
-  }
-  .fb-call:hover{ transform:scale(1.06); background:var(--gold-hover); }
+  /* ════════ FLOATING CALL ════════ */
+  .fb-call{ position:fixed; right:20px; bottom:20px; z-index:150; width:56px; height:56px; border-radius:50%; background:var(--yellow); color:var(--ink); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px rgba(20,20,22,.22); transition:transform .2s var(--ease); }
+  .fb-call:hover{ transform:scale(1.06); }
   .fb-call .icon{ width:24px; height:24px; }
 
-  /* ============ MOCK REGISTRATION MODAL ============ */
-  .public-modal-overlay{ position:fixed; inset:0; background:rgba(20,20,22,0.6); backdrop-filter:blur(4px); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity .25s ease; }
-  .public-modal-overlay.active{ opacity:1; pointer-events:auto; }
-  .public-modal-card{ background:#fff; width:100%; max-width:460px; border-radius:var(--radius); padding:36px 28px 28px; position:relative; transform:translateY(16px); transition:transform .25s ease; }
-  .public-modal-overlay.active .public-modal-card{ transform:translateY(0); }
-  .public-modal-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:50%; border:none; background:var(--bg-2); font-size:1rem; cursor:pointer; }
-  .public-modal-close:hover{ background:var(--gold); }
-  .public-modal-title{ font-size:1.4rem; font-weight:800; margin-bottom:6px; padding-right:40px; }
-  .public-modal-sub{ font-size:0.9rem; color:var(--text-2); margin-bottom:22px; }
-  .pm-group{ margin-bottom:14px; }
-  .pm-label{ display:block; font-size:0.8rem; font-weight:600; color:var(--text-2); margin-bottom:6px; padding-left:4px; }
-  .pm-input{ width:100%; height:var(--btn-h); padding:0 20px; border:1.5px solid transparent; border-radius:var(--pill); background:var(--bg-2); font-size:0.95rem; outline:none; transition:border-color .2s; }
-  .pm-input:focus{ border-color:var(--gold); background:#fff; }
-  .pm-submit{ width:100%; height:var(--btn-h); border:none; border-radius:var(--pill); background:var(--gold); color:var(--text); font-weight:700; font-size:0.95rem; cursor:pointer; margin-top:8px; transition:background .2s; }
-  .pm-submit:hover{ background:var(--gold-hover); }
-  .pm-success{ display:none; text-align:center; padding:12px 0; }
-  .pm-success.active{ display:block; }
-  .pm-success .public-modal-title{ padding-right:0; }
-  .pm-success-icon{ width:56px; height:56px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  /* ════════ COURSE MODAL ════════ */
+  .modal{ position:fixed; inset:0; z-index:400; display:flex; align-items:center; justify-content:center; padding:16px; visibility:hidden; }
+  .modal.open{ visibility:visible; }
+  .modal-backdrop{ position:absolute; inset:0; background:rgba(20,20,22,.5); opacity:0; transition:opacity .3s; }
+  .modal.open .modal-backdrop{ opacity:1; }
+  .modal-card{ position:relative; width:100%; max-width:460px; max-height:calc(100svh - 32px); overflow-y:auto; background:var(--paper); border-radius:var(--r-lg); padding:36px 32px 32px; opacity:0; transform:scale(.6); transition:opacity .25s, transform .4s var(--ease); }
+  .modal.open .modal-card{ opacity:1; transform:none; }
+  .modal-close{ position:absolute; top:16px; right:16px; width:40px; height:40px; border-radius:50%; border:none; background:var(--mist); display:flex; align-items:center; justify-content:center; transition:background-color .2s; }
+  .modal-close:hover{ background:var(--yellow); }
+  .modal-title{ font-size:1.6rem; padding-right:44px; margin-bottom:8px; }
+  .modal-course{ display:inline-block; font-weight:700; background:var(--yellow-soft); padding:4px 12px; border-radius:var(--pill); font-size:0.9rem; margin-bottom:14px; }
+  .modal-sub{ color:var(--muted); margin-bottom:24px; }
+  @media (prefers-reduced-motion:reduce){
+    html{ scroll-behavior:auto; }
+    .modal-card{ transform:none; transition:opacity .2s; }
+    .faq-answer{ transition:none; }
+  }
 
-  /* ============ RESPONSIVE ============ */
+  /* ════════ RESPONSIVE ════════ */
+  @media (max-width:1100px){
+    .nav-links a{ padding:8px 9px; font-size:0.9rem; }
+    .course{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+    .course-feats{ grid-row:2; }
+    .course-price{ grid-row:2; }
+    .course .btn{ grid-column:2; grid-row:1; justify-self:end; }
+  }
   @media (max-width:1024px){
-    .courses-grid{ grid-template-columns:repeat(2,1fr); }
-    .mock-grid{ grid-template-columns:repeat(2,1fr); }
-    .results-grid{ grid-template-columns:repeat(2,1fr); }
-    .story{ grid-template-columns:1fr; gap:8px; }
-    .story-body{ padding:16px 8px 8px; }
-    .contact-wrap{ grid-template-columns:1fr; }
-    .trial-form{ grid-template-columns:1fr 1fr; }
-    .trial-submit, #trialFieldCourse{ grid-column:span 2; }
+    .nav-links{ position:fixed; top:var(--nav-h); left:0; right:0; bottom:0; margin:0; background:var(--paper); color:var(--ink); flex-direction:column; align-items:stretch; gap:2px; padding:20px var(--gutter) 32px; overflow-y:auto; opacity:0; visibility:hidden; transform:translateY(-8px); transition:opacity .25s, transform .3s var(--ease), visibility .25s; }
+    body.menu-open .nav-links{ opacity:1; visibility:visible; transform:none; }
+    .nav-links a{ font-size:1.5rem; font-weight:800; letter-spacing:-0.03em; padding:12px 0; border-radius:0; }
+    .nav-links a:hover{ background:none; }
+    .nav-links a.nav-mock{ display:inline-flex; align-self:flex-start; font-size:1.1rem; padding:12px 22px; border-radius:var(--pill); margin:8px 0; }
+    .nav-links .nav-enroll-li{ margin-top:16px; }
+    .hamburger{ display:block; }
+    .nav-actions{ margin-left:auto; }
+    .nav-actions .nav-enroll{ display:none; }
+    body.menu-open{ overflow:hidden; }
+    .why-list{ grid-template-columns:repeat(2,1fr); }
+    .team-grid{ grid-template-columns:repeat(3,1fr); }
+    .mock-grid{ grid-template-columns:1fr; }
+    .faq-layout, .apply-layout, .contact-layout{ grid-template-columns:1fr; gap:36px; }
+    .faq-layout .sec-head{ position:static; }
+    .gallery-grid{ grid-template-columns:repeat(3,1fr); }
   }
-  @media (max-width:900px){
-    .stats-grid{ grid-template-columns:1fr 1fr; grid-template-areas:"a a" "b c" "d e"; }
-    .stat-card:nth-child(1){ min-height:240px; }
-    .why-grid{ grid-template-columns:1fr 1fr; grid-template-areas:"a a" "b b" "c d"; }
-    .why-card:nth-child(1){ min-height:260px; }
-    .team-grid{ grid-template-columns:1fr 1fr; }
-    .testi-grid{ grid-template-columns:1fr; }
-    .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:160px; }
-  }
+  @media (min-width:1025px){ .nav-links .nav-enroll-li{ display:none; } }
   @media (max-width:767px){
-    #hero{ padding:120px var(--gutter) 56px; min-height:640px; }
-    .hero-sub{ font-size:1rem; }
-    .stat-card{ padding:20px; min-height:150px; }
-    .stat-num{ font-size:2.2rem; }
-    .stat-label{ font-size:0.85rem; }
-    .why-grid{ grid-template-columns:1fr; grid-template-areas:"a" "b" "c" "d"; }
-    .why-card{ padding:24px; }
-    .courses-grid, .mock-grid, .team-grid{ grid-template-columns:1fr; }
-    .course-card, .mock-card{ padding:24px; }
-    .quiz-box{ padding:24px 16px; }
-    .quiz-opt{ border-radius:var(--radius-sm); }
-    /* Schedule rows become small cards: course + time on top, days below */
+    :root{ --gutter:20px; --section-y:72px; --nav-h:64px; }
+    body{ font-size:15.5px; }
+    .logo{ height:30px; width:139px; }
+    .logo img{ height:30px; }
+    .lang-switch button{ width:32px; height:28px; font-size:0.7rem; }
+    .sec-head{ grid-template-columns:1fr; gap:12px; margin-bottom:32px; }
+    #hero{ min-height:max(600px, 100svh); }
+    .hero-content{ padding-bottom:36px; }
+    .bubble{ border-radius:28px; padding:28px 24px 26px; }
+    .bubble::after{ left:26px; bottom:-24px; width:44px; height:30px; }
+    .hero-sub{ font-size:1rem; margin-bottom:22px; }
+    .hero-btns .btn{ width:100%; }
+    .hero-facts{ margin-top:44px; flex-direction:column; gap:10px; }
+    .hero-facts li{ padding:0; border:none; }
+    .why-list{ grid-template-columns:1fr; gap:28px; }
+    .course-list{ padding:4px 20px; border-radius:var(--r-md); }
+    .course{ grid-template-columns:1fr; gap:14px; padding:26px 0; }
+    .course-feats, .course-price{ grid-row:auto; }
+    .course .btn{ grid-column:auto; grid-row:auto; justify-self:stretch; }
+    .course-price{ display:flex; align-items:baseline; gap:8px; }
+    .mock-card{ padding:20px; gap:16px; }
+    .mock-date{ width:64px; }
+    .mock-day{ font-size:1.7rem; }
+    .r-card{ width:190px; }
+    .r-overall{ font-size:2.8rem; }
+    .team-grid{ grid-template-columns:repeat(2,1fr); gap:24px 14px; }
+    .team-name{ font-size:1.02rem; }
+    .quiz-box{ padding:28px 20px; border-radius:var(--r-md); }
+    .quiz-q{ font-size:1.3rem; }
+    .quiz-opt{ width:100%; }
     .schedule-table thead{ display:none; }
-    .schedule-table, .schedule-table tbody{ display:block; }
-    .schedule-table tr{ display:grid; grid-template-columns:1fr auto; gap:10px 12px; align-items:center; background:#fff; border-radius:var(--radius-sm); padding:16px 18px; margin-bottom:10px; }
-    .schedule-table td{ padding:0; background:none; border-radius:0 !important; font-size:0.92rem; }
-    .schedule-table td:nth-child(3){ grid-row:1; grid-column:2; }
-    .schedule-table td:nth-child(2){ grid-column:1 / -1; }
-    .stat-card:nth-child(3)::after{ width:40px; height:40px; top:16px; right:16px; }
-    .stat-card:nth-child(5)::after{ width:44px; height:44px; top:14px; right:14px; border-width:9px; }
-    .stat-card:nth-child(2)::after, .stat-card:nth-child(4)::after{ width:80px; height:80px; top:-40px; }
-    .stat-card:nth-child(2)::after{ right:-40px; }
-    .stat-card:nth-child(4)::after{ left:-40px; }
-    .stat-card:nth-child(n+2){ padding-top:64px; }
-    .results-grid{ gap:10px; }
-    .result-card{ padding:20px 16px; }
-    .result-band{ font-size:2.3rem; margin-bottom:16px; }
-    .result-card .avatar{ top:16px; right:16px; width:36px; height:36px; font-size:0.75rem; }
-    .story{ padding:12px; }
-    .story-photo{ height:260px; }
-    .story-title{ font-size:1.3rem; }
-    .story-timeline{ grid-template-columns:1fr; }
-    .gallery-grid{ grid-auto-rows:130px; gap:10px; }
-    .gallery-item{ border-radius:var(--radius-sm); }
-    .faq-question{ padding:16px 16px 16px 20px; font-size:0.95rem; }
-    .faq-answer-inner{ padding:0 20px 18px; }
-    .trial-wrap{ padding:32px 16px; }
-    .trial-form{ grid-template-columns:1fr; }
-    .trial-submit, #trialFieldCourse{ grid-column:auto; }
-    .contact-cards{ grid-template-columns:1fr; }
-    .contact-card.wide{ grid-column:auto; }
-    .map-wrap{ min-height:0; }
-    .map-wrap iframe{ min-height:280px; }
-    .footer-inner{ flex-direction:column; align-items:flex-start; }
+    .schedule-table, .schedule-table tbody, .schedule-table tr{ display:block; }
+    .schedule-table tr{ display:grid; grid-template-columns:1fr auto; gap:6px 12px; padding:18px 0; border-bottom:1px solid var(--line); }
+    .schedule-table td{ padding:0; border:none; }
+    .schedule-table td:nth-child(2){ grid-column:1 / -1; grid-row:2; color:var(--muted); font-size:0.95rem; }
+    .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:150px; gap:10px; }
+    .gallery-item.wide{ grid-column:span 2; }
+    .faq-question{ padding:18px; font-size:0.98rem; }
+    .faq-answer-inner{ padding:0 18px 18px; }
+    .form-card{ padding:24px 18px; border-radius:var(--r-md); }
+    .seg span{ font-size:0.88rem; }
+    .map, .map iframe{ min-height:300px; }
+    .modal{ align-items:flex-end; padding:0; }
+    .modal-card{ border-radius:var(--r-lg) var(--r-lg) 0 0; padding:32px 20px 24px; max-height:92svh; }
     .fb-call{ right:16px; bottom:16px; width:52px; height:52px; }
+    .footer-inner{ flex-direction:column; align-items:flex-start; }
   }
 </style>
 </head>
 <body>
 
-<!-- Icon sprite (reused via <use>) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
   <symbol id="i-insta" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></g></symbol>
-  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></g></symbol>
-  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="20 6 9 17 4 12"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></g></symbol>
   <symbol id="i-award" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></g></symbol>
   <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g></symbol>
   <symbol id="i-trend" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></g></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></g></symbol>
 </svg>
 
 <!-- HEADER -->
-<nav id="navbar">
-  <a href="#" class="logo">
-    <span class="logo-mark">STAN<span>FORD</span></span>
-    <span class="logo-sub">Языковой центр · Нукус</span>
-  </a>
-  <ul class="nav-links" id="navLinks">
-    <li><a href="#courses" data-i18n="nav-courses">Курсы</a></li>
-    <li><a href="#results" data-i18n="nav-results">Результаты</a></li>
-    <li><a href="#instructors" data-i18n="nav-instructors">Преподаватели</a></li>
-    <li><a href="mock.html" class="nav-mock" data-i18n="nav-mock-exams">Mock Exam</a></li>
-    <li><a href="#testimonials" data-i18n="nav-testimonials">Отзывы</a></li>
-    <li><a href="#faq" data-i18n="nav-faq">Вопросы</a></li>
-    <li><a href="#contact" data-i18n="nav-contact">Контакты</a></li>
-    <li class="nav-right">
-      <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language / Сменить язык"
-        onclick="setLanguage(document.documentElement.lang === 'en' ? 'ru' : 'en')">RU</button>
-      <a href="#cta-banner" class="btn btn-gold" data-i18n="nav-enroll">Записаться</a>
-    </li>
-  </ul>
-  <button type="button" class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-</nav>
+<header id="navbar">
+  <div class="wrap nav-inner">
+    <a href="#hero" class="logo" aria-label="Stanford language center">
+      <img class="logo-light" src="images/logo-row-white.png" alt="" width="167" height="36"/>
+      <img class="logo-dark" src="images/logo-row-black.png" alt="" width="167" height="36"/>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#courses" data-i18n="nav-courses">Курсы</a></li>
+      <li><a href="mock.html" class="nav-mock" data-i18n="nav-mock">Mock Exam</a></li>
+      <li data-needs="results" hidden><a href="#results" data-i18n="nav-results">Результаты</a></li>
+      <li data-needs="teachers" hidden><a href="#instructors" data-i18n="nav-teachers">Преподаватели</a></li>
+      <li><a href="#faq" data-i18n="nav-faq">Вопросы</a></li>
+      <li><a href="#contact" data-i18n="nav-contact">Контакты</a></li>
+      <li class="nav-enroll-li"><a href="#apply" class="btn btn-yellow" data-i18n="nav-enroll">Записаться</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="lang-switch" role="group" data-i18n-aria="lang-label" aria-label="Язык сайта">
+        <button type="button" data-lang="ru" lang="ru">RU</button>
+        <button type="button" data-lang="kaa" lang="kaa" title="Qaraqalpaqsha">QQ</button>
+        <button type="button" data-lang="en" lang="en">EN</button>
+      </div>
+      <a href="#apply" class="btn btn-yellow btn-sm nav-enroll" data-i18n="nav-enroll">Записаться</a>
+      <button type="button" class="hamburger" id="hamburger" aria-controls="navLinks" aria-expanded="false" data-i18n-aria="nav-menu" aria-label="Меню"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
 
+<main>
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-bg">
-    <!-- REPLACE with a real photo of Stanford center -->
-    <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1920&q=80" alt="" fetchpriority="high"/>
-  </div>
-  <div class="hero-content">
-    <h1 class="hero-title">
-      <span class="t1">Stanford</span>
-      <span class="t2" data-i18n="hero-title-2">Английский язык и IELTS</span>
-    </h1>
-    <p class="hero-sub" data-i18n="hero-sub">IELTS, General English и курсы для детей — с преподавателем IELTS 9.0 в Нукусе.</p>
-    <a href="#cta-banner" class="btn btn-gold">
-      <span data-i18n="hero-btn1">Первый бесплатный урок</span>
-      <svg class="icon"><use href="#i-arrow"/></svg>
-    </a>
+  <div class="hero-photo"><img src="images/hero.jpg" alt="" fetchpriority="high" onerror="this.remove()"/></div>
+  <div class="wrap hero-content">
+    <div class="bubble">
+      <h1 class="hero-title" data-i18n="hero-title">Английский и IELTS в Нукусе</h1>
+      <p class="hero-sub" data-i18n="hero-sub">IELTS, General English и курсы для детей. Занятия ведёт преподаватель с баллом IELTS 9.0.</p>
+      <div class="hero-btns">
+        <a href="#apply" class="btn btn-ink" data-i18n="hero-cta">Пробный урок бесплатно</a>
+        <a href="mock.html" class="btn btn-line" data-i18n="hero-mock">Записаться на Mock</a>
+      </div>
+    </div>
+    <ul class="hero-facts">
+      <li><b>9.0</b><span data-i18n="fact1">балл IELTS нашего преподавателя</span></li>
+      <li><b>5</b><span data-i18n="fact2">лет в Нукусе</span></li>
+      <li><b>09:00–19:00</b><span data-i18n="fact3">каждый день</span></li>
+    </ul>
   </div>
 </section>
 
-<!-- ABOUT / STATS -->
-<section id="about" class="bg-white">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="about-title">О нас</h2></div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num" data-count="7.2" data-decimals="1">7.2</div><div class="stat-label" data-i18n="rstat1-label">Средний балл IELTS</div></div>
-      <div class="stat-card"><div class="stat-num" data-count="200" data-suffix="+">200+</div><div class="stat-label" data-i18n="rstat2-label">Студентов подготовлено к экзамену</div></div>
-      <div class="stat-card"><div class="stat-num" data-count="94" data-suffix="%">94%</div><div class="stat-label" data-i18n="rstat3-label">Достигли цели</div></div>
-      <div class="stat-card"><div class="stat-num" data-count="5">5</div><div class="stat-label" data-i18n="rstat4-label">Лет в Нукусе</div></div>
-      <div class="stat-card"><div class="stat-num" data-count="9.0" data-decimals="1">9.0</div><div class="stat-label" data-i18n="rstat5-label">Балл IELTS нашего преподавателя</div></div>
+<!-- WHY -->
+<section id="why" class="section white">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="why-title">Почему Stanford</h2>
+      <p class="sec-desc" data-i18n="why-desc">Учим так, чтобы вы заговорили и сдали экзамен — без лишней теории.</p>
     </div>
-  </div>
-</section>
-
-<!-- WHY STANFORD -->
-<section id="why" class="bg-grey">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="why-title">Почему Stanford</h2></div>
-    <div class="why-grid">
-      <div class="why-card">
-        <span class="why-icon"><svg class="icon"><use href="#i-award"/></svg></span>
-        <div class="why-title" data-i18n="why1-title">Преподаватель IELTS 9.0</div>
-        <div class="why-text" data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</div>
-      </div>
-      <div class="why-card">
-        <span class="why-icon"><svg class="icon"><use href="#i-users"/></svg></span>
-        <div class="why-title" data-i18n="why2-title">Небольшие группы</div>
-        <div class="why-text" data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</div>
-      </div>
-      <div class="why-card">
-        <span class="why-icon"><svg class="icon"><use href="#i-trend"/></svg></span>
-        <div class="why-title" data-i18n="why3-title">Понятный прогресс</div>
-        <div class="why-text" data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</div>
-      </div>
-      <div class="why-card">
-        <span class="why-icon"><svg class="icon"><use href="#i-clock"/></svg></span>
-        <div class="why-title" data-i18n="why4-title">Гибкое расписание</div>
-        <div class="why-text" data-i18n="why4-text">Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.</div>
-      </div>
-    </div>
+    <ul class="why-list">
+      <li class="why-item"><div class="why-mark"><span><svg class="icon"><use href="#i-award"/></svg></span></div><h3 data-i18n="why1-title">Преподаватель IELTS 9.0</h3><p data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</p></li>
+      <li class="why-item"><div class="why-mark"><span><svg class="icon"><use href="#i-users"/></svg></span></div><h3 data-i18n="why2-title">Небольшие группы</h3><p data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</p></li>
+      <li class="why-item"><div class="why-mark"><span><svg class="icon"><use href="#i-trend"/></svg></span></div><h3 data-i18n="why3-title">Понятный прогресс</h3><p data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</p></li>
+      <li class="why-item"><div class="why-mark"><span><svg class="icon"><use href="#i-clock"/></svg></span></div><h3 data-i18n="why4-title">Удобное время</h3><p data-i18n="why4-text">Центр открыт каждый день с 09:00 до 19:00 — подберём время под учёбу и работу.</p></li>
+    </ul>
   </div>
 </section>
 
 <!-- COURSES -->
-<section id="courses" class="bg-white">
-  <div class="container">
+<section id="courses" class="section white">
+  <div class="wrap">
     <div class="sec-head">
       <h2 class="sec-title" data-i18n="courses-title">Курсы</h2>
-      <p class="sec-desc" data-i18n="courses-desc">От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.</p>
+      <p class="sec-desc" data-i18n="courses-desc">От первых слов до IELTS. Цена — за месяц занятий.</p>
     </div>
-    <div class="courses-grid">
-      <div class="course-card">
-        <span class="course-level" data-i18n="course1-level">Kids · 6–12 лет</span>
-        <div class="course-name" data-i18n="course1-name">Kids English</div>
-        <ul class="course-list">
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-f1">Игры, песни и картинки</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-f2">Первые слова и фразы</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-duration">2 занятия в неделю</span></li>
+    <ul class="course-list">
+      <li class="course">
+        <div><span class="course-level" data-i18n="course1-level">Дети 6–12 лет</span><h3 class="course-name" data-i18n="course1-name">Kids English</h3></div>
+        <ul class="course-feats">
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course1-f1">Игры, песни и картинки</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course1-f2">Первые слова и фразы</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course1-duration">2 занятия в неделю</span></li>
         </ul>
-        <div class="course-bottom">
-          <div class="course-price" data-i18n="course1-price">250 000 <sub>сум/мес</sub></div>
-          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
-        </div>
-      </div>
-      <div class="course-card">
-        <span class="course-level" data-i18n="course2-level">General · Intermediate</span>
-        <div class="course-name" data-i18n="course2-name">General English</div>
-        <ul class="course-list">
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-f1">Грамматика и лексика</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-f2">Разговорная практика</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-duration">3 занятия в неделю</span></li>
+        <div class="course-price"><strong data-i18n="course1-price">250 000</strong><span data-i18n="per-month">сум в месяц</span></div>
+        <button type="button" class="btn btn-ink" data-enroll="kids" data-i18n="course-btn">Записаться</button>
+      </li>
+      <li class="course">
+        <div><span class="course-level" data-i18n="course2-level">Средний уровень</span><h3 class="course-name" data-i18n="course2-name">General English</h3></div>
+        <ul class="course-feats">
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course2-f1">Грамматика и лексика</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course2-f2">Разговорная практика</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course2-duration">3 занятия в неделю</span></li>
         </ul>
-        <div class="course-bottom">
-          <div class="course-price" data-i18n="course2-price">280 000 <sub>сум/мес</sub></div>
-          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
-        </div>
-      </div>
-      <div class="course-card">
-        <span class="course-level" data-i18n="course3-level">Upper‑Intermediate</span>
-        <div class="course-name" data-i18n="course3-name">Advanced English</div>
-        <ul class="course-list">
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-f1">Свободная речь</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-f2">Академическая лексика</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-duration">3 занятия в неделю</span></li>
+        <div class="course-price"><strong data-i18n="course2-price">280 000</strong><span data-i18n="per-month">сум в месяц</span></div>
+        <button type="button" class="btn btn-ink" data-enroll="general" data-i18n="course-btn">Записаться</button>
+      </li>
+      <li class="course">
+        <div><span class="course-level" data-i18n="course3-level">Выше среднего</span><h3 class="course-name" data-i18n="course3-name">Advanced English</h3></div>
+        <ul class="course-feats">
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course3-f1">Свободная речь</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course3-f2">Академическая лексика</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course3-duration">3 занятия в неделю</span></li>
         </ul>
-        <div class="course-bottom">
-          <div class="course-price" data-i18n="course3-price">320 000 <sub>сум/мес</sub></div>
-          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
-        </div>
-      </div>
-      <div class="course-card">
-        <span class="course-level" data-i18n="course4-level">Exam Prep</span>
-        <div class="course-name" data-i18n="course4-name">IELTS Preparation</div>
-        <ul class="course-list">
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-f1">Все 4 модуля экзамена</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-f2">Пробные тесты и стратегии</span></li>
-          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-duration">4 занятия в неделю</span></li>
+        <div class="course-price"><strong data-i18n="course3-price">320 000</strong><span data-i18n="per-month">сум в месяц</span></div>
+        <button type="button" class="btn btn-ink" data-enroll="advanced" data-i18n="course-btn">Записаться</button>
+      </li>
+      <li class="course">
+        <div><span class="course-level" data-i18n="course4-level">Подготовка к экзамену</span><h3 class="course-name" data-i18n="course4-name">IELTS Preparation</h3></div>
+        <ul class="course-feats">
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course4-f1">Все 4 модуля экзамена</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course4-f2">Пробные тесты и стратегии</span></li>
+          <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="course4-duration">4 занятия в неделю</span></li>
         </ul>
-        <div class="course-bottom">
-          <div class="course-price" data-i18n="course4-price">380 000 <sub>сум/мес</sub></div>
-          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
-        </div>
-      </div>
-    </div>
+        <div class="course-price"><strong data-i18n="course4-price">380 000</strong><span data-i18n="per-month">сум в месяц</span></div>
+        <button type="button" class="btn btn-ink" data-enroll="ielts" data-i18n="course-btn">Записаться</button>
+      </li>
+    </ul>
   </div>
 </section>
 
 <!-- MOCK EXAMS -->
-<section id="mock-exams" class="bg-grey">
-  <div class="container">
+<section id="mock-exams" class="section white">
+  <div class="wrap">
     <div class="sec-head">
-      <h2 class="sec-title" data-i18n="mock-title">Mock Exam</h2>
-      <p class="sec-desc" data-i18n="mock-desc">Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.</p>
+      <h2 class="sec-title" data-i18n="mock-title">IELTS CD Mock Exam</h2>
+      <p class="sec-desc" data-i18n="mock-desc">Пробный IELTS на компьютере, как в настоящем тестовом центре. После экзамена — результат по каждой части.</p>
     </div>
-    <div class="mock-grid" id="publicMockExamsGrid">
-      <!-- Filled by main.js with real sessions from the database -->
-      <div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;" data-i18n="mock-loading">Загрузка сессий...</div>
+    <div class="mock-grid" id="mockGrid" aria-live="polite">
+      <p class="mock-empty" data-i18n="mock-loading">Загружаем даты…</p>
+    </div>
+    <div class="mock-links">
+      <a class="link-under" href="mock.html" data-i18n="mock-all">Все даты и запись</a>
+      <a class="link-under" href="mock.html#lookup" data-i18n="mock-lookup">Узнать результат Mock</a>
     </div>
   </div>
 </section>
 
-<!-- LEVEL QUIZ -->
-<section id="quiz" class="bg-white">
-  <div class="container">
+<!-- RESULTS (hidden until there is at least one published result) -->
+<section id="results" class="section" hidden>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="results-title">Результаты</h2>
+      <p class="sec-desc" data-i18n="results-desc">Настоящие баллы IELTS наших студентов.</p>
+    </div>
+  </div>
+  <div class="marquee" id="resultsMarquee"><div class="marquee-track" id="resultsTrack"></div></div>
+</section>
+
+<!-- TEACHERS (hidden until at least one is published) -->
+<section id="instructors" class="section white" hidden>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="team-title">Преподаватели</h2>
+      <p class="sec-desc" data-i18n="team-desc">Те, кто ведёт занятия каждый день.</p>
+    </div>
+    <div class="team-grid" id="teamGrid"></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="section white">
+  <div class="wrap">
     <div class="sec-head">
       <h2 class="sec-title" data-i18n="quiz-title">Подбор курса</h2>
-      <p class="sec-desc" data-i18n="quiz-desc">Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.</p>
+      <p class="sec-desc" data-i18n="quiz-desc">Два вопроса — и подскажем, какая программа подойдёт.</p>
     </div>
     <div class="quiz-box">
       <div class="quiz-step active" id="quizStep1">
-        <div class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</div>
+        <p class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</p>
         <div class="quiz-options">
-          <button class="quiz-opt" onclick="quizAnswer('kids')" data-i18n="quiz-q1-opt1">Ребёнку, 6–12 лет</button>
-          <button class="quiz-opt" onclick="quizGoto('quizStep2')" data-i18n="quiz-q1-opt2">Взрослому или подростку</button>
+          <button type="button" class="quiz-opt" data-quiz="kids" data-i18n="quiz-q1-opt1">Ребёнку, 6–12 лет</button>
+          <button type="button" class="quiz-opt" data-quiz-next="quizStep2" data-i18n="quiz-q1-opt2">Взрослому или подростку</button>
         </div>
       </div>
       <div class="quiz-step" id="quizStep2">
-        <div class="quiz-q" data-i18n="quiz-q2">Какая у вас цель?</div>
+        <p class="quiz-q" data-i18n="quiz-q2">Какая у вас цель?</p>
         <div class="quiz-options">
-          <button class="quiz-opt" onclick="quizAnswer('general')" data-i18n="quiz-q2-opt1">Заговорить увереннее в жизни и на работе</button>
-          <button class="quiz-opt" onclick="quizAnswer('ielts')" data-i18n="quiz-q2-opt2">Сдать международный экзамен IELTS</button>
-          <button class="quiz-opt" onclick="quizAnswer('advanced')" data-i18n="quiz-q2-opt3">Уже говорю свободно, хочу углубить знания</button>
+          <button type="button" class="quiz-opt" data-quiz="general" data-i18n="quiz-q2-opt1">Заговорить увереннее в жизни и на работе</button>
+          <button type="button" class="quiz-opt" data-quiz="ielts" data-i18n="quiz-q2-opt2">Сдать международный экзамен IELTS</button>
+          <button type="button" class="quiz-opt" data-quiz="advanced" data-i18n="quiz-q2-opt3">Уже говорю свободно, хочу углубить знания</button>
         </div>
       </div>
-      <div class="quiz-result" id="quizResultKids">
-        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-        <div class="quiz-result-name" data-i18n="course1-name">Kids English</div>
-        <p class="quiz-result-desc" data-i18n="course1-desc">Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.</p>
+      <div class="quiz-result" id="quizResult">
+        <p class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</p>
+        <p class="quiz-result-name" id="quizResultName"></p>
+        <p class="quiz-result-desc" id="quizResultDesc"></p>
         <div class="quiz-actions">
-          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-        </div>
-      </div>
-      <div class="quiz-result" id="quizResultGeneral">
-        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-        <div class="quiz-result-name" data-i18n="course2-name">General English</div>
-        <p class="quiz-result-desc" data-i18n="course2-desc">Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.</p>
-        <div class="quiz-actions">
-          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-        </div>
-      </div>
-      <div class="quiz-result" id="quizResultIelts">
-        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-        <div class="quiz-result-name" data-i18n="course4-name">IELTS Preparation</div>
-        <p class="quiz-result-desc" data-i18n="course4-desc">Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.</p>
-        <div class="quiz-actions">
-          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-        </div>
-      </div>
-      <div class="quiz-result" id="quizResultAdvanced">
-        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-        <div class="quiz-result-name" data-i18n="course3-name">Advanced English</div>
-        <p class="quiz-result-desc" data-i18n="course3-desc">Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.</p>
-        <div class="quiz-actions">
-          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+          <button type="button" class="btn btn-ink" id="quizEnroll" data-i18n="quiz-cta">Записаться на этот курс</button>
+          <button type="button" class="btn-text" id="quizRestart" data-i18n="quiz-restart">Пройти заново</button>
         </div>
       </div>
     </div>
@@ -757,330 +621,194 @@
 </section>
 
 <!-- SCHEDULE -->
-<section id="schedule" class="bg-grey">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="schedule-title">Расписание</h2></div>
-    <div class="schedule-wrap">
-      <table class="schedule-table">
-        <thead>
-          <tr>
-            <th data-i18n="schedule-th1">Курс</th>
-            <th data-i18n="schedule-th2">Дни</th>
-            <th data-i18n="schedule-th3">Время</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td data-i18n="course1-name">Kids English</td><td><span class="schedule-days" data-i18n="sched1-days">Пн, Чт</span></td><td>15:00 – 16:00</td></tr>
-          <tr><td data-i18n="course2-name">General English</td><td><span class="schedule-days" data-i18n="sched2-days">Пн, Ср, Пт</span></td><td>17:00 – 18:30</td></tr>
-          <tr><td data-i18n="course3-name">Advanced English</td><td><span class="schedule-days" data-i18n="sched3-days">Вт, Чт, Сб</span></td><td>18:00 – 19:30</td></tr>
-          <tr><td data-i18n="course4-name">IELTS Preparation</td><td><span class="schedule-days" data-i18n="sched4-days">Пн, Вт, Чт, Сб</span></td><td>19:00 – 20:30</td></tr>
-        </tbody>
-      </table>
-      <p class="schedule-note" data-i18n="schedule-note">Расписание может отличаться в зависимости от набора группы — уточняйте актуальное время по телефону.</p>
-    </div>
+<section id="schedule" class="section white">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="schedule-title">Расписание</h2><p class="sec-desc" data-i18n="schedule-note">Время может меняться при наборе новой группы — уточняйте по телефону.</p></div>
+    <table class="schedule-table">
+      <thead><tr><th data-i18n="schedule-th1">Курс</th><th data-i18n="schedule-th2">Дни</th><th data-i18n="schedule-th3">Время</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="course1-name">Kids English</td><td data-i18n="sched1-days">Пн, Чт</td><td>15:00–16:00</td></tr>
+        <tr><td data-i18n="course2-name">General English</td><td data-i18n="sched2-days">Пн, Ср, Пт</td><td>17:00–18:30</td></tr>
+        <tr><td data-i18n="course3-name">Advanced English</td><td data-i18n="sched3-days">Вт, Чт, Сб</td><td>18:00–19:30</td></tr>
+        <tr><td data-i18n="course4-name">IELTS Preparation</td><td data-i18n="sched4-days">Пн, Вт, Чт, Сб</td><td>19:00–20:30</td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
-<!-- RESULTS (the single dark section) -->
-<section id="results">
-  <div class="container">
-    <div class="sec-head">
-      <h2 class="sec-title" data-i18n="results-title">Результаты</h2>
-      <p class="sec-desc" data-i18n="results-desc">Реальные результаты студентов Stanford на международном экзамене IELTS.</p>
-    </div>
-    <div class="results-grid">
-      <div class="result-card">
-        <div class="result-band">7.5</div>
-        <span class="avatar av-gold">АЖ</span>
-        <div class="result-name">Азиз Жураев</div>
-        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-      </div>
-      <div class="result-card">
-        <div class="result-band">8.0</div>
-        <span class="avatar av-pink">МК</span>
-        <div class="result-name">Малика Каримова</div>
-        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-      </div>
-      <div class="result-card">
-        <div class="result-band">7.0</div>
-        <span class="avatar av-blue">СР</span>
-        <div class="result-name">Сабохат Ражабова</div>
-        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-      </div>
-      <div class="result-card">
-        <div class="result-band">6.5</div>
-        <span class="avatar av-green">ТЮ</span>
-        <div class="result-name">Тимур Юсупов</div>
-        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-      </div>
-    </div>
-
-    <!-- Success story -->
-    <div class="story">
-      <div class="story-photo-wrap">
-        <!-- REPLACE with real photo (the student from this success story) -->
-        <img class="story-photo" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80" alt="Студентка Stanford" loading="lazy"/>
-        <div class="story-badge">
-          <div class="story-badge-band">7.5</div>
-          <div class="story-badge-label" data-i18n="story-badge-label">Итоговый<br>балл IELTS</div>
-        </div>
-      </div>
-      <div class="story-body">
-        <h3 class="story-title" data-i18n="story-title">От 5.5 до 7.5 за 4 месяца</h3>
-        <p class="story-quote" data-i18n="story-quote">«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».</p>
-        <div class="story-name">Дилноза Эшмуратова</div>
-        <div class="story-meta" data-i18n="story-meta">Курс IELTS Preparation · поступила в университет по гранту</div>
-        <div class="story-timeline">
-          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m1">Месяц 1</div><div class="story-tl-text" data-i18n="story-m1-text">Диагностика — пробный тест показал балл 5.5, определили слабые модули.</div></div>
-          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m2">Месяц 2</div><div class="story-tl-text" data-i18n="story-m2-text">Плотная работа над Listening и Reading, расширение академической лексики.</div></div>
-          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m3">Месяц 3</div><div class="story-tl-text" data-i18n="story-m3-text">Стратегии Writing Task 2 и разбор структуры эссе на реальных темах.</div></div>
-          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m4">Месяц 4</div><div class="story-tl-text" data-i18n="story-m4-text">Финальные пробные тесты и день экзамена — результат 7.5.</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TEACHERS -->
-<section id="instructors" class="bg-white">
-  <div class="container">
-    <div class="sec-head">
-      <h2 class="sec-title" data-i18n="team-title">Преподаватели</h2>
-      <p class="sec-desc" data-i18n="team-desc">Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.</p>
-    </div>
-    <div class="team-grid">
-      <div class="team-card">
-        <!-- REPLACE with real photo of Улугбек Матниязов -->
-        <img class="team-photo" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80" alt="Улугбек Матниязов" loading="lazy"/>
-        <div class="team-body">
-          <div class="team-name">Улугбек Матниязов</div>
-          <div class="team-role" data-i18n="team1-role">IELTS 9.0 · 7 лет опыта</div>
-          <div class="team-tags"><span class="team-tag">IELTS</span><span class="team-tag">Advanced</span><span class="team-tag">Speaking</span></div>
-        </div>
-      </div>
-      <div class="team-card">
-        <!-- REPLACE with real photo of Нилюфар Абдуллаева -->
-        <img class="team-photo" src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80" alt="Нилюфар Абдуллаева" loading="lazy"/>
-        <div class="team-body">
-          <div class="team-name">Нилюфар Абдуллаева</div>
-          <div class="team-role" data-i18n="team2-role">General English · 5 лет опыта</div>
-          <div class="team-tags"><span class="team-tag">General English</span><span class="team-tag">Grammar</span></div>
-        </div>
-      </div>
-      <div class="team-card">
-        <!-- REPLACE with real photo of Дилноза Рахимова -->
-        <img class="team-photo" src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&fit=crop&w=600&q=80" alt="Дилноза Рахимова" loading="lazy"/>
-        <div class="team-body">
-          <div class="team-name">Дилноза Рахимова</div>
-          <div class="team-role" data-i18n="team3-role">Kids English · 4 года опыта</div>
-          <div class="team-tags"><span class="team-tag">Kids</span><span class="team-tag">Phonics</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- GALLERY (main.js swaps in admin-uploaded photos when there are any) -->
-<section id="gallery" class="bg-grey">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="gallery-title">Галерея</h2></div>
-    <!-- REPLACE with real photo: all 6 pictures below are stock placeholders; upload real ones in the admin panel -->
-    <div class="gallery-grid">
-      <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80" alt="Занятие в классе" loading="lazy"/></div>
-      <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" alt="Урок для детей" loading="lazy"/></div>
-      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&q=80" alt="Студенты за учёбой" loading="lazy"/></div>
-      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" alt="Групповое занятие" loading="lazy"/></div>
-      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80" alt="Аудитория центра" loading="lazy"/></div>
-      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80" alt="Преподаватель со студентами" loading="lazy"/></div>
-    </div>
-  </div>
-</section>
-
-<!-- TESTIMONIALS -->
-<section id="testimonials" class="bg-white">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="testi-title">Отзывы</h2></div>
-    <div class="testi-grid">
-      <div class="testi-card">
-        <div class="testi-mark">“</div>
-        <p class="testi-text" data-i18n="testi1-text">Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.</p>
-        <div class="testi-person"><span class="avatar av-purple">ГТ</span><div><div class="testi-name">Гулнора Т.</div><div class="testi-role" data-i18n="testi1-role">General English</div></div></div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-mark">“</div>
-        <p class="testi-text" data-i18n="testi2-text">Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.</p>
-        <div class="testi-person"><span class="avatar av-gold">ЖК</span><div><div class="testi-name">Жасур К.</div><div class="testi-role" data-i18n="testi2-role">IELTS Preparation</div></div></div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-mark">“</div>
-        <p class="testi-text" data-i18n="testi3-text">Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.</p>
-        <div class="testi-person"><span class="avatar av-green">ФА</span><div><div class="testi-name">Феруза А.</div><div class="testi-role" data-i18n="testi3-role">Родитель, Kids English</div></div></div>
-      </div>
-    </div>
+<!-- GALLERY (hidden until photos are uploaded in the admin panel) -->
+<section id="gallery" class="section white" hidden>
+  <div class="wrap">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="gallery-title">Галерея</h2><p class="sec-desc" data-i18n="gallery-desc">Наши классы и занятия.</p></div>
+    <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section id="faq" class="bg-grey">
-  <div class="container">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="faq-title">FAQ</h2></div>
+<section id="faq" class="section white">
+  <div class="wrap faq-layout">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="faq-title">Вопросы</h2>
+      <p class="sec-desc"><span data-i18n="faq-desc">Не нашли ответ — позвоните, объясним.</span><br><a class="link-under" href="tel:+998913036001">+998 91 303-60-01</a></p>
+    </div>
     <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq1-q">Как понять, на какой уровень записаться?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq1-a">Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq2-q">Сколько длится подготовка к IELTS?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq2-a">В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq3-q">Можно ли перейти в другую группу, если не подошло время?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq3-a">Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq4-q">С какого возраста можно записать ребёнка?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq4-a">Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq5-q">Что если я пропущу занятие?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq5-a">Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq6-q">Как оплачивать занятия?</span><span class="faq-icon">+</span></button>
-        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq6-a">Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.</div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq1-q">Как понять, на какой уровень записаться?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq1-a">Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.</p></div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq2-q">Сколько длится подготовка к IELTS?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq2-a">В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.</p></div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq3-q">Можно ли перейти в другую группу, если не подошло время?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq3-a">Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.</p></div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq4-q">С какого возраста можно записать ребёнка?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq4-a">Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.</p></div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq5-q">Что если я пропущу занятие?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq5-a">Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.</p></div></div>
+      <div class="faq-item"><button type="button" class="faq-question" aria-expanded="false"><span data-i18n="faq6-q">Как оплачивать занятия?</span><span class="faq-icon" aria-hidden="true"></span></button><div class="faq-answer"><p class="faq-answer-inner" data-i18n="faq6-a">Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLY (the yellow block) -->
+<section id="apply" class="section">
+  <div class="wrap apply-layout">
+    <div>
+      <h2 class="apply-title" data-i18n="apply-title">Оставить заявку</h2>
+      <p class="apply-sub" data-i18n="apply-sub">Расскажите, что вам нужно, — перезвоним, ответим на вопросы и запишем на бесплатный пробный урок.</p>
+      <ul class="apply-points">
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="apply-point1">Бесплатный пробный урок</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="apply-point2">Определим ваш уровень</span></li>
+        <li><svg class="icon"><use href="#i-check"/></svg><span data-i18n="apply-point3">Подберём группу и время</span></li>
+      </ul>
+    </div>
+    <div class="form-card">
+      <form id="applyForm" novalidate>
+        <div class="field" data-field="name">
+          <label class="field-label" for="applyName" data-i18n="f-name">Ваше имя</label>
+          <input class="input" id="applyName" name="name" autocomplete="name" maxlength="200"/>
+          <p class="field-error" data-i18n="f-name-error">Укажите имя</p>
+        </div>
+        <div class="field" data-field="phone">
+          <label class="field-label" for="applyPhone" data-i18n="f-phone">Номер телефона</label>
+          <input class="input" id="applyPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___-__-__" data-phone/>
+          <p class="field-error" data-i18n="f-phone-error">Введите номер полностью: +998 и 9 цифр</p>
+        </div>
+        <div class="field" data-field="course">
+          <label class="field-label" for="applyCourse" data-i18n="f-course">Курс</label>
+          <select class="input" id="applyCourse" name="course">
+            <option value="" data-i18n="f-course-opt0">Выберите курс</option>
+            <option value="kids" data-i18n="course1-name">Kids English</option>
+            <option value="general" data-i18n="course2-name">General English</option>
+            <option value="advanced" data-i18n="course3-name">Advanced English</option>
+            <option value="ielts" data-i18n="course4-name">IELTS Preparation</option>
+            <option value="unsure" data-i18n="f-course-unsure">Не знаю — помогите выбрать</option>
+          </select>
+          <p class="field-error" data-i18n="f-course-error">Выберите курс</p>
+        </div>
+        <fieldset class="field" data-field="time" style="border:none">
+          <legend class="field-label" data-i18n="f-time">Удобное время</legend>
+          <div class="seg">
+            <label><input type="radio" name="time" value="morning"/><span data-i18n="f-time-morning">Утро</span></label>
+            <label><input type="radio" name="time" value="day"/><span data-i18n="f-time-day">День</span></label>
+            <label><input type="radio" name="time" value="evening"/><span data-i18n="f-time-evening">Вечер</span></label>
+          </div>
+          <p class="field-error" data-i18n="f-time-error">Выберите время</p>
+        </fieldset>
+        <div class="field">
+          <label class="field-label" for="applyComment"><span data-i18n="f-comment">Комментарий</span><small data-i18n="f-optional">необязательно</small></label>
+          <textarea class="input" id="applyComment" name="comment" maxlength="1000" rows="3" data-i18n-placeholder="f-comment-ph"></textarea>
+        </div>
+        <button type="submit" class="btn btn-ink form-submit" data-i18n="apply-submit">Отправить заявку</button>
+        <p class="form-privacy" data-i18n="f-privacy">Мы позвоним только по поводу заявки.</p>
+      </form>
+      <div class="form-success" id="applySuccess" hidden tabindex="-1">
+        <div class="ok-mark"><svg class="icon"><use href="#i-check"/></svg></div>
+        <h3 data-i18n="apply-success-title">Спасибо, заявка у нас</h3>
+        <p data-i18n="apply-success-text">Администратор позвонит в рабочее время, с 09:00 до 19:00.</p>
+        <button type="button" class="btn-text" id="applyAgain" data-i18n="apply-again">Отправить ещё одну заявку</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- QUESTIONS BOX (trial lesson form) -->
-<section id="cta-banner" class="bg-white">
-  <div class="trial-wrap">
-    <h2 class="cta-banner-title" data-i18n="ctabanner-title">Остались вопросы? Свяжитесь с нами!</h2>
-    <p class="cta-banner-sub" data-i18n="ctabanner-sub">Оставьте имя и телефон — запишем на бесплатный пробный урок и ответим на все вопросы.</p>
-
-    <form class="trial-form" id="trialForm" novalidate>
-      <div class="trial-field" id="trialFieldName">
-        <label for="trialName" class="sr-only" data-i18n="trial-name-label">Имя</label>
-        <input type="text" id="trialName" autocomplete="name" data-i18n-placeholder="trial-name-ph" placeholder="Ваше имя"/>
-        <span class="trial-error" data-i18n="trial-name-error">Укажите имя</span>
-      </div>
-      <div class="trial-field" id="trialFieldPhone">
-        <label for="trialPhone" class="sr-only" data-i18n="trial-phone-label">Телефон</label>
-        <input type="tel" id="trialPhone" autocomplete="tel" inputmode="tel" placeholder="+998 __ ___-__-__"/>
-        <span class="trial-error" data-i18n="trial-phone-error">Введите номер телефона</span>
-      </div>
-      <div class="trial-field" id="trialFieldCourse">
-        <label for="trialCourse" class="sr-only" data-i18n="trial-course-label">Курс</label>
-        <select id="trialCourse">
-          <option value="" data-i18n="trial-course-opt0">Выберите курс</option>
-          <option value="kids" data-i18n="course1-name">Kids English</option>
-          <option value="general" data-i18n="course2-name">General English</option>
-          <option value="advanced" data-i18n="course3-name">Advanced English</option>
-          <option value="ielts" data-i18n="course4-name">IELTS Preparation</option>
-        </select>
-        <span class="trial-error" data-i18n="trial-course-error">Выберите курс</span>
-      </div>
-      <button type="submit" class="trial-submit" data-i18n="trial-submit">Отправить</button>
-    </form>
-
-    <div class="trial-success" id="trialSuccess">
-      <div class="icon-ok"><svg class="icon"><use href="#i-check"/></svg></div>
-      <h3 data-i18n="trial-success-title">Заявка отправлена!</h3>
-      <p data-i18n="trial-success-text">Мы свяжемся с вами в ближайшее время, чтобы подтвердить бесплатное пробное занятие.</p>
-    </div>
-
-    <p class="trial-privacy" data-i18n="trial-privacy">Мы свяжемся только по поводу вашей записи. Никакого спама.</p>
-  </div>
-</section>
-
-<!-- CONTACTS -->
-<section id="contact" class="bg-grey">
-  <div class="container">
+<!-- CONTACT -->
+<section id="contact" class="section white">
+  <div class="wrap">
     <div class="sec-head"><h2 class="sec-title" data-i18n="contact-title">Контакты</h2></div>
-    <div class="contact-wrap">
-      <div class="map-wrap">
+    <div class="contact-layout">
+      <div class="map">
         <iframe title="Google Maps" src="https://www.google.com/maps?q=%D1%83%D0%BB.%20%D0%9D.%20%D0%A1%D0%B0%D1%80%D0%B0%D0%B5%D0%B2%D0%B0%2034%2C%20%D0%9D%D1%83%D0%BA%D1%83%D1%81%2C%20%D0%A3%D0%B7%D0%B1%D0%B5%D0%BA%D0%B8%D1%81%D1%82%D0%B0%D0%BD&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-        <a class="map-link" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener">
-          <span>FJ85+V6 Нукус</span>
-          <span data-i18n="contact-map-btn">Открыть в Google Maps →</span>
-        </a>
       </div>
-      <div class="contact-cards">
-        <div class="contact-card wide">
-          <span class="contact-icon"><svg class="icon"><use href="#i-pin"/></svg></span>
-          <div class="contact-label" data-i18n="contact-address-label">Адрес</div>
-          <a class="contact-value" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener" data-i18n="contact-address-value">ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан</a>
+      <div class="contact-list">
+        <div class="contact-row">
+          <p class="contact-label" data-i18n="contact-address-label">Адрес</p>
+          <p class="contact-value" data-i18n="contact-address-value">ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан</p>
+          <a class="link-under" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener" data-i18n="contact-map-btn">Открыть в Google Maps</a>
         </div>
-        <div class="contact-card">
-          <span class="contact-icon"><svg class="icon"><use href="#i-phone"/></svg></span>
-          <div class="contact-label" data-i18n="contact-phones-label">Телефоны</div>
-          <a class="contact-value" href="tel:+998994576001">+998 99 457‑60‑01</a>
-          <a class="contact-value" href="tel:+998913036001">+998 91 303‑60‑01</a>
+        <div class="contact-row">
+          <p class="contact-label" data-i18n="contact-phones-label">Телефоны</p>
+          <a class="contact-value" href="tel:+998994576001">+998 99 457-60-01</a>
+          <a class="contact-value" href="tel:+998913036001">+998 91 303-60-01</a>
         </div>
-        <div class="contact-card">
-          <span class="contact-icon"><svg class="icon"><use href="#i-clock"/></svg></span>
-          <div class="contact-label" data-i18n="contact-hours-label">Часы работы</div>
-          <div class="contact-value" data-i18n="contact-hours-value">Ежедневно, 09:00–19:00</div>
-          <div class="status-badge"><span class="status-dot"></span><span data-i18n="contact-status">Открыто · Закроется в 19:00</span></div>
+        <div class="contact-row">
+          <p class="contact-label" data-i18n="contact-hours-label">Часы работы</p>
+          <p class="contact-value" data-i18n="contact-hours-value">Каждый день, 09:00–19:00</p>
         </div>
-        <div class="contact-card wide">
-          <span class="contact-icon"><svg class="icon"><use href="#i-insta"/></svg></span>
-          <div class="contact-label">Instagram</div>
+        <div class="contact-row">
+          <p class="contact-label">Instagram</p>
           <a class="contact-value" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener">@stanford_nukus</a>
         </div>
       </div>
     </div>
   </div>
 </section>
+</main>
 
-<!-- FOOTER -->
 <footer>
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="footer-logo">STAN<span>FORD</span></div>
-      <p class="footer-desc" data-i18n="footer-desc">Языковой центр в Нукусе: IELTS, General English и курсы для детей.</p>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="images/logo-row-black.png" alt="Stanford language center" width="157" height="34" loading="lazy"/>
+        <p class="footer-desc" data-i18n="footer-desc">Языковой центр в Нукусе: IELTS, General English и курсы для детей.</p>
+      </div>
+      <div class="footer-icons">
+        <a class="footer-icon" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="icon"><use href="#i-insta"/></svg></a>
+        <a class="footer-icon" href="tel:+998913036001" data-i18n-aria="call" aria-label="Позвонить"><svg class="icon"><use href="#i-phone"/></svg></a>
+      </div>
     </div>
-    <div class="footer-icons">
-      <a class="footer-icon" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="icon"><use href="#i-insta"/></svg></a>
-      <a class="footer-icon" href="tel:+998913036001" aria-label="Позвонить / Call"><svg class="icon"><use href="#i-phone"/></svg></a>
-    </div>
+    <p class="footer-copy" data-i18n="footer-copy">© 2026 Stanford Language Center, Нукус</p>
   </div>
-  <div class="footer-copy" data-i18n="footer-copy">© 2026 Stanford Educational Centre · Нукус, Каракалпакстан</div>
 </footer>
 
-<!-- FLOATING CALL BUTTON -->
-<a href="tel:+998913036001" class="fb-call" title="Позвонить" aria-label="Позвонить / Call"><svg class="icon"><use href="#i-phone"/></svg></a>
+<a href="tel:+998913036001" class="fb-call" data-i18n-aria="call" aria-label="Позвонить"><svg class="icon"><use href="#i-phone"/></svg></a>
 
-<!-- MOCK EXAM PUBLIC REGISTRATION MODAL -->
-<div class="public-modal-overlay" id="publicMockModal">
-  <div class="public-modal-card">
-    <button class="public-modal-close" onclick="closePublicMockModal()" aria-label="Close">✕</button>
-    <div id="pmFormBody">
-      <div class="public-modal-title" data-i18n="pm-modal-title">Запись на Mock Exam</div>
-      <div class="public-modal-sub" id="pmSelectedExamName">Заполните форму для бронирования места</div>
-      <form id="publicMockForm">
-        <input type="hidden" id="pmExamIdVal" value="">
-        <input type="hidden" id="pmExamTitleVal" value="IELTS Mock Exam">
-        <div class="pm-group">
-          <label class="pm-label" for="pmStudentName" data-i18n="pm-name-label">Ваше Имя и Фамилия</label>
-          <input type="text" class="pm-input" id="pmStudentName" placeholder="Асилбек Джумабаев" required>
+<!-- COURSE MODAL: name + phone only; the course is sent automatically -->
+<div class="modal" id="courseModal" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" id="courseModalCard">
+    <button type="button" class="modal-close" data-close data-i18n-aria="close" aria-label="Закрыть"><svg class="icon"><use href="#i-close"/></svg></button>
+    <div id="cmFormWrap">
+      <h2 class="modal-title" id="cmTitle" data-i18n="cm-title">Запись на курс</h2>
+      <span class="modal-course" id="cmCourseName"></span>
+      <p class="modal-sub" data-i18n="cm-sub">Оставьте имя и телефон — администратор перезвонит и подберёт группу.</p>
+      <form id="courseForm" novalidate>
+        <div class="field" data-field="name">
+          <label class="field-label" for="cmName" data-i18n="f-name">Ваше имя</label>
+          <input class="input" id="cmName" autocomplete="name" maxlength="200"/>
+          <p class="field-error" data-i18n="f-name-error">Укажите имя</p>
         </div>
-        <div class="pm-group">
-          <label class="pm-label" for="pmStudentPhone" data-i18n="pm-phone-label">Номер телефона</label>
-          <input type="tel" class="pm-input" id="pmStudentPhone" inputmode="tel" placeholder="+998 __ ___-__-__" required>
+        <div class="field" data-field="phone">
+          <label class="field-label" for="cmPhone" data-i18n="f-phone">Номер телефона</label>
+          <input class="input" id="cmPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___-__-__" data-phone/>
+          <p class="field-error" data-i18n="f-phone-error">Введите номер полностью: +998 и 9 цифр</p>
         </div>
-        <button type="submit" class="pm-submit" data-i18n="pm-submit-btn">Подтвердить запись</button>
+        <button type="submit" class="btn btn-ink form-submit" data-i18n="cm-submit">Отправить заявку</button>
+        <p class="form-privacy" data-i18n="f-privacy">Мы позвоним только по поводу заявки.</p>
       </form>
     </div>
-    <div class="pm-success" id="pmSuccessMsg">
-      <div class="pm-success-icon"><svg class="icon"><use href="#i-check"/></svg></div>
-      <div class="public-modal-title" data-i18n="pm-success-head">Заявка принята!</div>
-      <p class="public-modal-sub" data-i18n="pm-success-sub">Вы успешно зарегистрировались на Mock Exam. Наш администратор свяжется с вами по указанному номеру для подтверждения места.</p>
+    <div class="form-success" id="cmSuccess" hidden tabindex="-1">
+      <div class="ok-mark"><svg class="icon"><use href="#i-check"/></svg></div>
+      <h3 data-i18n="cm-success-title">Заявка отправлена</h3>
+      <p data-i18n="cm-success-text">Мы перезвоним в рабочее время, с 09:00 до 19:00.</p>
     </div>
   </div>
 </div>
 
+<script src="translations.js"></script>
+<script src="i18n.js"></script>
 <script src="main.js"></script>
 </body>
 </html>

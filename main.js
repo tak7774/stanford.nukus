@@ -1,9 +1,11 @@
 // ============================================================
-// Stanford Educational Centre — Main Public Script
+// Stanford Language Center — main page (index.html)
+// Texts: translations.js · language switching and dates: i18n.js
 // ============================================================
+const { t } = window.I18N;
 
 // ── Backend API (Django on the same site: /api/...) ──
-// Returns { data } on success or { error } with the server's JSON (e.g. { code: 'EXAM_FULL' }).
+// Returns { data } on success or { error } with the server's JSON.
 async function apiRequest(method, path, body) {
   try {
     const res = await fetch('/api/' + path, {
@@ -17,322 +19,17 @@ async function apiRequest(method, path, body) {
     return { error: { code: 'NETWORK', detail: String(e) } };
   }
 }
-const apiGet = path => apiRequest('GET', path);
-const apiPost = (path, body) => apiRequest('POST', path, body);
-
-// ── Global Helper Functions (Exposed to Window for Inline Event Handlers) ──
-
-window.quizGoto = function(stepId) {
-  document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(stepId);
-  if (el) el.classList.add('active');
-};
-
-window.quizAnswer = function(track) {
-  document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
-  const map = { kids:'quizResultKids', general:'quizResultGeneral', ielts:'quizResultIelts', advanced:'quizResultAdvanced' };
-  const resEl = document.getElementById(map[track]);
-  if (resEl) resEl.classList.add('active');
-};
-
-window.quizReset = function() {
-  document.querySelectorAll('.quiz-result').forEach(r => r.classList.remove('active'));
-  window.quizGoto('quizStep1');
-};
-
-window.toggleFaq = function(btn) {
-  const item = btn.closest('.faq-item');
-  if (!item) return;
-  const answer = item.querySelector('.faq-answer');
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(openItem => {
-    if (openItem !== item) {
-      openItem.classList.remove('open');
-      if (openItem.querySelector('.faq-answer')) {
-        openItem.querySelector('.faq-answer').style.maxHeight = null;
-      }
-    }
-  });
-  if (isOpen) {
-    item.classList.remove('open');
-    answer.style.maxHeight = null;
-  } else {
-    item.classList.add('open');
-    answer.style.maxHeight = answer.scrollHeight + 'px';
-  }
-};
-
-window.openPublicMockModal = function(examTitle, examId) {
-  const modal = document.getElementById('publicMockModal');
-  const selectedName = document.getElementById('pmSelectedExamName');
-  const titleVal = document.getElementById('pmExamTitleVal');
-  const idVal = document.getElementById('pmExamIdVal');
-  const formBody = document.getElementById('pmFormBody');
-  const successMsg = document.getElementById('pmSuccessMsg');
-
-  if (selectedName) selectedName.textContent = examTitle ? `${t('pm-exam-prefix')}: ${examTitle}` : t('pm-sub-default');
-  if (titleVal) titleVal.value = examTitle || 'IELTS Mock Exam';
-  if (idVal) idVal.value = examId || '';
-
-  if (formBody) formBody.style.display = 'block';
-  if (successMsg) successMsg.classList.remove('active');
-
-  if (modal) modal.classList.add('active');
-};
-
-window.closePublicMockModal = function() {
-  const modal = document.getElementById('publicMockModal');
-  if (modal) modal.classList.remove('active');
-};
-
-// ── DOM Initialization ──
-document.addEventListener('DOMContentLoaded', () => {
-  // Navbar scroll state
-  const navbar = document.getElementById('navbar');
-  if (navbar) {
-    const updateNav = () => navbar.classList.toggle('scrolled', window.scrollY > 50);
-    window.addEventListener('scroll', updateNav, { passive: true });
-    updateNav(); // correct state when the page opens mid-scroll (e.g. reload or #anchor)
-  }
-
-  // +998 phone mask on the trial form and the mock exam modal
-  ['trialPhone', 'pmStudentPhone'].forEach(id => attachUzPhoneMask(document.getElementById(id)));
-
-  // Count-up for the stats in "О нас" (numbers are already in the HTML, so nothing can stay hidden)
-  initCountUp();
-
-  // Mobile menu
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.getElementById('navLinks');
-  if (hamburger && navLinks) {
-    hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('open');
-      navLinks.classList.toggle('open');
-    });
-    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      navLinks.classList.remove('open');
-    }));
-  }
-
-  // ── Trial Lesson Form Handler ──
-  const trialForm = document.getElementById('trialForm');
-  if (trialForm) {
-    trialForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      let valid = true;
-
-      const nameField = document.getElementById('trialFieldName');
-      const nameInput = document.getElementById('trialName');
-      if (!nameInput || !nameInput.value.trim()){ if(nameField) nameField.classList.add('invalid'); valid = false; }
-      else if(nameField) nameField.classList.remove('invalid');
-
-      const phoneField = document.getElementById('trialFieldPhone');
-      const phoneInput = document.getElementById('trialPhone');
-      const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-      if (phoneDigits.length < 12){ /* +998 + 9 digits */ if(phoneField) phoneField.classList.add('invalid'); valid = false; }
-      else if(phoneField) phoneField.classList.remove('invalid');
-
-      const courseField = document.getElementById('trialFieldCourse');
-      const courseInput = document.getElementById('trialCourse');
-      if (!courseInput || !courseInput.value){ if(courseField) courseField.classList.add('invalid'); valid = false; }
-      else if(courseField) courseField.classList.remove('invalid');
-
-      if (!valid) return;
-
-      // Save trial registration via the Django API
-      {
-        const { error } = await apiPost('trial-registrations/', {
-          full_name: nameInput.value.trim(),
-          phone: phoneInput.value.trim(),
-          course: courseInput.value
-        });
-        if (error) {
-          console.warn('Could not save trial registration:', error);
-          alert(t('alert-trial-fail'));
-          return;
-        }
-      }
-
-      trialForm.style.display = 'none';
-      const successEl = document.getElementById('trialSuccess');
-      if (successEl) successEl.classList.add('active');
-    });
-  }
-
-  // ── Public Mock Registration Form Handler ──
-  const pmForm = document.getElementById('publicMockForm');
-  if (pmForm) {
-    pmForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const nameInput = document.getElementById('pmStudentName');
-      const phoneInput = document.getElementById('pmStudentPhone');
-      const examIdInput = document.getElementById('pmExamIdVal');
-      const examTitleInput = document.getElementById('pmExamTitleVal');
-
-      const name = nameInput ? nameInput.value.trim() : '';
-      const phone = phoneInput ? phoneInput.value.trim() : '';
-      const examId = examIdInput ? examIdInput.value : null;
-      const examTitle = examTitleInput ? examTitleInput.value : 'IELTS Mock Exam';
-
-      if (!name || !phone) return;
-
-      {
-        let error;
-        if (examId && !isNaN(parseInt(examId))) {
-          ({ error } = await apiPost('exam-registrations/', {
-            exam_id: parseInt(examId),
-            full_name: name,
-            phone: phone
-          }));
-        } else {
-          // No exam id: save as a trial registration tagged with the mock exam title
-          ({ error } = await apiPost('trial-registrations/', {
-            full_name: `${name} [Mock: ${examTitle}]`,
-            phone: phone,
-            course: 'ielts'
-          }));
-        }
-        if (error) {
-          console.warn('Could not save exam registration:', error);
-          if (error.code === 'EXAM_FULL') alert(t('alert-exam-full'));
-          else if (error.code === 'EXAM_CLOSED') alert(t('alert-exam-closed'));
-          else alert(t('alert-exam-fail'));
-          loadPublicMockExams();
-          return;
-        }
-      }
-
-      const formBody = document.getElementById('pmFormBody');
-      const successMsg = document.getElementById('pmSuccessMsg');
-      if (formBody) formBody.style.display = 'none';
-      if (successMsg) successMsg.classList.add('active');
-    });
-  }
-
-  // ── Fetch & Render Live Mock Exams from the API ──
-  loadPublicMockExams();
-
-  // ── Gallery photos uploaded in the admin panel ──
-  loadGallery();
-});
-
-const MOCK_COURSE_LABELS = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English' };
-
-// Current page language ('ru' or 'en') and a lookup into the translations object below.
-function currentLang() { return document.documentElement.lang === 'en' ? 'en' : 'ru'; }
-function t(key) {
-  const lang = currentLang();
-  return (translations[lang] && translations[lang][key]) ?? translations.ru[key] ?? key;
-}
-
-function noSessionsHtml() {
-  return `<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">${t('mock-none')} <a href="tel:+998913036001" style="color: var(--text); font-weight: 700;">+998 91 303-60-01</a></div>`;
-}
-
-// Exams from the last API call, so the cards can be redrawn when the language changes (no new request).
-// null = not loaded yet, [] = loaded (or failed) with nothing open.
-let lastMockExams = null;
-
-async function loadPublicMockExams() {
-  const container = document.getElementById('publicMockExamsGrid');
-  if (!container) return;
-
-  // The API only returns exams with status 'upcoming' whose date has not passed.
-  const { data: exams, error } = await apiGet('mock-exams/');
-  if (error) console.warn('Could not load mock exams:', error);
-  lastMockExams = (!error && Array.isArray(exams)) ? exams : [];
-  renderMockExams();
-}
-
-function renderMockExams() {
-  const container = document.getElementById('publicMockExamsGrid');
-  if (!container || lastMockExams === null) return;
-
-  try {
-    if (lastMockExams.length === 0) {
-      container.innerHTML = noSessionsHtml();
-      return;
-    }
-
-    const locale = currentLang() === 'en' ? 'en-GB' : 'ru-RU';
-
-    const html = lastMockExams.map(e => {
-      // Seat counts come with each exam from the API
-      const registered = e.registered || 0;
-      const maxSeats = e.max_seats || 30;
-      const leftSeats = Math.max(0, maxSeats - registered);
-      const percentage = Math.min(100, Math.round((registered / maxSeats) * 100));
-
-      const dt = new Date(e.exam_date);
-      const dateStr = dt.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
-      const timeStr = dt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-
-      const courseBadgeClass = e.course_type === 'ielts' ? 'badge-ielts' : 'badge-general';
-      const courseLabel = MOCK_COURSE_LABELS[e.course_type] || 'IELTS Preparation';
-      const isFull = leftSeats <= 0;
-
-      // Title, description and location are typed in the admin panel, so they show as entered.
-      return `
-        <div class="mock-card">
-          <div>
-            <div class="mock-tag-bar">
-              <span class="mock-badge ${courseBadgeClass}">${escapeHtml(courseLabel)}</span>
-              <span class="mock-badge badge-general">${isFull ? t('mock-full') : t('mock-open')}</span>
-            </div>
-            <div class="mock-title">${escapeHtml(e.title)}</div>
-            <p class="mock-desc">${escapeHtml(e.description || t('mock-default-desc'))}</p>
-            <div class="mock-details">
-              <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> ${escapeHtml(dateStr)}</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${escapeHtml(timeStr)} (${escapeHtml(e.duration_minutes || 120)} ${t('mock-min')})</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> ${escapeHtml(e.location || t('mock-default-location'))}</div>
-            </div>
-          </div>
-          <div>
-            <div class="mock-seats-wrap">
-              <div class="mock-seats-info"><span>${t('mock-seats-left')}</span> <span>${escapeHtml(leftSeats)} ${t('mock-seats-of')} ${escapeHtml(maxSeats)}</span></div>
-              <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: ${percentage}%;"></div></div>
-            </div>
-            ${isFull
-              ? `<button class="mock-btn" disabled style="opacity: 0.5; cursor: not-allowed;">${t('mock-full')}</button>`
-              : `<button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">${t('mock-register-btn')}</button>`}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = html;
-
-    // Attach click handlers in JS (not onclick="...") so a title containing ' or " can't break the page.
-    container.querySelectorAll('.mock-btn[data-exam-id]').forEach(btn => {
-      btn.addEventListener('click', () => openPublicMockModal(btn.dataset.examTitle, Number(btn.dataset.examId)));
-    });
-  } catch(e) {
-    console.warn("Error rendering mock exams:", e);
-    container.innerHTML = noSessionsHtml();
-  }
-}
-
-// Replaces the default gallery pictures with the photos uploaded in admin.html.
-// If there are none yet (or the API is unreachable), the default pictures stay.
-async function loadGallery() {
-  const grid = document.querySelector('#gallery .gallery-grid');
-  if (!grid) return;
-  const { data: photos, error } = await apiGet('gallery/');
-  if (error || !photos || photos.length === 0) return;
-
-  grid.innerHTML = photos.map(p => {
-    const sizeClass = p.size === 'tall' || p.size === 'wide' ? ' ' + p.size : '';
-    return `<div class="gallery-item${sizeClass}"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Educational Centre')}" loading="lazy"/></div>`;
-  }).join('');
-}
 
 // Escape a value for use inside HTML text AND inside quoted attributes.
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Formats input as "+998 90 123-45-67" while typing. Keeps the +998 prefix.
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COURSE_KEYS = { kids: 'course1', general: 'course2', advanced: 'course3', ielts: 'course4' };
+const COURSE_NAMES = { kids: 'Kids English', general: 'General English', advanced: 'Advanced English', ielts: 'IELTS Preparation' };
+
+// ── Phone: "+998 90 123-45-67" while typing ──
 function formatUzPhone(value) {
   let d = String(value).replace(/\D/g, '');
   if (d.startsWith('998')) d = d.slice(3);
@@ -344,7 +41,6 @@ function formatUzPhone(value) {
   if (d.length > 7) out += '-' + d.slice(7, 9);
   return out;
 }
-
 function attachUzPhoneMask(input) {
   if (!input) return;
   input.addEventListener('focus', () => { if (!input.value) input.value = '+998 '; });
@@ -354,231 +50,345 @@ function attachUzPhoneMask(input) {
   });
   input.addEventListener('blur', () => { if (input.value.replace(/\D/g, '') === '998') input.value = ''; });
 }
+const phoneIsComplete = v => String(v).replace(/\D/g, '').length === 12; // 998 + 9 digits
 
-// Animates .stat-num[data-count] from 0 to its value once it scrolls into view.
-// The final value is in the HTML, so without JS / IntersectionObserver the number simply shows.
-function initCountUp() {
-  const nums = document.querySelectorAll('.stat-num[data-count]');
-  if (!nums.length || !('IntersectionObserver' in window)) return;
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const run = el => {
-    const target = parseFloat(el.dataset.count);
-    const decimals = parseInt(el.dataset.decimals || '0', 10);
-    const suffix = el.dataset.suffix || '';
-    const duration = 1200;
-    const start = performance.now();
-    const step = now => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = (target * eased).toFixed(decimals) + suffix;
-      if (t < 1) requestAnimationFrame(step);
-      else el.textContent = target.toFixed(decimals) + suffix;
-    };
-    requestAnimationFrame(step);
-  };
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) { observer.unobserve(entry.target); run(entry.target); }
-    });
-  }, { threshold: 0.4 });
-  nums.forEach(el => observer.observe(el));
+function setInvalid(form, field, invalid) {
+  const el = form.querySelector(`[data-field="${field}"]`);
+  if (el) el.classList.toggle('invalid', invalid);
+  return !invalid;
 }
 
-// ── i18n Translation Engine ──
-const translations = {
-  ru: {
-    'nav-courses':'Курсы','nav-mock-exams':'Mock Exam','nav-results':'Результаты','nav-instructors':'Преподаватели','nav-testimonials':'Отзывы','nav-faq':'Вопросы','nav-contact':'Контакты','nav-enroll':'Записаться',
-    'hero-title-2':'Английский язык и IELTS',
-    'hero-sub':'IELTS, General English и курсы для детей — с преподавателем IELTS 9.0 в Нукусе.',
-    'hero-btn1':'Первый бесплатный урок',
-    'about-title':'О нас',
-    'rstat1-label':'Средний балл IELTS','rstat2-label':'Студентов подготовлено к экзамену','rstat3-label':'Достигли цели','rstat4-label':'Лет в Нукусе','rstat5-label':'Балл IELTS нашего преподавателя',
-    'why-title':'Почему Stanford',
-    'why1-title':'Преподаватель IELTS 9.0','why1-text':'Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.',
-    'why2-title':'Небольшие группы','why2-text':'До 10–12 человек в группе — каждому достаётся время на разговорную практику.',
-    'why3-title':'Понятный прогресс','why3-text':'Регулярные пробные тесты показывают реальный уровень и что подтянуть.',
-    'why4-title':'Гибкое расписание','why4-text':'Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.',
-    'courses-title':'Курсы',
-    'courses-desc':'От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.',
-    'course1-level':'Kids · 6–12 лет','course1-name':'Kids English','course1-desc':'Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.',
-    'course1-f1':'Игры, песни и картинки','course1-f2':'Первые слова и фразы',
-    'course1-price':'250 000 <sub>сум/мес</sub>','course1-duration':'2 занятия в неделю',
-    'course2-level':'General · Intermediate','course2-name':'General English','course2-desc':'Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.',
-    'course2-f1':'Грамматика и лексика','course2-f2':'Разговорная практика',
-    'course2-price':'280 000 <sub>сум/мес</sub>','course2-duration':'3 занятия в неделю',
-    'course3-level':'Upper‑Intermediate','course3-name':'Advanced English','course3-desc':'Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.',
-    'course3-f1':'Свободная речь','course3-f2':'Академическая лексика',
-    'course3-price':'320 000 <sub>сум/мес</sub>','course3-duration':'3 занятия в неделю',
-    'course4-level':'Exam Prep','course4-name':'IELTS Preparation','course4-desc':'Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.',
-    'course4-f1':'Все 4 модуля экзамена','course4-f2':'Пробные тесты и стратегии',
-    'course4-price':'380 000 <sub>сум/мес</sub>','course4-duration':'4 занятия в неделю',
-    'course-btn':'Записаться',
-    'mock-title':'Mock Exam','mock-desc':'Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.',
-    'mock-loading':'Загрузка сессий...','mock-none':'Сейчас нет открытых сессий. Позвоните:',
-    'mock-open':'Открыта запись','mock-full':'Мест нет','mock-min':'мин',
-    'mock-default-desc':'Пробный экзамен IELTS в условиях реального тестирования с индивидуальным разбором результатов.',
-    'mock-default-location':'Stanford Center, Нукус','mock-seats-left':'Мест осталось','mock-seats-of':'из',
-    'mock-register-btn':'Зарегистрироваться на Mock',
-    'pm-exam-prefix':'Экзамен','pm-sub-default':'Заполните форму для бронирования места',
-    'alert-trial-fail':'Не удалось отправить заявку. Позвоните нам: +998 91 303-60-01',
-    'alert-exam-full':'К сожалению, все места на этот экзамен заняты.',
-    'alert-exam-closed':'Запись на этот экзамен закрыта.',
-    'alert-exam-fail':'Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01',
-    'pm-modal-title':'Запись на Mock Exam','pm-name-label':'Ваше Имя и Фамилия','pm-phone-label':'Номер телефона','pm-submit-btn':'Подтвердить запись',
-    'pm-success-head':'Заявка принята!','pm-success-sub':'Вы успешно зарегистрировались на Mock Exam. Наш администратор свяжется с вами по указанному номеру для подтверждения места.',
-    'quiz-title':'Подбор курса','quiz-desc':'Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.',
-    'quiz-q1':'Кому нужен курс?','quiz-q1-opt1':'Ребёнку, 6–12 лет','quiz-q1-opt2':'Взрослому или подростку',
-    'quiz-q2':'Какая у вас цель?','quiz-q2-opt1':'Заговорить увереннее в жизни и на работе','quiz-q2-opt2':'Сдать международный экзамен IELTS','quiz-q2-opt3':'Уже говорю свободно, хочу углубить знания',
-    'quiz-result-label':'Вам подходит','quiz-cta':'Смотреть курс →','quiz-restart':'Пройти заново',
-    'schedule-title':'Расписание',
-    'schedule-th1':'Курс','schedule-th2':'Дни','schedule-th3':'Время',
-    'sched1-days':'Пн, Чт','sched2-days':'Пн, Ср, Пт','sched3-days':'Вт, Чт, Сб','sched4-days':'Пн, Вт, Чт, Сб',
-    'schedule-note':'Расписание может отличаться в зависимости от набора группы — уточняйте актуальное время по телефону.',
-    'results-title':'Результаты','results-desc':'Реальные результаты студентов Stanford на международном экзамене IELTS.',
-    'result-course':'Курс IELTS Preparation',
-    'story-badge-label':'Итоговый<br>балл IELTS',
-    'story-title':'От 5.5 до 7.5 за 4 месяца',
-    'story-quote':'«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».',
-    'story-meta':'Курс IELTS Preparation · поступила в университет по гранту',
-    'story-m1':'Месяц 1','story-m1-text':'Диагностика — пробный тест показал балл 5.5, определили слабые модули.',
-    'story-m2':'Месяц 2','story-m2-text':'Плотная работа над Listening и Reading, расширение академической лексики.',
-    'story-m3':'Месяц 3','story-m3-text':'Стратегии Writing Task 2 и разбор структуры эссе на реальных темах.',
-    'story-m4':'Месяц 4','story-m4-text':'Финальные пробные тесты и день экзамена — результат 7.5.',
-    'team-title':'Преподаватели','team-desc':'Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.',
-    'team1-role':'IELTS 9.0 · 7 лет опыта','team2-role':'General English · 5 лет опыта','team3-role':'Kids English · 4 года опыта',
-    'gallery-title':'Галерея',
-    'testi-title':'Отзывы',
-    'testi1-text':'Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.','testi1-role':'General English',
-    'testi2-text':'Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.','testi2-role':'IELTS Preparation',
-    'testi3-text':'Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.','testi3-role':'Родитель, Kids English',
-    'faq-title':'FAQ',
-    'faq1-q':'Как понять, на какой уровень записаться?','faq1-a':'Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.',
-    'faq2-q':'Сколько длится подготовка к IELTS?','faq2-a':'В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.',
-    'faq3-q':'Можно ли перейти в другую группу, если не подошло время?','faq3-a':'Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.',
-    'faq4-q':'С какого возраста можно записать ребёнка?','faq4-a':'Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.',
-    'faq5-q':'Что если я пропущу занятие?','faq5-a':'Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.',
-    'faq6-q':'Как оплачивать занятия?','faq6-a':'Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.',
-    'ctabanner-title':'Остались вопросы? Свяжитесь с нами!','ctabanner-sub':'Оставьте имя и телефон — запишем на бесплатный пробный урок и ответим на все вопросы.',
-    'trial-name-label':'Имя','trial-name-ph':'Ваше имя','trial-name-error':'Укажите имя',
-    'trial-phone-label':'Телефон','trial-phone-error':'Введите номер телефона полностью',
-    'trial-course-label':'Курс','trial-course-opt0':'Выберите курс','trial-course-error':'Выберите курс',
-    'trial-submit':'Отправить',
-    'trial-success-title':'Заявка отправлена!','trial-success-text':'Мы свяжемся с вами в ближайшее время, чтобы подтвердить бесплатное пробное занятие.',
-    'trial-privacy':'Мы свяжемся только по поводу вашей записи. Никакого спама.',
-    'contact-title':'Контакты',
-    'contact-address-label':'Адрес','contact-address-value':'ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан',
-    'contact-phones-label':'Телефоны','contact-hours-label':'Часы работы','contact-hours-value':'Ежедневно, 09:00–19:00',
-    'contact-status':'Открыто · Закроется в 19:00','contact-map-btn':'Открыть в Google Maps →',
-    'footer-desc':'Языковой центр в Нукусе: IELTS, General English и курсы для детей.',
-    'footer-copy':'© 2026 Stanford Educational Centre · Нукус, Каракалпакстан'
-  },
-  en: {
-    'nav-courses':'Courses','nav-mock-exams':'Mock Exam','nav-results':'Results','nav-instructors':'Teachers','nav-testimonials':'Reviews','nav-faq':'FAQ','nav-contact':'Contact','nav-enroll':'Enroll',
-    'hero-title-2':'English & IELTS',
-    'hero-sub':'IELTS, General English and kids\' courses — with an IELTS 9.0 instructor in Nukus.',
-    'hero-btn1':'First lesson free',
-    'about-title':'About us',
-    'rstat1-label':'Average IELTS score','rstat2-label':'Students prepared for the exam','rstat3-label':'Reached their goal','rstat4-label':'Years in Nukus','rstat5-label':'Our instructor\'s IELTS score',
-    'why-title':'Why Stanford',
-    'why1-title':'IELTS 9.0 Instructor','why1-text':'Classes are led by an instructor with a top IELTS score — who knows the exam inside out.',
-    'why2-title':'Small Groups','why2-text':'Up to 10–12 students per group, so everyone gets real speaking practice.',
-    'why3-title':'Clear Progress','why3-text':'Regular mock tests show your real level and exactly what to work on.',
-    'why4-title':'Flexible Schedule','why4-text':'Open daily from 9 AM to 7 PM — we\'ll find a time that fits your study and work.',
-    'courses-title':'Courses',
-    'courses-desc':'From first words to IELTS band scores — pick the track that matches your goal.',
-    'course1-level':'Kids · Ages 6–12','course1-name':'Kids English','course1-desc':'English through games, songs, and pictures. First words, phrases, and confidence in communication.',
-    'course1-f1':'Games, songs and pictures','course1-f2':'First words and phrases',
-    'course1-price':'250,000 <sub>UZS/mo</sub>','course1-duration':'2 lessons a week',
-    'course2-level':'General · Intermediate','course2-name':'General English','course2-desc':'Grammar, vocabulary, and speaking practice for confident everyday and workplace communication.',
-    'course2-f1':'Grammar and vocabulary','course2-f2':'Speaking practice',
-    'course2-price':'280,000 <sub>UZS/mo</sub>','course2-duration':'3 lessons a week',
-    'course3-level':'Upper‑Intermediate','course3-name':'Advanced English','course3-desc':'Fluent speech, advanced grammar, and academic vocabulary for advanced students.',
-    'course3-f1':'Fluent speaking','course3-f2':'Academic vocabulary',
-    'course3-price':'320,000 <sub>UZS/mo</sub>','course3-duration':'3 lessons a week',
-    'course4-level':'Exam Prep','course4-name':'IELTS Preparation','course4-desc':'All 4 exam modules, mock tests, and high-score strategies with an IELTS 9.0 instructor.',
-    'course4-f1':'All 4 exam modules','course4-f2':'Mock tests and strategies',
-    'course4-price':'380,000 <sub>UZS/mo</sub>','course4-duration':'4 lessons a week',
-    'course-btn':'Enroll',
-    'mock-title':'Mock Exam','mock-desc':'Experience real IELTS exam conditions with expert evaluation across all modules.',
-    'mock-loading':'Loading sessions...','mock-none':'No open sessions right now. Call us:',
-    'mock-open':'Registration open','mock-full':'Fully booked','mock-min':'min',
-    'mock-default-desc':'A practice IELTS exam in real test conditions, with a personal review of your results.',
-    'mock-default-location':'Stanford Center, Nukus','mock-seats-left':'Seats left','mock-seats-of':'of',
-    'mock-register-btn':'Register for the Mock',
-    'pm-exam-prefix':'Exam','pm-sub-default':'Fill in the form to book your seat',
-    'alert-trial-fail':'Could not send your request. Please call us: +998 91 303-60-01',
-    'alert-exam-full':'Sorry, all seats for this exam are taken.',
-    'alert-exam-closed':'Registration for this exam is closed.',
-    'alert-exam-fail':'Could not register. Please call us: +998 91 303-60-01',
-    'pm-modal-title':'Mock Exam Registration','pm-name-label':'Full Name','pm-phone-label':'Phone Number','pm-submit-btn':'Confirm Registration',
-    'pm-success-head':'Registration Received!','pm-success-sub':'You have successfully registered for the Mock Exam. Our administrator will contact you shortly.',
-    'quiz-title':'Find your course','quiz-desc':'Answer a couple of questions and we\'ll point you to the right program.',
-    'quiz-q1':'Who is this course for?','quiz-q1-opt1':'A child, aged 6–12','quiz-q1-opt2':'An adult or teenager',
-    'quiz-q2':'What\'s your goal?','quiz-q2-opt1':'Speak more confidently in life and at work','quiz-q2-opt2':'Pass the international IELTS exam','quiz-q2-opt3':'Already fluent, want to go deeper',
-    'quiz-result-label':'You\'d be a great fit for','quiz-cta':'View Course →','quiz-restart':'Start Over',
-    'schedule-title':'Schedule',
-    'schedule-th1':'Course','schedule-th2':'Days','schedule-th3':'Time',
-    'sched1-days':'Mon, Thu','sched2-days':'Mon, Wed, Fri','sched3-days':'Tue, Thu, Sat','sched4-days':'Mon, Tue, Thu, Sat',
-    'schedule-note':'Schedule may vary depending on group formation — please confirm the current time by phone.',
-    'results-title':'Results','results-desc':'Real results from Stanford students on the international IELTS exam.',
-    'result-course':'IELTS Preparation Course',
-    'story-badge-label':'Final<br>IELTS Score',
-    'story-title':'From 5.5 to 7.5 in 4 Months',
-    'story-quote':'"I thought 6.0 was my ceiling. But once we broke down my Writing mistakes point by point, everything clicked."',
-    'story-meta':'IELTS Preparation Course · admitted to university on a grant',
-    'story-m1':'Month 1','story-m1-text':'Diagnostic mock test showed a 5.5 — we identified the weak modules.',
-    'story-m2':'Month 2','story-m2-text':'Focused work on Listening and Reading, building academic vocabulary.',
-    'story-m3':'Month 3','story-m3-text':'Writing Task 2 strategies and essay structure practice on real topics.',
-    'story-m4':'Month 4','story-m4-text':'Final mock tests and exam day — a 7.5 result.',
-    'team-title':'Teachers','team-desc':'Experienced instructors who don\'t just know English — they know how to get you results.',
-    'team1-role':'IELTS 9.0 · 7 years experience','team2-role':'General English · 5 years experience','team3-role':'Kids English · 4 years experience',
-    'gallery-title':'Gallery',
-    'testi-title':'Reviews',
-    'testi1-text':'I started from zero, and six months later I speak comfortably about everyday things. The classes feel relaxed — you\'re not afraid to make mistakes.','testi1-role':'General English',
-    'testi2-text':'I prepped for IELTS for two months — we broke down every weak spot and got a clear Writing strategy. My score went from 5.5 to 7.0.','testi2-role':'IELTS Preparation',
-    'testi3-text':'My son has been going to Kids English for a year and looks forward to every class. The teachers find a way to reach even the shyest kids.','testi3-role':'Parent, Kids English',
-    'faq-title':'FAQ',
-    'faq1-q':'How do I know which level to join?','faq1-a':'Before you start, we run a free placement test to assess your real level and match you with the right group — Kids, General English, or IELTS Preparation.',
-    'faq2-q':'How long does IELTS prep take?','faq2-a':'On average 2–4 months, depending on your starting level and target score. Your placement test will give you a more precise estimate.',
-    'faq3-q':'Can I switch groups if the schedule doesn\'t work?','faq3-a':'Yes — if another group at the same level has open seats, we\'ll help you transfer without losing any paid lessons.',
-    'faq4-q':'What age can a child start Kids English?','faq4-a':'Kids English is designed for children aged 6 to 12. Groups are formed by age and level so lessons stay engaging and easy to follow.',
-    'faq5-q':'What if I miss a lesson?','faq5-a':'No problem — your teacher will briefly catch you up at the next class. If you miss several in a row, we recommend a short one-on-one review.',
-    'faq6-q':'How do I pay for classes?','faq6-a':'Payment is monthly, by cash or transfer at the centre. We\'ll confirm the details when you register by phone or in person.',
-    'ctabanner-title':'Still have questions? Get in touch!','ctabanner-sub':'Leave your name and phone — we\'ll book your free trial lesson and answer any questions.',
-    'trial-name-label':'Name','trial-name-ph':'Your name','trial-name-error':'Please enter your name',
-    'trial-phone-label':'Phone','trial-phone-error':'Please enter the full phone number',
-    'trial-course-label':'Course','trial-course-opt0':'Select a course','trial-course-error':'Please select a course',
-    'trial-submit':'Send',
-    'trial-success-title':'Application Sent!','trial-success-text':'We\'ll be in touch shortly to confirm your free trial lesson.',
-    'trial-privacy':'We\'ll only contact you about your booking. No spam.',
-    'contact-title':'Contacts',
-    'contact-address-label':'Address','contact-address-value':'34 N. Sarayev St., 230100, Nukus, Republic of Karakalpakstan, Uzbekistan',
-    'contact-phones-label':'Phone Numbers','contact-hours-label':'Working Hours','contact-hours-value':'Daily, 9:00 AM–7:00 PM',
-    'contact-status':'Open · Closes at 7:00 PM','contact-map-btn':'Open in Google Maps →',
-    'footer-desc':'English language centre in Nukus: IELTS, General English and courses for kids.',
-    'footer-copy':'© 2026 Stanford Educational Centre · Nukus, Karakalpakstan'
+// Sends a lead to trial_registrations. source: 'course_card' | 'apply_form'
+async function sendLead(payload, button) {
+  const label = button.innerHTML;
+  button.disabled = true;
+  button.textContent = t('f-sending');
+  const { error } = await apiRequest('POST', 'trial-registrations/', payload);
+  button.disabled = false;
+  button.innerHTML = label;
+  if (error) {
+    console.warn('Could not save the request:', error);
+    alert(t('alert-send-fail'));
+    return false;
   }
-};
+  return true;
+}
 
-window.setLanguage = function(lang) {
-  document.documentElement.lang = lang;
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[lang] && translations[lang][key] !== undefined) {
-      el.innerHTML = translations[lang][key];
-    }
+// ════════ Header ════════
+function initHeader() {
+  const navbar = document.getElementById('navbar');
+  const hero = document.getElementById('hero');
+  const update = () => navbar.classList.toggle('scrolled', window.scrollY > (hero ? hero.offsetHeight - 90 : 40));
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+
+  const burger = document.getElementById('hamburger');
+  const setMenu = open => {
+    document.body.classList.toggle('menu-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  burger.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  document.querySelectorAll('#navLinks a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+  window.matchMedia('(min-width: 1025px)').addEventListener('change', e => { if (e.matches) setMenu(false); });
+}
+
+// ════════ FAQ ════════
+function initFaq() {
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = !item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(other => {
+        if (other === item) return;
+        other.classList.remove('open');
+        other.querySelector('.faq-answer').style.maxHeight = null;
+        other.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+      item.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      const answer = item.querySelector('.faq-answer');
+      answer.style.maxHeight = open ? answer.scrollHeight + 'px' : null;
+    });
   });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    if (translations[lang] && translations[lang][key] !== undefined) {
-      el.setAttribute('placeholder', translations[lang][key]);
-    }
+}
+
+// ════════ Quiz ════════
+let quizCourse = null;
+function initQuiz() {
+  const show = id => {
+    document.querySelectorAll('.quiz-step, .quiz-result').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  };
+  document.querySelectorAll('[data-quiz-next]').forEach(b => b.addEventListener('click', () => show(b.dataset.quizNext)));
+  document.querySelectorAll('[data-quiz]').forEach(b => b.addEventListener('click', () => {
+    quizCourse = b.dataset.quiz;
+    renderQuizResult();
+    show('quizResult');
+  }));
+  document.getElementById('quizRestart').addEventListener('click', () => { quizCourse = null; show('quizStep1'); });
+  document.getElementById('quizEnroll').addEventListener('click', e => openCourseModal(quizCourse, e));
+}
+function renderQuizResult() {
+  if (!quizCourse) return;
+  const k = COURSE_KEYS[quizCourse];
+  document.getElementById('quizResultName').textContent = t(k + '-name');
+  document.getElementById('quizResultDesc').textContent = t(k + '-desc');
+}
+
+// ════════ Course modal (name + phone; course sent automatically) ════════
+let modalCourse = null;
+let modalReturnFocus = null;
+function openCourseModal(course, event) {
+  modalCourse = course;
+  modalReturnFocus = document.activeElement;
+  const modal = document.getElementById('courseModal');
+  const card = document.getElementById('courseModalCard');
+  document.getElementById('cmCourseName').textContent = COURSE_NAMES[course] || '';
+  document.getElementById('cmFormWrap').hidden = false;
+  document.getElementById('cmSuccess').hidden = true;
+  const form = document.getElementById('courseForm');
+  form.querySelectorAll('.field').forEach(f => f.classList.remove('invalid'));
+
+  // Grow from the button that was clicked
+  modal.classList.add('open');
+  if (event && event.clientX && !reduceMotion && window.innerWidth > 767) {
+    const r = card.getBoundingClientRect();
+    card.style.transformOrigin = `${event.clientX - r.left}px ${event.clientY - r.top}px`;
+  } else {
+    card.style.transformOrigin = '50% 100%';
+  }
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('cmName').focus(), 60);
+}
+function closeCourseModal() {
+  document.getElementById('courseModal').classList.remove('open');
+  document.body.style.overflow = '';
+  if (modalReturnFocus) modalReturnFocus.focus();
+}
+function initCourseModal() {
+  document.querySelectorAll('[data-enroll]').forEach(b => b.addEventListener('click', e => openCourseModal(b.dataset.enroll, e)));
+  document.querySelectorAll('#courseModal [data-close]').forEach(el => el.addEventListener('click', closeCourseModal));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('courseModal').classList.contains('open')) closeCourseModal();
   });
-  // Round switcher shows the current language
-  const toggle = document.getElementById('langToggle');
-  if (toggle) toggle.textContent = lang.toUpperCase();
-  // Mock exam cards are built in JS, so redraw them in the new language
+
+  const form = document.getElementById('courseForm');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('cmName').value.trim();
+    const phone = document.getElementById('cmPhone').value.trim();
+    let ok = setInvalid(form, 'name', !name);
+    ok = setInvalid(form, 'phone', !phoneIsComplete(phone)) && ok;
+    if (!ok) { form.querySelector('.invalid .input').focus(); return; }
+    const sent = await sendLead({ full_name: name, phone, course: modalCourse, source: 'course_card' }, form.querySelector('[type=submit]'));
+    if (!sent) return;
+    form.reset();
+    document.getElementById('cmFormWrap').hidden = true;
+    const success = document.getElementById('cmSuccess');
+    success.hidden = false;
+    success.focus();
+  });
+}
+
+// ════════ Apply form (bottom yellow block) ════════
+function initApplyForm() {
+  const form = document.getElementById('applyForm');
+  const success = document.getElementById('applySuccess');
+  form.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', () => { const f = el.closest('.field'); if (f) f.classList.remove('invalid'); });
+    el.addEventListener('change', () => { const f = el.closest('.field'); if (f) f.classList.remove('invalid'); });
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = form.name.value.trim();
+    const phone = form.phone.value.trim();
+    const course = form.course.value;
+    const time = (form.querySelector('input[name=time]:checked') || {}).value || '';
+    let ok = setInvalid(form, 'name', !name);
+    ok = setInvalid(form, 'phone', !phoneIsComplete(phone)) && ok;
+    ok = setInvalid(form, 'course', !course) && ok;
+    ok = setInvalid(form, 'time', !time) && ok;
+    if (!ok) {
+      const first = form.querySelector('.field.invalid');
+      (first.querySelector('.input, input') || first).focus();
+      return;
+    }
+    const sent = await sendLead({
+      full_name: name, phone, course, source: 'apply_form',
+      preferred_time: time, comment: form.comment.value.trim()
+    }, form.querySelector('[type=submit]'));
+    if (!sent) return;
+    form.reset();
+    form.hidden = true;
+    success.hidden = false;
+    success.focus();
+  });
+  document.getElementById('applyAgain').addEventListener('click', () => {
+    success.hidden = true;
+    form.hidden = false;
+    form.name.focus();
+  });
+}
+
+// ════════ Mock exams → mock.html?exam=<id> ════════
+let mockExams = null; // null = loading, [] = none
+async function loadMockExams() {
+  const { data, error } = await apiRequest('GET', 'mock-exams/');
+  if (error) console.warn('Could not load mock exams:', error);
+  mockExams = (!error && Array.isArray(data)) ? data : [];
   renderMockExams();
-};
+}
+function renderMockExams() {
+  const grid = document.getElementById('mockGrid');
+  if (mockExams === null) return;
+  if (!mockExams.length) {
+    grid.innerHTML = `<p class="mock-empty">${escapeHtml(t('mock-none'))} <a href="tel:+998913036001">+998 91 303-60-01</a></p>`;
+    return;
+  }
+  grid.innerHTML = mockExams.slice(0, 4).map(e => {
+    const dt = new Date(e.exam_date);
+    const p = I18N.tashkentParts(dt);
+    const max = e.max_seats || 0;
+    const left = Math.max(0, Number(e.seats_left) || 0);
+    const taken = max ? Math.min(100, Math.round(((max - left) / max) * 100)) : 100;
+    const full = left === 0;
+    const tag = full ? 'div' : 'a';
+    const href = full ? '' : ` href="mock.html?exam=${encodeURIComponent(e.id)}"`;
+    return `
+      <${tag} class="mock-card${full ? ' full' : ''}"${href}>
+        <div class="mock-date"><span class="mock-day">${p.d}</span><span class="mock-month">${escapeHtml(I18N.formatMonthShort(dt))}</span></div>
+        <div>
+          <div class="mock-name">${escapeHtml(e.title)}</div>
+          <div class="mock-meta">${escapeHtml(I18N.formatWeekday(dt))}, ${escapeHtml(I18N.formatTime(dt))} · ${escapeHtml(e.duration_minutes)} ${escapeHtml(t('mock-min'))}</div>
+          ${e.location ? `<div class="mock-meta">${escapeHtml(e.location)}</div>` : ''}
+        </div>
+        <div class="mock-foot">
+          <span class="mock-price">${escapeHtml(I18N.formatPrice(e.price_uzs))}</span>
+          <span class="mock-seats"><span class="bar" aria-hidden="true"><i style="width:${taken}%"></i></span>${escapeHtml(full ? t('mock-full') : t('mock-seats', { n: left, max }))}</span>
+          <span class="mock-go">${escapeHtml(full ? t('mock-full') : t('mock-book'))}</span>
+        </div>
+      </${tag}>`;
+  }).join('');
+}
+
+// ════════ Results marquee (hidden when there are none) ════════
+let results = [];
+async function loadResults() {
+  const { data, error } = await apiRequest('GET', 'results/');
+  results = (!error && Array.isArray(data)) ? data : [];
+  renderResults();
+}
+function resultCard(r, hidden) {
+  const band = v => Number(v).toFixed(1);
+  const name = `${r.first_name}${r.last_name_initial ? ' ' + r.last_name_initial + '.' : ''}`;
+  return `
+    <article class="r-card${r.image_url ? ' has-photo' : ''}"${hidden ? ' aria-hidden="true"' : ''}>
+      ${r.image_url ? `<img src="${escapeHtml(r.image_url)}" alt="${hidden ? '' : escapeHtml('IELTS — ' + name)}" loading="lazy"/>` : ''}
+      <div class="r-top"><div class="r-overall">${band(r.overall)}</div><div class="r-label">Overall</div></div>
+      <div class="r-bottom">
+        <div class="r-bands">
+          <span>L<b>${band(r.listening)}</b></span><span>R<b>${band(r.reading)}</b></span><span>W<b>${band(r.writing)}</b></span><span>S<b>${band(r.speaking)}</b></span>
+        </div>
+        <div class="r-name">${escapeHtml(name)}</div>
+        <div class="r-course">${escapeHtml(COURSE_NAMES[r.course] || r.course)}</div>
+      </div>
+    </article>`;
+}
+function renderResults() {
+  const section = document.getElementById('results');
+  const show = results.length > 0;
+  section.hidden = !show;
+  document.querySelectorAll('[data-needs="results"]').forEach(el => { el.hidden = !show; });
+  if (!show) return;
+
+  const track = document.getElementById('resultsTrack');
+  // Repeat the set until it is wider than the screen, then add one hidden copy for a seamless loop.
+  const cardWidth = window.innerWidth <= 767 ? 210 : 256;
+  const times = Math.max(1, Math.ceil((window.innerWidth * 1.1) / (results.length * cardWidth)));
+  let set = '';
+  for (let i = 0; i < times; i++) set += results.map(r => resultCard(r, i > 0)).join('');
+  const copy = results.map(r => resultCard(r, true)).join('').repeat(times);
+  track.innerHTML = set + copy;
+  // About 45 px per second, but never faster than one loop in 25 s
+  const seconds = Math.max(25, (results.length * times * cardWidth) / 45);
+  track.style.setProperty('--marquee-duration', seconds + 's');
+}
+function initMarqueeTouch() {
+  const m = document.getElementById('resultsMarquee');
+  let timer = null;
+  m.addEventListener('touchstart', () => { clearTimeout(timer); m.classList.add('paused'); }, { passive: true });
+  m.addEventListener('touchend', () => { timer = setTimeout(() => m.classList.remove('paused'), 1500); }, { passive: true });
+}
+
+// ════════ Teachers (hidden when none are published) ════════
+let teachers = [];
+async function loadTeachers() {
+  const { data, error } = await apiRequest('GET', 'teachers/');
+  teachers = (!error && Array.isArray(data)) ? data : [];
+  renderTeachers();
+}
+function renderTeachers() {
+  const section = document.getElementById('instructors');
+  const show = teachers.length > 0;
+  section.hidden = !show;
+  document.querySelectorAll('[data-needs="teachers"]').forEach(el => { el.hidden = !show; });
+  if (!show) return;
+  document.getElementById('teamGrid').innerHTML = teachers.map(tc => {
+    const initials = tc.name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const chips = [];
+    if (tc.ielts_band !== null && tc.ielts_band !== undefined) chips.push(`<span class="chip ink">IELTS ${Number(tc.ielts_band).toFixed(1)}</span>`);
+    if (tc.experience_years) chips.push(`<span class="chip">${escapeHtml(t('team-exp', { n: tc.experience_years, yrs: I18N.yearsWord(tc.experience_years) }))}</span>`);
+    (tc.tags || []).forEach(tag => chips.push(`<span class="chip">${escapeHtml(tag)}</span>`));
+    return `
+      <article class="team-card">
+        <div class="team-photo">${tc.image_url ? `<img src="${escapeHtml(tc.image_url)}" alt="${escapeHtml(tc.name)}" loading="lazy"/>` : `<span class="team-initials" aria-hidden="true">${escapeHtml(initials)}</span>`}</div>
+        <h3 class="team-name">${escapeHtml(tc.name)}</h3>
+        ${tc.role ? `<p class="team-role">${escapeHtml(tc.role)}</p>` : ''}
+        <div class="chips">${chips.join('')}</div>
+      </article>`;
+  }).join('');
+}
+
+// ════════ Gallery (hidden when there are no photos) ════════
+async function loadGallery() {
+  const { data, error } = await apiRequest('GET', 'gallery/');
+  const photos = (!error && Array.isArray(data)) ? data : [];
+  document.getElementById('gallery').hidden = photos.length === 0;
+  if (!photos.length) return;
+  document.getElementById('galleryGrid').innerHTML = photos.map(p => {
+    const size = p.size === 'tall' || p.size === 'wide' ? ' ' + p.size : '';
+    return `<div class="gallery-item${size}"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Language Center')}" loading="lazy"/></div>`;
+  }).join('');
+}
+
+// ════════ Start ════════
+document.addEventListener('DOMContentLoaded', () => {
+  I18N.init();
+  initHeader();
+  initFaq();
+  initQuiz();
+  initCourseModal();
+  initApplyForm();
+  initMarqueeTouch();
+  document.querySelectorAll('[data-phone]').forEach(attachUzPhoneMask);
+
+  // Parts built in JS are redrawn in the new language
+  I18N.onChange(() => {
+    renderMockExams();
+    renderTeachers();
+    renderQuizResult();
+    document.querySelectorAll('.faq-item.open .faq-answer').forEach(a => { a.style.maxHeight = a.scrollHeight + 'px'; });
+  });
+
+  loadMockExams();
+  loadResults();
+  loadTeachers();
+  loadGallery();
+
+  let lastWidth = window.innerWidth;
+  window.addEventListener('resize', () => {
+    if (Math.abs(window.innerWidth - lastWidth) > 80) { lastWidth = window.innerWidth; renderResults(); }
+  }, { passive: true });
+});
