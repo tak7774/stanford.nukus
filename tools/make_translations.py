@@ -72,10 +72,10 @@ ROWS = [
     ("why3-text", "Регулярные пробные тесты показывают реальный уровень и что подтянуть.",
      "Turaqlı sınaq testleri haqıyqıy dárejeńizdi hám neni jaqsılaw kerekligin kórsetedi.",
      "Regular practice tests show your real level and what to work on."),
-    ("why4-title", "Удобное время", "Qolaylı waqıt", "Convenient hours"),
-    ("why4-text", "Центр открыт каждый день с 09:00 до 19:00 — подберём время под учёбу и работу.",
-     "Oray hár kúni 09:00 den 19:00 ge shekem isleydi — oqıw hám jumısıńızǵa qolaylı waqıt tabamız.",
-     "Open every day from 09:00 to 19:00, so we can fit around your study and work."),
+    ("why4-title", "Бесплатный пробный урок", "Biypul sınaq sabaq", "Free trial lesson"),
+    ("why4-text", "Приходите на пробный урок — определим ваш уровень и подберём подходящую группу.",
+     "Sınaq sabaqqa keliń — dárejeńizdi anıqlap, mánisli topar tańlap beremiz.",
+     "Come to a trial lesson and we will find your level and the right group."),
 
     # ── Courses ──
     ("courses-title", "Курсы", "Kurslar", "Courses"),
@@ -128,9 +128,9 @@ ROWS = [
      "Leave your name and phone. An administrator will call back and find you a group."),
     ("cm-submit", "Отправить заявку", "Arza jiberiw", "Send request"),
     ("cm-success-title", "Заявка отправлена", "Arza jiberildi", "Request sent"),
-    ("cm-success-text", "Мы перезвоним в рабочее время, с 09:00 до 19:00.",
-     "Jumıs waqtında, 09:00 den 19:00 ge shekem qońıraw etemiz.",
-     "We will call you back during working hours, 09:00–19:00."),
+    ("cm-success-text", "Мы перезвоним вам в рабочее время.",
+     "Sizge jumıs waqtında qońıraw etemiz.",
+     "We will call you back during working hours."),
 
     # ── Form fields (both lead forms) ──
     ("f-name", "Ваше имя", "Atıńız", "Your name"),
@@ -162,9 +162,9 @@ ROWS = [
     ("apply-point3", "Подберём группу и время", "Topar hám waqıt tańlaymız", "We'll match a group and time"),
     ("apply-submit", "Отправить заявку", "Arza jiberiw", "Send request"),
     ("apply-success-title", "Спасибо, заявка у нас", "Raxmet, arzańız qabıl etildi", "Thank you, we have your request"),
-    ("apply-success-text", "Администратор позвонит в рабочее время, с 09:00 до 19:00.",
-     "Administrator jumıs waqtında, 09:00 den 19:00 ge shekem qońıraw etedi.",
-     "An administrator will call during working hours, 09:00–19:00."),
+    ("apply-success-text", "Администратор позвонит вам в рабочее время.",
+     "Administrator sizge jumıs waqtında qońıraw etedi.",
+     "An administrator will call you during working hours."),
     ("apply-again", "Отправить ещё одну заявку", "Jáne bir arza jiberiw", "Send another request"),
 
     # ── Mock exam cards on index ──

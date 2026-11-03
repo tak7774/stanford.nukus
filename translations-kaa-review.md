@@ -45,8 +45,8 @@ To fix a translation, change it in `translations.js` (the `kaa` block).
 | 37 | До 10–12 человек в группе — каждому достаётся время на разговорную практику. | Toparda 10–12 adamǵa shekem — hár kimge sóylesiw ámeliyatına waqıt jetedi. |
 | 38 | Понятный прогресс | Anıq rawajlanıw |
 | 39 | Регулярные пробные тесты показывают реальный уровень и что подтянуть. | Turaqlı sınaq testleri haqıyqıy dárejeńizdi hám neni jaqsılaw kerekligin kórsetedi. |
-| 40 | Удобное время | Qolaylı waqıt |
-| 41 | Центр открыт каждый день с 09:00 до 19:00 — подберём время под учёбу и работу. | Oray hár kúni 09:00 den 19:00 ge shekem isleydi — oqıw hám jumısıńızǵa qolaylı waqıt tabamız. |
+| 40 | Бесплатный пробный урок | Biypul sınaq sabaq |
+| 41 | Приходите на пробный урок — определим ваш уровень и подберём подходящую группу. | Sınaq sabaqqa keliń — dárejeńizdi anıqlap, mánisli topar tańlap beremiz. |
 | 42 | Курсы | Kurslar |
 | 43 | От первых слов до IELTS. Цена — за месяц занятий. | Birinshi sózlerden IELTS-ke shekem. Baha — bir aylıq sabaq ushın. |
 | 44 | Дети 6–12 лет | 6–12 jastaǵı balalar |
@@ -83,7 +83,7 @@ To fix a translation, change it in `translations.js` (the `kaa` block).
 | 75 | Оставьте имя и телефон — администратор перезвонит и подберёт группу. | Atıńız hám telefon nomerińizdi qaldırıń — administrator qońıraw etip, topar tańlap beredi. |
 | 76 | Отправить заявку | Arza jiberiw |
 | 77 | Заявка отправлена | Arza jiberildi |
-| 78 | Мы перезвоним в рабочее время, с 09:00 до 19:00. | Jumıs waqtında, 09:00 den 19:00 ge shekem qońıraw etemiz. |
+| 78 | Мы перезвоним вам в рабочее время. | Sizge jumıs waqtında qońıraw etemiz. |
 | 79 | Ваше имя | Atıńız |
 | 80 | Укажите имя | Atıńızdı jazıń |
 | 81 | Номер телефона | Telefon nomerińiz |
@@ -109,7 +109,7 @@ To fix a translation, change it in `translations.js` (the `kaa` block).
 | 101 | Подберём группу и время | Topar hám waqıt tańlaymız |
 | 102 | Отправить заявку | Arza jiberiw |
 | 103 | Спасибо, заявка у нас | Raxmet, arzańız qabıl etildi |
-| 104 | Администратор позвонит в рабочее время, с 09:00 до 19:00. | Administrator jumıs waqtında, 09:00 den 19:00 ge shekem qońıraw etedi. |
+| 104 | Администратор позвонит вам в рабочее время. | Administrator sizge jumıs waqtında qońıraw etedi. |
 | 105 | Отправить ещё одну заявку | Jáne bir arza jiberiw |
 | 106 | IELTS CD Mock Exam | IELTS CD Mock Exam |
 | 107 | Пробный IELTS на компьютере, как в настоящем тестовом центре. После экзамена — результат по каждой части. | Kompyuterde sınaq IELTS, haqıyqıy test orayındaǵıday. Imtihannan keyin — hár bólim boyınsha nátiyje. |
