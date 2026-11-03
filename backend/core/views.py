@@ -114,6 +114,8 @@ class PublicExamRegistrationCreate(PublicView, APIView):
                 amount_due=exam.price_uzs or DEFAULT_EXAM_PRICE_UZS,
                 amount_paid=None,
             )
+            # ticket_no is created by a database trigger; read it back.
+            registration.refresh_from_db(fields=["ticket_no"])
 
         return Response(
             PublicExamRegistrationSerializer(registration).data,

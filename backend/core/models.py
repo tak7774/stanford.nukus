@@ -35,6 +35,8 @@ PAYMENT_STATUS_CHOICES = [
     ("verified", "Verified"),
 ]
 
+EXAM_FORMAT_CHOICES = [("paper", "Paper-based"), ("computer", "Computer-delivered")]
+
 ROLE_CHOICES = [("owner", "Owner"), ("editor", "Editor")]
 
 
@@ -121,6 +123,9 @@ class ExamRegistration(models.Model):
     last_name = models.TextField(null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.TextField(null=True, blank=True)
+    format = models.TextField(choices=EXAM_FORMAT_CHOICES, null=True, blank=True)
+    # Filled in by a database trigger on insert: ST-<year>-MOCK-<id padded to 4>.
+    ticket_no = models.TextField(unique=True, null=True, blank=True, editable=False)
     payment_status = models.TextField(
         choices=PAYMENT_STATUS_CHOICES, default="pending", null=True, blank=True
     )

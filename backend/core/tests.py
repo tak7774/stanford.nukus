@@ -81,6 +81,25 @@ class PublicApiTests(APITestCase):
         self.assertIsNone(res.data["amount_paid"])
         self.assertEqual(self.client.get("/api/mock-exams/").data[0]["price_uzs"], 120000)
 
+    def test_format_saved_and_ticket_no_made_by_database(self):
+        exam = make_exam()
+        res = self.client.post(
+            "/api/exam-registrations/",
+            reg_payload(exam, format="computer", ticket_no="FAKE-1"),
+            format="json",
+        )
+        self.assertEqual(res.status_code, 201)
+        reg = ExamRegistration.objects.get()
+        self.assertEqual(reg.format, "computer")
+        self.assertRegex(res.data["ticket_no"], r"^ST-\d{4}-MOCK-\d{4,}$")
+        self.assertTrue(res.data["ticket_no"].endswith("-MOCK-" + str(reg.id).zfill(4)))
+        self.assertEqual(reg.ticket_no, res.data["ticket_no"])
+
+    def test_format_must_be_paper_or_computer(self):
+        exam = make_exam()
+        res = self.client.post("/api/exam-registrations/", reg_payload(exam, format="tablet"), format="json")
+        self.assertEqual(res.status_code, 400)
+
     def test_exam_full(self):
         exam = make_exam(max_seats=1)
         self.assertEqual(self.client.post("/api/exam-registrations/", reg_payload(exam), format="json").status_code, 201)

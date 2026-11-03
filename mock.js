@@ -106,6 +106,9 @@ window.selectGender = function(val) {
 
 window.selectFormat = function(fmt) {
   selectedFormat = fmt;
+  document.querySelectorAll('.radio-card[data-format]').forEach(card => {
+    card.classList.toggle('active', card.dataset.format === fmt);
+  });
 };
 
 window.selectPayMethod = function(method, el) {
@@ -223,6 +226,7 @@ window.submitRegistration = async function() {
     last_name: lname,
     birth_date: dob || null,
     gender: selectedGender,
+    format: selectedFormat,
     payment_method: selectedPayMethod
   });
   if (error) {
@@ -241,7 +245,8 @@ window.submitRegistration = async function() {
   }
 
   // Ticket number is based on the saved registration id, so staff can look it up
-  const ticketNo = 'ST-' + new Date().getFullYear() + '-MOCK-' + String(saved.id).padStart(4, '0');
+  // The ticket number is created by the database when the registration is saved
+  const ticketNo = saved.ticket_no || '—';
 
   // Populate Digital Ticket (Step 4)
   const tNoEl = document.getElementById('tNo');
