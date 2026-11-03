@@ -176,6 +176,13 @@ class AdminApiTests(APITestCase):
         res = self.client.patch(f"/api/admin/exams/{exam_id}/", {"max_seats": 25}, format="json")
         self.assertEqual(res.data["max_seats"], 25)
 
+        res = self.client.patch(f"/api/admin/exams/{exam_id}/", {"price_uzs": 175000, "location": "Room 2, Nukus"}, format="json")
+        self.assertEqual((res.data["price_uzs"], res.data["location"]), (175000, "Room 2, Nukus"))
+        public = self.client.get("/api/mock-exams/").data[0]
+        self.assertEqual((public["price_uzs"], public["location"]), (175000, "Room 2, Nukus"))
+        res = self.client.patch(f"/api/admin/exams/{exam_id}/", {"price_uzs": -1}, format="json")
+        self.assertEqual(res.status_code, 400)
+
         self.assertEqual(self.client.delete(f"/api/admin/exams/{exam_id}/").status_code, 403)
 
         self.client.post("/api/auth/logout/")

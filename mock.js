@@ -117,6 +117,11 @@ window.selectPayMethod = function(method, el) {
   if (el) el.classList.add('selected');
 };
 
+// Price and location come from the exam (set in the admin panel), no hard-coded fallbacks.
+function formatPrice(uzs) {
+  return (uzs === null || uzs === undefined) ? '—' : Number(uzs).toLocaleString('ru-RU') + ' сум';
+}
+
 // ── Fetch Open Mock Sessions from the API ──
 // The API only returns exams with status 'upcoming' whose date has not passed,
 // each with seats_left. No demo sessions: if there are none, say so.
@@ -144,7 +149,7 @@ async function loadMockSessions() {
     const dt = new Date(ex.exam_date);
     const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const priceStr = (ex.price_uzs || 150000).toLocaleString('ru-RU') + ' сум';
+    const priceStr = formatPrice(ex.price_uzs);
     const seatsLeft = Math.max(0, Number(ex.seats_left) || 0);
     const isFull = seatsLeft === 0;
 
@@ -154,7 +159,7 @@ async function loadMockSessions() {
           <div class="session-date">${dateStr} в ${timeStr}</div>
           <div class="session-meta">
             <span class="session-badge">${escapeHtml(ex.title)}</span>
-            <span>📍 ${escapeHtml(ex.location || 'Stanford Main Center')}</span>
+            ${ex.location ? `<span>📍 ${escapeHtml(ex.location)}</span>` : ''}
           </div>
         </div>
         <div class="session-seats">
@@ -182,14 +187,13 @@ window.pickSession = function(id, el) {
   const dt = new Date(sessionObj.exam_date);
   const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
   const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  const priceStr = (sessionObj.price_uzs || 150000).toLocaleString('ru-RU') + ' сум';
-
   selectedSession = {
     id: sessionObj.id,
     title: sessionObj.title,
     dateStr: `${dateStr}, ${timeStr}`,
-    price: sessionObj.price_uzs || 150000,
-    priceStr: priceStr
+    price: sessionObj.price_uzs,
+    priceStr: formatPrice(sessionObj.price_uzs),
+    location: sessionObj.location || ''
   };
 };
 
@@ -207,6 +211,8 @@ function populateSummary() {
   if (titleEl && selectedSession) titleEl.textContent = selectedSession.title;
   if (dateEl && selectedSession) dateEl.textContent = selectedSession.dateStr;
   if (priceEl && selectedSession) priceEl.textContent = selectedSession.priceStr;
+  const locationEl = document.getElementById('sumExamLocation');
+  if (locationEl && selectedSession && selectedSession.location) locationEl.textContent = selectedSession.location;
 }
 
 // ── Submit Registration to the API & Generate Ticket ──
@@ -244,7 +250,6 @@ window.submitRegistration = async function() {
     return;
   }
 
-  // Ticket number is based on the saved registration id, so staff can look it up
   // The ticket number is created by the database when the registration is saved
   const ticketNo = saved.ticket_no || '—';
 

@@ -265,7 +265,7 @@ async function loadPublicMockExams() {
             <div class="mock-details">
               <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> ${dateStr}</div>
               <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${timeStr} (${escapeHtml(e.duration_minutes || 120)} мин)</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> Stanford Center, Нукус</div>
+              <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> ${escapeHtml(e.location || 'Stanford Center, Нукус')}</div>
             </div>
           </div>
           <div>

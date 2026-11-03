@@ -254,17 +254,20 @@ function openExamModal(editId) {
   if (isEdit) {
     api('GET', 'admin/exams/' + editId + '/').then(({ data: e, error }) => {
       if (error) { showApiError(error); closeModal(); return; }
+      // Build the date from LOCAL date parts. toISOString() is UTC, so exams between
+      // 00:00 and 04:59 Tashkent time used to show the previous day.
       const dt = new Date(e.exam_date);
-      const dateVal = dt.toISOString().slice(0, 10);
-      const timeVal = dt.toTimeString().slice(0, 5);
-      fillExamForm(e.title, e.description || '', e.course_type, dateVal, timeVal, e.duration_minutes, e.max_seats, e.status, editId);
+      const pad = n => String(n).padStart(2, '0');
+      const dateVal = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+      const timeVal = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      fillExamForm(e.title, e.description || '', e.course_type, dateVal, timeVal, e.duration_minutes, e.max_seats, e.status, editId, e.price_uzs, e.location || '');
     });
   } else {
-    fillExamForm('', '', 'ielts', '', '', 120, 30, 'upcoming', null);
+    fillExamForm('', '', 'ielts', '', '', 120, 30, 'upcoming', null, 150000, 'Stanford Main Center, Nukus');
   }
 }
 
-function fillExamForm(title, desc, course, date, time, dur, seats, status, editId) {
+function fillExamForm(title, desc, course, date, time, dur, seats, status, editId, price, location) {
   $('examFormBody').innerHTML = `
     <div class="form-group"><label>Title</label><input class="form-control" id="exTitle" value="${esc(title)}" placeholder="e.g. IELTS Mock Test #5"/></div>
     <div class="form-group"><label>Description</label><textarea class="form-control" id="exDesc" placeholder="Optional details...">${esc(desc)}</textarea></div>
@@ -280,6 +283,10 @@ function fillExamForm(title, desc, course, date, time, dur, seats, status, editI
       <div class="form-group"><label>Duration (minutes)</label><input class="form-control" id="exDur" type="number" value="${esc(dur)}"/></div>
       <div class="form-group"><label>Max Seats</label><input class="form-control" id="exSeats" type="number" value="${esc(seats)}"/></div>
     </div>
+    <div class="form-row">
+      <div class="form-group"><label>Price (UZS)</label><input class="form-control" id="exPrice" type="number" min="0" step="1000" value="${esc(price ?? '')}" placeholder="e.g. 150000"/></div>
+      <div class="form-group"><label>Location</label><input class="form-control" id="exLocation" value="${esc(location || '')}" placeholder="e.g. Stanford Main Center, Nukus"/></div>
+    </div>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveExamBtn">${editId ? 'Save Changes' : 'Create Exam'}</button></div>
   `;
   $('saveExamBtn').addEventListener('click', () => saveExam(editId));
@@ -294,11 +301,16 @@ async function saveExam(editId) {
   const time = $('exTime').value;
   const dur = parseInt($('exDur').value) || 120;
   const seats = parseInt($('exSeats').value) || 30;
+  const priceText = $('exPrice').value.trim();
+  const price = parseInt(priceText, 10);
+  const location = $('exLocation').value.trim();
 
   if (!title || !date || !time) { alert('Title, date, and time are required'); return; }
+  if (priceText === '' || isNaN(price) || price < 0) { alert('Price (UZS) is required and cannot be negative'); return; }
+  if (!location) { alert('Location is required'); return; }
 
   const examDate = new Date(date + 'T' + time).toISOString();
-  const row = { title, description: desc || null, course_type: course, exam_date: examDate, duration_minutes: dur, max_seats: seats, status };
+  const row = { title, description: desc || null, course_type: course, exam_date: examDate, duration_minutes: dur, max_seats: seats, status, price_uzs: price, location };
 
   const { error } = editId
     ? await api('PATCH', 'admin/exams/' + editId + '/', row)

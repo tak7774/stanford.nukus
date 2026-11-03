@@ -60,4 +60,8 @@ update exam_registrations
     || lpad(id::text, greatest(4, length(id::text)), '0')
   where ticket_no is null;
 
+-- ── 7. Price and location for each mock exam (set in the admin exam form) ──
+alter table mock_exams add column if not exists price_uzs integer default 150000;
+alter table mock_exams add column if not exists location text default 'Stanford Main Center, Nukus';
+
 commit;

@@ -75,6 +75,11 @@ class AdminMockExamSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Must be at least 1.")
         return value
 
+    def validate_price_uzs(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Cannot be negative.")
+        return value
+
     def validate_duration_minutes(self, value):
         if value < 1:
             raise serializers.ValidationError("Must be at least 1.")
