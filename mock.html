@@ -2,398 +2,424 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<title>IELTS Mock Exam Registration — Stanford Educational Centre</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="description" content="Официальная онлайн-регистрация на пробный экзамен IELTS Mock Exam в языковом центре Stanford (Нукус). Выберите дату, формат и оплатите онлайн."/>
+<title>IELTS CD Mock Exam — запись | Stanford Language Center</title>
+<meta name="description" content="Запись на IELTS CD Mock Exam в Stanford Language Center, Нукус: выберите день в календаре, получите билет и узнайте результат онлайн."/>
+<link rel="icon" type="image/png" href="favicon.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="theme-color" content="#FFB703"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Stanford Language Center"/>
+<meta property="og:title" content="IELTS CD Mock Exam — Stanford Language Center"/>
+<meta property="og:description" content="Пробный IELTS на компьютере в Нукусе. Запись в три шага и результат онлайн."/>
+<meta property="og:image" content="https://stanford-nukus.vercel.app/images/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #F8FAF9;
-    --navy: #0C162C;
-    --navy-soft: #14213D;
-    --gold: #C9A227;
-    --gold-hover: #b8921e;
-    --gold-light: rgba(201,162,39,0.1);
-    --red: #B8332A;
-    --green: #22C55E;
-    --text: #1F2937;
-    --text-soft: #4B5563;
-    --line: #E5E7EB;
-    --card: #FFFFFF;
-    --radius: 12px;
+  :root{
+    --ink:#141416; --ink-2:#2A2B30; --paper:#FFFFFF; --mist:#F5F5F6; --line:#E9E9EC; --muted:#6B6E78;
+    --yellow:#FFB703; --yellow-deep:#EBA600; --yellow-soft:#FFF4D6; --warn:#B54708;
+    --r-lg:28px; --r-md:20px; --r-sm:14px; --pill:999px; --gutter:32px; --nav-h:72px;
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  img{ display:block; max-width:100%; }
+  a{ color:inherit; }
+  button,input,select,textarea{ font:inherit; color:inherit; }
+  button{ cursor:pointer; }
+  :focus-visible{ outline:2.5px solid var(--ink); outline-offset:3px; border-radius:6px; }
+  [hidden]{ display:none !important; }
+  .icon{ width:20px; height:20px; flex-shrink:0; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 var(--gutter); }
+  h1,h2,h3{ font-weight:800; letter-spacing:-0.03em; line-height:1.05; }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px; height:52px; padding:0 28px; border-radius:var(--pill); border:1.5px solid transparent; font-weight:700; font-size:0.98rem; text-decoration:none; white-space:nowrap; transition:background-color .2s, color .2s, transform .2s var(--ease); }
+  .btn:active{ transform:scale(.98); }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .btn-ink{ background:var(--ink); color:#fff; }
+  .btn-ink:hover:not(:disabled){ background:var(--ink-2); }
+  .btn-yellow{ background:var(--yellow); color:var(--ink); }
+  .btn-yellow:hover{ background:var(--yellow-deep); }
+  .btn-ghost{ background:none; border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--ink); }
+
+  /* ── Header ── */
+  header{ position:sticky; top:0; z-index:100; height:var(--nav-h); background:rgba(255,255,255,.94); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); box-shadow:0 1px 0 var(--line); }
+  .nav-inner{ height:100%; display:flex; align-items:center; gap:20px; }
+  .logo img{ height:36px; width:auto; }
+  .nav-right{ margin-left:auto; display:flex; align-items:center; gap:16px; }
+  .nav-home{ font-weight:600; font-size:0.93rem; text-decoration:none; padding:8px 12px; border-radius:var(--pill); transition:background-color .2s; }
+  .nav-home:hover{ background:var(--mist); }
+  .lang-switch{ display:inline-flex; padding:3px; gap:2px; border-radius:var(--pill); border:1.5px solid var(--line); }
+  .lang-switch button{ width:36px; height:30px; border:none; background:none; border-radius:var(--pill); font-weight:700; font-size:0.74rem; transition:background-color .2s; }
+  .lang-switch button:hover{ background:var(--mist); }
+  .lang-switch button.active{ background:var(--yellow); }
+
+  /* ── Intro ── */
+  .intro{ padding:64px 0 40px; display:grid; grid-template-columns:1fr minmax(0,380px); gap:20px 48px; align-items:end; }
+  .intro h1{ font-size:clamp(2.4rem,5vw,3.8rem); letter-spacing:-0.045em; }
+  .intro p{ color:var(--muted); font-size:1.05rem; line-height:1.55; }
+  .intro a{ color:var(--ink); font-weight:700; text-decoration:underline; text-decoration-color:var(--yellow); text-decoration-thickness:2px; text-underline-offset:4px; }
+
+  /* ── Steps indicator (a real sequence, so numbers are information) ── */
+  .steps{ display:flex; gap:8px; list-style:none; margin-bottom:20px; counter-reset:step; }
+  .steps li{ flex:1; display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:var(--r-sm); background:var(--mist); font-weight:700; font-size:0.92rem; color:var(--muted); transition:background-color .3s, color .3s; }
+  .steps li::before{ counter-increment:step; content:counter(step); flex-shrink:0; width:28px; height:28px; border-radius:50%; background:var(--paper); display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
+  .steps li.active{ background:var(--ink); color:#fff; }
+  .steps li.active::before{ background:var(--yellow); color:var(--ink); }
+  .steps li.done{ color:var(--ink); }
+  .steps li.done::before{ content:'✓'; background:var(--yellow); }
+
+  /* ── Panels ── */
+  .panel{ background:var(--mist); border-radius:var(--r-lg); padding:40px; }
+  .stage{ position:relative; }
+  .step{ display:none; }
+  .step.active{ display:block; }
+  @media (prefers-reduced-motion:no-preference){
+    .step.active.fwd{ animation:in-right .45s var(--ease) both; }
+    .step.active.back{ animation:in-left .45s var(--ease) both; }
+  }
+  @keyframes in-right{ from{ opacity:0; transform:translateX(28px); } to{ opacity:1; transform:none; } }
+  @keyframes in-left{ from{ opacity:0; transform:translateX(-28px); } to{ opacity:1; transform:none; } }
+  @keyframes pop{ from{ opacity:0; transform:scale(.9); } to{ opacity:1; transform:none; } }
+  .step-head{ margin-bottom:28px; max-width:40em; }
+  .step-head h2{ font-size:1.8rem; margin-bottom:8px; }
+  .step-head p{ color:var(--muted); }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 18px; }
+  .field{ margin-bottom:18px; border:none; }
+  .field-label{ display:block; font-size:0.88rem; font-weight:700; margin-bottom:8px; }
+  .input{ width:100%; height:52px; padding:0 18px; border-radius:var(--r-sm); border:1.5px solid transparent; background:var(--paper); font-size:1rem; outline:none; transition:border-color .2s; }
+  .input:focus{ border-color:var(--ink); }
+  .field-error{ display:none; font-size:0.82rem; color:var(--warn); margin-top:6px; font-weight:600; }
+  .field.invalid .input{ border-color:var(--warn); background:#FFF8F3; }
+  .field.invalid .field-error{ display:block; }
+  .seg{ display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--paper); padding:5px; border-radius:var(--r-sm); }
+  .seg label{ position:relative; }
+  .seg input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+  .seg span{ display:flex; align-items:center; justify-content:center; height:42px; border-radius:10px; font-weight:600; font-size:0.95rem; transition:background-color .2s, color .2s; }
+  .seg input:checked + span{ background:var(--ink); color:#fff; }
+  .seg input:focus-visible + span{ outline:2.5px solid var(--ink); outline-offset:2px; }
+  .field.invalid .seg{ box-shadow:inset 0 0 0 1.5px var(--warn); }
+  .step-actions{ display:flex; gap:12px; justify-content:space-between; align-items:center; flex-wrap:wrap; margin-top:28px; }
+  .step-actions .chosen{ color:var(--muted); font-size:0.93rem; font-weight:600; }
+  .step-actions .spacer{ flex:1; }
+
+  /* ── Calendar ── */
+  .cal-layout{ display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:28px; align-items:start; }
+  .cal{ background:var(--paper); border-radius:var(--r-md); padding:20px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-wd{ text-align:center; font-size:0.78rem; font-weight:700; color:var(--muted); padding-bottom:6px; }
+  .cal-month{ grid-column:1 / -1; font-weight:800; font-size:1rem; letter-spacing:-0.01em; padding:12px 2px 4px; text-transform:capitalize; }
+  .cal-month:first-of-type{ padding-top:0; }
+  .day{ position:relative; height:52px; border-radius:12px; border:none; background:none; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:600; font-size:0.98rem; font-variant-numeric:tabular-nums; color:#B4B6BD; line-height:1.1; }
+  .day small{ font-size:0.58rem; font-weight:700; letter-spacing:0; }
+  .day.open{ background:var(--yellow); color:var(--ink); font-weight:800; transition:transform .2s var(--ease), background-color .2s; }
+  .day.open:hover{ background:var(--yellow-deep); }
+  .day.open.selected{ background:var(--ink); color:#fff; }
+  .day.full{ background:var(--mist); color:#9A9CA4; text-decoration:line-through; text-decoration-thickness:1.5px; }
+  .day.full small{ text-decoration:none; display:block; }
+  .day.today::after{ content:''; position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; background:currentColor; }
+  .legend{ display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:16px; font-size:0.84rem; color:var(--muted); }
+  .legend span{ display:flex; align-items:center; gap:8px; }
+  .legend i{ width:14px; height:14px; border-radius:4px; display:inline-block; }
+  .sessions h3{ font-size:1.15rem; margin-bottom:14px; letter-spacing:-0.02em; }
+  .sessions-empty{ color:var(--muted); background:var(--paper); border-radius:var(--r-md); padding:24px; }
+  .sessions-empty a{ color:var(--ink); font-weight:700; }
+  .session{ width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:6px 16px; align-items:center; text-align:left; background:var(--paper); border:1.5px solid transparent; border-radius:var(--r-md); padding:18px 20px; margin-bottom:10px; transition:border-color .2s; }
+  .session:hover{ border-color:#CFCFD4; }
+  .session[aria-pressed="true"]{ border-color:var(--ink); }
+  .session-time{ font-size:1.6rem; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; }
+  .session-title{ font-weight:700; line-height:1.3; }
+  .session-meta{ font-size:0.86rem; color:var(--muted); }
+  .session-price{ font-weight:800; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .session-radio{ width:22px; height:22px; border-radius:50%; border:2px solid #CFCFD4; justify-self:end; position:relative; }
+  .session[aria-pressed="true"] .session-radio{ border-color:var(--ink); background:var(--ink); }
+  .session[aria-pressed="true"] .session-radio::after{ content:''; position:absolute; inset:5px; border-radius:50%; background:var(--yellow); }
+  .session-error{ color:var(--warn); font-weight:600; font-size:0.9rem; margin-top:8px; }
+
+  /* ── Summary + payment ── */
+  .sum-layout{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; align-items:start; }
+  .summary{ background:var(--paper); border-radius:var(--r-md); padding:8px 24px; }
+  .sum-row{ display:flex; justify-content:space-between; gap:16px; padding:14px 0; border-top:1px solid var(--line); }
+  .sum-row:first-child{ border-top:none; }
+  .sum-row dt{ color:var(--muted); font-size:0.92rem; }
+  .sum-row dd{ font-weight:700; text-align:right; }
+  .sum-row.total dd{ font-size:1.3rem; font-weight:800; letter-spacing:-0.02em; }
+  .pay-title{ font-size:1.15rem; margin-bottom:14px; letter-spacing:-0.02em; }
+  .pay-opt{ display:flex; align-items:center; gap:16px; background:var(--paper); border:1.5px solid transparent; border-radius:var(--r-md); padding:16px 18px; margin-bottom:10px; cursor:pointer; transition:border-color .2s; position:relative; }
+  .pay-opt:hover{ border-color:#CFCFD4; }
+  .pay-opt:has(input:checked){ border-color:var(--ink); }
+  .pay-opt input{ position:absolute; opacity:0; }
+  .pay-opt:has(input:focus-visible){ outline:2.5px solid var(--ink); outline-offset:2px; }
+  .pay-mark{ width:44px; height:44px; border-radius:12px; background:var(--mist); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.78rem; flex-shrink:0; }
+  .pay-opt b{ display:block; }
+  .pay-opt small{ color:var(--muted); font-size:0.86rem; }
+  .pay-dot{ margin-left:auto; width:22px; height:22px; border-radius:50%; border:2px solid #CFCFD4; flex-shrink:0; position:relative; }
+  .pay-opt:has(input:checked) .pay-dot{ border-color:var(--ink); background:var(--ink); }
+  .pay-opt:has(input:checked) .pay-dot::after{ content:''; position:absolute; inset:5px; border-radius:50%; background:var(--yellow); }
+
+  /* ── Ticket: the speech bubble again ── */
+  .ticket-wrap{ max-width:620px; }
+  .ticket{ position:relative; background:var(--yellow); border-radius:32px; padding:36px; margin-bottom:44px; }
+  .ticket::after{ content:''; position:absolute; left:40px; bottom:-26px; width:50px; height:34px; background:var(--yellow); clip-path:polygon(18% 0,100% 0,0 100%); }
+  @media (prefers-reduced-motion:no-preference){ .ticket{ animation:pop .6s var(--ease) both; transform-origin:0 100%; } }
+  .t-badge{ display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:#fff; font-weight:700; font-size:0.85rem; padding:6px 14px 6px 8px; border-radius:var(--pill); margin-bottom:16px; }
+  .t-badge .icon{ width:20px; height:20px; background:var(--yellow); color:var(--ink); border-radius:50%; padding:4px; }
+  .ticket h2{ font-size:clamp(1.6rem,3.6vw,2.2rem); margin-bottom:8px; }
+  .t-sub{ color:#3A2E05; margin-bottom:24px; max-width:32em; }
+  .t-no{ background:var(--paper); border-radius:var(--r-md); padding:16px 20px; margin-bottom:16px; }
+  .t-no small{ display:block; font-size:0.82rem; font-weight:600; color:var(--muted); }
+  .t-no b{ font-size:clamp(1.2rem,5.4vw,1.9rem); font-weight:800; letter-spacing:-0.01em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+  .t-rows{ display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+  .t-rows small{ display:block; font-size:0.8rem; font-weight:600; color:#5C4A0A; }
+  .t-rows b{ font-weight:700; line-height:1.35; display:block; }
+  .t-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+
+  /* ── Result lookup ── */
+  .lookup{ margin:72px 0 88px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:40px; align-items:start; scroll-margin-top:calc(var(--nav-h) + 16px); }
+  .lookup h2{ font-size:clamp(1.9rem,3.6vw,2.6rem); margin-bottom:12px; }
+  .lookup > div > p{ color:var(--muted); max-width:28em; }
+  .lookup-msg{ margin-top:16px; padding:14px 18px; border-radius:var(--r-sm); background:var(--paper); font-weight:600; }
+  .lookup-msg.warn{ color:var(--warn); }
+  .lk-result{ background:var(--paper); border-radius:var(--r-md); padding:24px; animation:pop .4s var(--ease) both; }
+  .lk-hello{ font-weight:700; margin-bottom:2px; }
+  .lk-exam{ color:var(--muted); font-size:0.9rem; margin-bottom:16px; }
+  .lk-bands{ display:grid; grid-template-columns:1.3fr repeat(4,1fr); gap:8px; }
+  .lk-band{ background:var(--mist); border-radius:var(--r-sm); padding:12px; }
+  .lk-band small{ display:block; font-size:0.74rem; font-weight:700; color:var(--muted); }
+  .lk-band b{ font-size:1.5rem; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; }
+  .lk-band.overall{ background:var(--yellow); }
+  .lk-band.overall small{ color:#5C4A0A; }
+  .lk-band.overall b{ font-size:2.1rem; }
+  .btn-text{ background:none; border:none; font-weight:700; padding:12px 0 0; text-decoration:underline; text-underline-offset:5px; text-decoration-color:var(--line); text-decoration-thickness:2px; }
+  .btn-text:hover{ text-decoration-color:var(--ink); }
+
+  footer{ border-top:1px solid var(--line); padding:28px 0; font-size:0.86rem; color:var(--muted); }
+  footer .wrap{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  footer a{ color:var(--ink); font-weight:600; text-decoration:none; }
+
+  @media (max-width:900px){
+    .cal-layout, .sum-layout, .lookup{ grid-template-columns:minmax(0,1fr); }
+    .lookup{ gap:24px; }
+  }
+  @media (max-width:767px){
+    :root{ --gutter:16px; --nav-h:64px; }
+    body{ font-size:15.5px; }
+    .logo img{ height:30px; }
+    .nav-home{ display:none; }
+    .lang-switch button{ width:32px; height:28px; font-size:0.7rem; }
+    .intro{ grid-template-columns:1fr; padding:36px 0 28px; }
+    .steps li{ padding:10px; font-size:0.82rem; gap:8px; justify-content:center; }
+    .steps li span{ display:none; }
+    .steps li.active span{ display:inline; }
+    .panel{ padding:24px 16px; border-radius:var(--r-md); }
+    .step-head h2{ font-size:1.45rem; }
+    .grid2{ grid-template-columns:1fr; }
+    .cal{ padding:12px; }
+    .cal-grid{ gap:4px; }
+    .day{ height:44px; font-size:0.92rem; border-radius:10px; }
+    .day small{ font-size:0.5rem; }
+    .session{ grid-template-columns:auto minmax(0,1fr) auto; padding:16px; }
+    .session-price{ grid-column:2; grid-row:2; text-align:left; }
+    .session-radio{ grid-column:3; grid-row:1; }
+    .step-actions .btn{ flex:1; }
+    .step-actions .spacer{ display:none; }
+    .step-actions .chosen{ width:100%; order:-1; }
+    .ticket{ padding:24px 20px; border-radius:24px; }
+    .ticket::after{ left:26px; }
+    .t-rows{ grid-template-columns:1fr; }
+    .lk-bands{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .lk-band.overall{ grid-column:1 / -1; display:flex; align-items:baseline; justify-content:space-between; }
+    .lk-band b{ font-size:1.3rem; }
+    .lookup{ margin:56px 0 64px; }
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-  a { color: inherit; text-decoration: none; }
-  button, input, select { font-family: inherit; }
-
-  /* NAV */
-  nav {
-    background: var(--navy); color: #fff; padding: 18px 40px; display: flex; justify-content: space-between; align-items: center;
-    position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-mark { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 800; letter-spacing: 0.04em; color: #fff; }
-  .logo-mark span { color: var(--gold); }
-  .logo-sub { font-size: 0.72rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.08em; }
-  .nav-right { display: flex; align-items: center; gap: 20px; }
-  .nav-back { color: var(--gold); font-weight: 600; font-size: 0.9rem; transition: color .2s; }
-  .nav-back:hover { color: #fff; }
-
-  /* HERO */
-  .mock-hero {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 100%);
-    color: #fff; padding: 50px 24px 70px; text-align: center; position: relative; overflow: hidden;
-  }
-  .mock-hero::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: var(--bg); clip-path: polygon(0 100%, 100% 100%, 100% 0);
-  }
-  .hero-eyebrow {
-    display: inline-block; background: rgba(201,162,39,0.15); color: var(--gold); border: 1px solid rgba(201,162,39,0.3);
-    padding: 6px 16px; border-radius: 100px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
-  }
-  .hero-title { font-family: 'Fraunces', serif; font-size: 2.4rem; font-weight: 700; line-height: 1.25; max-width: 800px; margin: 0 auto 16px; }
-  .hero-sub { font-size: 1rem; color: rgba(255,255,255,0.78); max-width: 660px; margin: 0 auto; line-height: 1.6; }
-
-  /* MAIN WRAPPER */
-  .container { width: 100%; max-width: 960px; margin: -30px auto 60px; padding: 0 20px; position: relative; z-index: 10; }
-
-  /* STEP PROGRESS BAR */
-  .step-bar {
-    background: #fff; border-radius: var(--radius); padding: 20px 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border: 1px solid var(--line);
-  }
-  .step-item { display: flex; align-items: center; gap: 12px; color: var(--text-soft); font-weight: 600; font-size: 0.9rem; opacity: 0.5; transition: opacity .3s; }
-  .step-item.active { opacity: 1; color: var(--navy); }
-  .step-item.completed { opacity: 1; color: var(--green); }
-  .step-num {
-    width: 32px; height: 32px; border-radius: 50%; background: var(--line); color: var(--text); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem; transition: background .3s, color .3s;
-  }
-  .step-item.active .step-num { background: var(--navy); color: var(--gold); }
-  .step-item.completed .step-num { background: var(--green); color: #fff; }
-  .step-divider { flex: 1; height: 2px; background: var(--line); margin: 0 16px; max-width: 60px; }
-
-  /* FORM CARD */
-  .card {
-    background: var(--card); border-radius: var(--radius); padding: 40px; box-shadow: 0 12px 36px rgba(0,0,0,0.05); border: 1px solid var(--line);
-  }
-  .form-step { display: none; }
-  .form-step.active { display: block; animation: fadeIn .3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .step-title { font-family: 'Fraunces', serif; font-size: 1.6rem; color: var(--navy); margin-bottom: 8px; font-weight: 700; }
-  .step-desc { font-size: 0.9rem; color: var(--text-soft); margin-bottom: 28px; }
-
-  /* INPUT FIELDS */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .form-group { margin-bottom: 20px; }
-  .form-label { display: block; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--navy); margin-bottom: 8px; }
-  .form-label span { color: var(--red); }
-  .form-input, .form-select {
-    width: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem; background: #FAFAFA; transition: border-color .2s, background .2s; outline: none;
-  }
-  .form-input:focus, .form-select:focus { border-color: var(--gold); background: #fff; box-shadow: 0 0 0 3px rgba(201,162,39,0.15); }
-
-  /* RADIO CARDS (Gender / Formats) */
-  .radio-group { display: flex; gap: 16px; }
-  .radio-card {
-    flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 14px; text-align: center; cursor: pointer; background: #FAFAFA; transition: border-color .2s, background .2s; font-weight: 600; font-size: 0.9rem;
-  }
-  .radio-card input { display: none; }
-  .radio-card:hover { border-color: var(--gold); }
-  .radio-card.active { border-color: var(--navy); background: rgba(12,22,44,0.04); color: var(--navy); }
-
-  /* SESSION CARDS */
-  .session-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
-  .session-card {
-    border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: border-color .2s, box-shadow .2s; background: #fff;
-  }
-  .session-card:hover { border-color: var(--gold); box-shadow: 0 6px 16px rgba(0,0,0,0.04); }
-  .session-card.selected { border: 2px solid var(--navy); background: rgba(12,22,44,0.02); }
-  .session-date { font-weight: 700; font-size: 1.05rem; color: var(--navy); margin-bottom: 4px; }
-  .session-meta { font-size: 0.85rem; color: var(--text-soft); display: flex; gap: 14px; }
-  .session-badge { background: var(--gold-light); color: #B38600; padding: 4px 10px; border-radius: 100px; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
-  .session-seats { text-align: right; }
-  .session-seats-num { font-weight: 700; font-size: 0.95rem; color: var(--navy); }
-  .session-seats-label { font-size: 0.76rem; color: var(--text-soft); }
-  .session-card.full { opacity: 0.55; cursor: not-allowed; }
-  .session-card.full:hover { border-color: var(--line); box-shadow: none; }
-  .session-empty { padding: 20px; text-align: center; color: var(--text-soft); font-size: 0.92rem; border: 1px dashed var(--line); border-radius: 10px; }
-  .session-empty a { color: var(--gold); font-weight: 700; }
-
-  /* PAYMENT SUMMARY & OPTIONS */
-  .payment-summary { background: #F3F4F6; border-radius: 10px; padding: 24px; margin-bottom: 28px; border: 1px solid var(--line); }
-  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.9rem; color: var(--text-soft); }
-  .summary-row.total { border-top: 1px dashed #D1D5DB; margin-top: 8px; padding-top: 14px; font-size: 1.15rem; font-weight: 800; color: var(--navy); }
-
-  .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
-  .pay-option {
-    border: 1px solid var(--line); border-radius: 10px; padding: 20px 14px; text-align: center; cursor: pointer; transition: all .2s; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-  }
-  .pay-option:hover { border-color: var(--gold); }
-  .pay-option.selected { border: 2px solid var(--gold); background: var(--gold-light); }
-  .pay-logo { height: 28px; object-fit: contain; }
-  .pay-title { font-weight: 700; font-size: 0.88rem; color: var(--navy); }
-
-  /* BUTTONS */
-  .btn-wrap { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; }
-  .btn-primary {
-    background: var(--navy); color: var(--gold); padding: 16px 36px; border-radius: 8px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: background .2s, transform .1s; display: inline-flex; align-items: center; gap: 10px;
-  }
-  .btn-primary:hover { background: var(--navy-soft); transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-secondary {
-    background: #E5E7EB; color: var(--text); padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: background .2s;
-  }
-  .btn-secondary:hover { background: #D1D5DB; }
-
-  /* TICKET (STEP 4) */
-  .ticket-card {
-    background: #fff; border: 2px solid var(--gold); border-radius: 16px; padding: 40px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.08);
-  }
-  .ticket-header { margin-bottom: 24px; }
-  .ticket-badge { background: var(--green); color: #fff; padding: 6px 18px; border-radius: 100px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-block; margin-bottom: 12px; }
-  .ticket-id { font-family: monospace; font-size: 1.3rem; font-weight: 800; color: var(--navy); letter-spacing: 0.1em; background: #F3F4F6; padding: 8px 18px; border-radius: 6px; display: inline-block; }
-  .ticket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin: 28px 0; padding: 20px; background: #F9FAFB; border-radius: 10px; border: 1px solid var(--line); }
-  .t-label { font-size: 0.76rem; font-weight: 700; text-transform: uppercase; color: var(--text-soft); }
-  .t-value { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-top: 2px; }
-
-  @media (max-width: 768px) {
-    .grid-2 { grid-template-columns: 1fr; }
-    .payment-methods { grid-template-columns: 1fr; }
-    .hero-title { font-size: 1.8rem; }
-    .step-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .step-divider { display: none; }
+  @media print{
+    header, .intro, .steps, .lookup, footer, .t-actions{ display:none !important; }
+    body{ background:#fff; }
+    .panel{ background:none; padding:0; }
+    .ticket{ animation:none; border:2px solid var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 </style>
 </head>
-<body>
+<body data-title-key="m-page-title">
 
-<!-- NAVBAR -->
-<nav>
-  <a href="index.html" class="logo">
-    <div>
-      <div class="logo-mark">STAN<span>FORD</span></div>
-      <div class="logo-sub">Language Center · Nukus</div>
-    </div>
-  </a>
-  <div class="nav-right">
-    <a href="index.html" class="nav-back">← Вернуться на главный сайт</a>
-  </div>
-</nav>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="20 6 9 17 4 12"/></symbol>
+</svg>
 
-<!-- HERO -->
-<section class="mock-hero">
-  <span class="hero-eyebrow">Stanford Examination Portal</span>
-  <h1 class="hero-title">Официальная запись на IELTS Mock Exam</h1>
-  <p class="hero-sub">Полная симуляция настоящего экзамена IELTS с соблюдением регламента и детальной проверкой от инструкторов с баллом 9.0.</p>
-</section>
-
-<!-- MAIN CONTENT CONTAINER -->
-<div class="container">
-  
-  <!-- STEP PROGRESS BAR -->
-  <div class="step-bar">
-    <div class="step-item active" id="stepIndicator1">
-      <div class="step-num">1</div>
-      <span>Личные данные</span>
-    </div>
-    <div class="step-divider"></div>
-    <div class="step-item" id="stepIndicator2">
-      <div class="step-num">2</div>
-      <span>Дата и формат</span>
-    </div>
-    <div class="step-divider"></div>
-    <div class="step-item" id="stepIndicator3">
-      <div class="step-num">3</div>
-      <span>Оплата и Подтверждение</span>
+<header>
+  <div class="wrap nav-inner">
+    <a href="index.html" class="logo" aria-label="Stanford language center"><img src="images/logo-row-black.png" alt="" width="167" height="36"/></a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-home" data-i18n="nav-home">На главную</a>
+      <div class="lang-switch" role="group" data-i18n-aria="lang-label" aria-label="Язык сайта">
+        <button type="button" data-lang="ru" lang="ru">RU</button>
+        <button type="button" data-lang="kaa" lang="kaa" title="Qaraqalpaqsha">QQ</button>
+        <button type="button" data-lang="en" lang="en">EN</button>
+      </div>
     </div>
   </div>
+</header>
 
-  <!-- FORM CARD -->
-  <div class="card">
-    <form id="mockRegistrationForm" onsubmit="return false;">
-      
-      <!-- STEP 1: PERSONAL INFORMATION -->
-      <div class="form-step active" id="step1">
-        <h2 class="step-title">Шаг 1: Информация о кандидате</h2>
-        <p class="step-desc">Введите свои личные данные точно так, как они указаны в паспорте или ID-карте.</p>
-        
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Имя <span>*</span></label>
-            <input type="text" id="regFirstName" class="form-input" placeholder="Асилбек" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Фамилия <span>*</span></label>
-            <input type="text" id="regLastName" class="form-input" placeholder="Джумабаев" required>
-          </div>
-        </div>
+<main class="wrap">
+  <div class="intro">
+    <h1>IELTS CD Mock Exam</h1>
+    <p><span data-i18n="m-hero-sub">Пробный IELTS на компьютере, как в настоящем тестовом центре. Запись — в три шага.</span> <a href="#lookup" data-i18n="mock-lookup">Узнать результат Mock</a></p>
+  </div>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Дата рождения <span>*</span></label>
-            <input type="date" id="regBirthDate" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Пол <span>*</span></label>
-            <div class="radio-group">
-              <label class="radio-card active" onclick="selectGender('male')">
-                <input type="radio" name="gender" value="male" checked> Мужской
-              </label>
-              <label class="radio-card" onclick="selectGender('female')">
-                <input type="radio" name="gender" value="female"> Женский
-              </label>
-            </div>
-          </div>
-        </div>
+  <ol class="steps" id="steps" aria-label="IELTS CD Mock Exam">
+    <li class="active" data-step="1"><span data-i18n="m-step1">Данные</span></li>
+    <li data-step="2"><span data-i18n="m-step2">Дата</span></li>
+    <li data-step="3"><span data-i18n="m-step3">Оплата</span></li>
+  </ol>
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Номер телефона <span>*</span></label>
-            <input type="tel" id="regPhone" class="form-input" placeholder="+998 90 123 45 67" required>
-          </div>
-        </div>
-
-        <div class="btn-wrap" style="justify-content: flex-end;">
-          <button type="button" class="btn-primary" onclick="goToStep(2)">Далее к выбору сессии →</button>
-        </div>
+  <div class="panel stage" id="stage">
+    <!-- STEP 1: candidate -->
+    <form class="step active" id="step1" novalidate>
+      <div class="step-head">
+        <h2 data-i18n="m-s1-title">Ваши данные</h2>
+        <p data-i18n="m-s1-desc">Как в паспорте или ID-карте — так они будут написаны в билете.</p>
       </div>
-
-      <!-- STEP 2: EXAM & SESSION SELECTION -->
-      <div class="form-step" id="step2">
-        <h2 class="step-title">Шаг 2: Выбор даты и сессии</h2>
-        <p class="step-desc">Выберите удобный формат экзамена и открытую сессию для тестирования.</p>
-
-        <div class="form-group">
-          <label class="form-label">Формат проведения <span>*</span></label>
-          <div class="radio-group">
-            <label class="radio-card active" data-format="paper" onclick="selectFormat('paper')">
-              📝 Paper-Based (На бумаге)
-            </label>
-            <label class="radio-card" data-format="computer" onclick="selectFormat('computer')">
-              💻 Computer-Delivered (На компьютере)
-            </label>
+      <div class="grid2">
+        <div class="field" data-field="first">
+          <label class="field-label" for="fFirst" data-i18n="m-first">Имя</label>
+          <input class="input" id="fFirst" autocomplete="given-name" maxlength="100"/>
+          <p class="field-error" data-i18n="m-err-first">Укажите имя</p>
+        </div>
+        <div class="field" data-field="last">
+          <label class="field-label" for="fLast" data-i18n="m-last">Фамилия</label>
+          <input class="input" id="fLast" autocomplete="family-name" maxlength="100"/>
+          <p class="field-error" data-i18n="m-err-last">Укажите фамилию</p>
+        </div>
+        <div class="field" data-field="phone">
+          <label class="field-label" for="fPhone" data-i18n="f-phone">Номер телефона</label>
+          <input class="input" id="fPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___-__-__"/>
+          <p class="field-error" data-i18n="m-err-phone">Введите номер полностью: +998 и 9 цифр</p>
+        </div>
+        <fieldset class="field" data-field="gender">
+          <legend class="field-label" data-i18n="m-gender">Пол</legend>
+          <div class="seg">
+            <label><input type="radio" name="gender" value="male"/><span data-i18n="m-male">Мужской</span></label>
+            <label><input type="radio" name="gender" value="female"/><span data-i18n="m-female">Женский</span></label>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Доступные сессии Mock Exam <span>*</span></label>
-          <div class="session-list" id="sessionsContainer">
-            <!-- Real sessions from the database are rendered here by mock.js -->
-            <div class="session-empty">Загрузка сессий...</div>
-          </div>
-        </div>
-
-        <div class="btn-wrap">
-          <button type="button" class="btn-secondary" onclick="goToStep(1)">← Назад</button>
-          <button type="button" class="btn-primary" id="step2NextBtn" onclick="goToStep(3)">Перейти к оплате →</button>
-        </div>
+          <p class="field-error" data-i18n="m-err-gender">Выберите пол</p>
+        </fieldset>
       </div>
-
-      <!-- STEP 3: PAYMENT & SUMMARY -->
-      <div class="form-step" id="step3">
-        <h2 class="step-title">Шаг 3: Способ оплаты и подтверждение</h2>
-        <p class="step-desc">Проверьте данные бронирования и выберите удобный способ оплаты.</p>
-
-        <div class="payment-summary">
-          <div class="summary-row">
-            <span>Кандидат:</span>
-            <strong id="sumCandidateName">Асилбек Джумабаев</strong>
-          </div>
-          <div class="summary-row">
-            <span>Экзамен:</span>
-            <strong id="sumExamTitle">IELTS Full Mock Test</strong>
-          </div>
-          <div class="summary-row">
-            <span>Дата и время:</span>
-            <strong id="sumExamDate">25 Августа 2026, 10:00</strong>
-          </div>
-          <div class="summary-row">
-            <span>Локация:</span>
-            <strong id="sumExamLocation">Stanford Main Center (ул. Н. Сараева 34, Нукус)</strong>
-          </div>
-          <div class="summary-row total">
-            <span>Итого к оплате:</span>
-            <span style="color: var(--gold);" id="sumExamPrice">150 000 сум</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Выберите способ оплаты <span>*</span></label>
-          <div class="payment-methods">
-            <div class="pay-option selected" onclick="selectPayMethod('click', this)">
-              <div style="font-size: 1.8rem;">📱</div>
-              <div class="pay-title">Click Online</div>
-              <div style="font-size: 0.74rem; color: var(--text-soft);">Оплата через Click / Приложение</div>
-            </div>
-            <div class="pay-option" onclick="selectPayMethod('payme', this)">
-              <div style="font-size: 1.8rem;">💳</div>
-              <div class="pay-title">Payme Online</div>
-              <div style="font-size: 0.74rem; color: var(--text-soft);">Быстрая оплата картой</div>
-            </div>
-            <div class="pay-option" onclick="selectPayMethod('cash', this)">
-              <div style="font-size: 1.8rem;">🏢</div>
-              <div class="pay-title">Оплата в центре</div>
-              <div style="font-size: 0.74rem; color: var(--text-soft);">Наличными до дня экзамена</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="btn-wrap">
-          <button type="button" class="btn-secondary" onclick="goToStep(2)">← Назад</button>
-          <button type="button" class="btn-primary" onclick="submitRegistration()">Завершить регистрацию</button>
-        </div>
+      <div class="step-actions">
+        <span class="spacer"></span>
+        <button type="submit" class="btn btn-ink" data-i18n="m-next">Далее</button>
       </div>
-
-      <!-- STEP 4: DIGITAL EXAM TICKET -->
-      <div class="form-step" id="step4">
-        <div class="ticket-card">
-          <div class="ticket-header">
-            <span class="ticket-badge">Заявка успешно зарегистрирована 🎉</span>
-            <h2 style="font-family: 'Fraunces', serif; color: var(--navy); margin-top: 8px;">Ваш электронный билет на Mock Exam</h2>
-            <p style="font-size: 0.88rem; color: var(--text-soft); margin-top: 4px;">Сохраните этот билет или предъявите его администратору на входе.</p>
-          </div>
-
-          <div class="ticket-id" id="tNo">ST-2026-MOCK-8392</div>
-
-          <div class="ticket-grid">
-            <div>
-              <div class="t-label">Кандидат</div>
-              <div class="t-value" id="tName">Асилбек Джумабаев</div>
-            </div>
-            <div>
-              <div class="t-label">Экзамен</div>
-              <div class="t-value" id="tExam">IELTS Full Mock Test</div>
-            </div>
-            <div>
-              <div class="t-label">Дата и время</div>
-              <div class="t-value" id="tDate">25 Августа 2026, 10:00</div>
-            </div>
-            <div>
-              <div class="t-label">Статус оплаты</div>
-              <div class="t-value" style="color: #B38600;" id="tPayStatus">🟡 Ожидает оплаты</div>
-            </div>
-            <div>
-              <div class="t-label">Адрес центра</div>
-              <div class="t-value">ул. Н. Сараева 34, Нукус</div>
-            </div>
-          </div>
-
-          <div style="margin-top: 24px; display: flex; gap: 16px; justify-content: center;">
-            <button type="button" class="btn-primary" onclick="window.print()">🖨️ Распечатать билет</button>
-            <a href="index.html" class="btn-secondary">На главную страницу</a>
-          </div>
-        </div>
-      </div>
-
     </form>
-  </div>
-</div>
 
+    <!-- STEP 2: calendar -->
+    <div class="step" id="step2">
+      <div class="step-head">
+        <h2 data-i18n="m-s2-title">Выберите день</h2>
+        <p data-i18n="m-s2-desc">Жёлтые дни — есть свободные места. Нажмите на день, чтобы увидеть время.</p>
+      </div>
+      <div class="cal-layout">
+        <div class="cal">
+          <div class="cal-grid" id="calGrid" aria-live="polite"></div>
+          <div class="legend">
+            <span><i style="background:var(--yellow)"></i><span data-i18n="m-legend-open">Есть места</span></span>
+            <span><i style="background:var(--mist); box-shadow:inset 0 0 0 1px #D9D9DE"></i><span data-i18n="m-legend-full">Мест нет</span></span>
+            <span><i style="background:var(--paper); box-shadow:inset 0 0 0 1px var(--line)"></i><span data-i18n="m-legend-none">Нет экзамена</span></span>
+          </div>
+        </div>
+        <div class="sessions" id="sessions" aria-live="polite"></div>
+      </div>
+      <p class="session-error" id="sessionError" hidden data-i18n="m-err-session">Выберите день и время экзамена</p>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back data-i18n="m-back">Назад</button>
+        <span class="spacer"></span>
+        <span class="chosen" id="chosenText"></span>
+        <button type="button" class="btn btn-ink" id="toStep3" data-i18n="m-next">Далее</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: summary + payment -->
+    <div class="step" id="step3">
+      <div class="step-head">
+        <h2 data-i18n="m-s3-title">Проверьте и выберите оплату</h2>
+        <p data-i18n="m-s3-desc">Оплату подтверждает администратор. До этого в билете будет «Ожидает оплаты».</p>
+      </div>
+      <div class="sum-layout">
+        <dl class="summary" id="summary"></dl>
+        <div>
+          <h3 class="pay-title" data-i18n="m-pay-title">Как вам удобнее оплатить?</h3>
+          <label class="pay-opt"><input type="radio" name="pay" value="click" checked/><span class="pay-mark">Click</span><span><b>Click</b><small data-i18n="m-pay-click-sub">Перевод в приложении Click</small></span><span class="pay-dot"></span></label>
+          <label class="pay-opt"><input type="radio" name="pay" value="payme"/><span class="pay-mark">Payme</span><span><b>Payme</b><small data-i18n="m-pay-payme-sub">Перевод в приложении Payme</small></span><span class="pay-dot"></span></label>
+          <label class="pay-opt"><input type="radio" name="pay" value="cash"/><span class="pay-mark">UZS</span><span><b data-i18n="m-pay-cash">В центре</b><small data-i18n="m-pay-cash-sub">Наличными до дня экзамена</small></span><span class="pay-dot"></span></label>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button type="button" class="btn btn-ghost" data-back data-i18n="m-back">Назад</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-ink" id="submitBtn" data-i18n="m-submit">Записаться на экзамен</button>
+      </div>
+    </div>
+
+    <!-- TICKET -->
+    <div class="step" id="step4" tabindex="-1">
+      <div class="ticket-wrap">
+        <div class="ticket">
+          <span class="t-badge"><svg class="icon"><use href="#i-check"/></svg><span data-i18n="m-t-badge">Вы записаны</span></span>
+          <h2 data-i18n="m-t-title">Ваш билет на IELTS CD Mock</h2>
+          <p class="t-sub" data-i18n="m-t-sub">Сохраните номер билета: он нужен на входе и чтобы узнать результат.</p>
+          <div class="t-no"><small data-i18n="m-t-no">Номер билета</small><b id="tNo">—</b></div>
+          <div class="t-rows">
+            <div><small data-i18n="m-sum-name">Кандидат</small><b id="tName"></b></div>
+            <div><small data-i18n="m-sum-date">Дата и время</small><b id="tDate"></b></div>
+            <div><small data-i18n="m-t-pay">Оплата</small><b id="tPay"></b></div>
+            <div><small data-i18n="m-t-address">Адрес</small><b data-i18n="m-t-address-val">ул. Н. Сараева 34, Нукус</b></div>
+          </div>
+        </div>
+        <div class="t-actions">
+          <button type="button" class="btn btn-ink" onclick="window.print()" data-i18n="m-t-print">Распечатать</button>
+          <a class="btn btn-ghost" href="index.html" data-i18n="nav-home">На главную</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT LOOKUP -->
+  <section class="lookup" id="lookup">
+    <div>
+      <h2 data-i18n="m-l-title">Узнать результат Mock</h2>
+      <p data-i18n="m-l-desc">Введите номер билета и телефон, указанный при записи.</p>
+    </div>
+    <div class="panel">
+      <form id="lookupForm" novalidate>
+        <div class="field">
+          <label class="field-label" for="lkTicket" data-i18n="m-l-ticket">Номер билета</label>
+          <input class="input" id="lkTicket" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" data-i18n-placeholder="m-ticket-ph"/>
+        </div>
+        <div class="field">
+          <label class="field-label" for="lkPhone" data-i18n="f-phone">Номер телефона</label>
+          <input class="input" id="lkPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+998 __ ___-__-__"/>
+        </div>
+        <button type="submit" class="btn btn-ink" id="lkSubmit" data-i18n="m-l-submit">Показать результат</button>
+      </form>
+      <div id="lkOut" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Stanford Language Center</span>
+    <a href="tel:+998913036001">+998 91 303-60-01</a>
+  </div>
+</footer>
+
+<script src="translations.js"></script>
+<script src="i18n.js"></script>
 <script src="mock.js"></script>
 </body>
 </html>
