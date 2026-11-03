@@ -218,14 +218,22 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGallery();
 });
 
+const MOCK_COURSE_LABELS = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English' };
+const NO_SESSIONS_HTML = '<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Сейчас нет открытых сессий. Позвоните: <a href="tel:+998913036001" style="color: var(--gold); font-weight: 600;">+998 91 303-60-01</a></div>';
+
 async function loadPublicMockExams() {
   const container = document.getElementById('publicMockExamsGrid');
   if (!container) return;
 
   try {
+    // The API only returns exams with status 'upcoming' whose date has not passed.
     const { data: exams, error } = await apiGet('mock-exams/');
 
-    if (error || !exams || exams.length === 0) return;
+    if (error || !exams || exams.length === 0) {
+      if (error) console.warn('Could not load mock exams:', error);
+      container.innerHTML = NO_SESSIONS_HTML;
+      return;
+    }
 
     // Seat counts come with each exam from the API
     const counts = {};
@@ -242,29 +250,32 @@ async function loadPublicMockExams() {
       const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
 
       const courseBadgeClass = e.course_type === 'ielts' ? 'badge-ielts' : 'badge-general';
-      const courseLabel = e.course_type === 'ielts' ? 'IELTS Preparation' : (e.course_type.toUpperCase() + ' English');
+      const courseLabel = MOCK_COURSE_LABELS[e.course_type] || 'IELTS Preparation';
+      const isFull = leftSeats <= 0;
 
       return `
         <div class="mock-card">
           <div>
             <div class="mock-tag-bar">
-              <span class="mock-badge ${courseBadgeClass}">${courseLabel}</span>
-              <span class="mock-badge badge-general">${e.status === 'upcoming' ? 'Открыта запись' : e.status}</span>
+              <span class="mock-badge ${courseBadgeClass}">${escapeHtml(courseLabel)}</span>
+              <span class="mock-badge badge-general">${isFull ? 'Мест нет' : 'Открыта запись'}</span>
             </div>
             <div class="mock-title">${escapeHtml(e.title)}</div>
             <p class="mock-desc">${escapeHtml(e.description || 'Пробный экзамен IELTS в условиях реального тестирования с индивидуальным разбором результатов.')}</p>
             <div class="mock-details">
               <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> ${dateStr}</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${timeStr} (${e.duration_minutes || 120} мин)</div>
+              <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${timeStr} (${escapeHtml(e.duration_minutes || 120)} мин)</div>
               <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> Stanford Center, Нукус</div>
             </div>
           </div>
           <div>
             <div class="mock-seats-wrap">
-              <div class="mock-seats-info"><span>Мест осталось</span> <span>${leftSeats} из ${maxSeats}</span></div>
+              <div class="mock-seats-info"><span>Мест осталось</span> <span>${escapeHtml(leftSeats)} из ${escapeHtml(maxSeats)}</span></div>
               <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: ${percentage}%;"></div></div>
             </div>
-            <button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">Зарегистрироваться на Mock</button>
+            ${isFull
+              ? '<button class="mock-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Мест нет</button>'
+              : `<button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">Зарегистрироваться на Mock</button>`}
           </div>
         </div>
       `;
@@ -278,6 +289,7 @@ async function loadPublicMockExams() {
     });
   } catch(e) {
     console.warn("Error loading mock exams:", e);
+    container.innerHTML = NO_SESSIONS_HTML;
   }
 }
 

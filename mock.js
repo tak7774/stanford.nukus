@@ -114,65 +114,39 @@ window.selectPayMethod = function(method, el) {
   if (el) el.classList.add('selected');
 };
 
-// ── Fetch Open Mock Sessions from Supabase ──
+// ── Fetch Open Mock Sessions from the API ──
+// The API only returns exams with status 'upcoming' whose date has not passed,
+// each with seats_left. No demo sessions: if there are none, say so.
 async function loadMockSessions() {
   const container = document.getElementById('sessionsContainer');
   if (!container) return;
 
-  let exams = [];
   const { data, error } = await apiRequest('GET', 'mock-exams/');
-  if (!error && data && data.length > 0) {
-    exams = data;
-  } else if (error) {
-    console.warn("Could not fetch mock exams:", error);
-  }
-
-  // Fallback demo sessions if DB is empty or connecting
-  if (exams.length === 0) {
-    exams = [
-      {
-        id: 1,
-        title: 'IELTS Full Simulation #12 (Academic & GT)',
-        exam_date: '2026-08-25T10:00:00',
-        duration_minutes: 180,
-        price_uzs: 150000,
-        max_seats: 30,
-        location: 'Stanford Main Center, Нукус'
-      },
-      {
-        id: 2,
-        title: 'IELTS Writing & Speaking Specialized Mock',
-        exam_date: '2026-08-30T14:00:00',
-        duration_minutes: 120,
-        price_uzs: 120000,
-        max_seats: 25,
-        location: 'Stanford Main Center, Нукус'
-      }
-    ];
-  }
+  if (error) console.warn("Could not fetch mock exams:", error);
+  const exams = (!error && Array.isArray(data)) ? data : [];
 
   loadedSessions = exams;
+  selectedSession = null; // the student must pick a session themselves
+
+  const nextBtn = document.getElementById('step2NextBtn');
+  if (exams.length === 0) {
+    container.innerHTML = '<div class="session-empty">Сейчас нет открытых сессий. Позвоните: <a href="tel:+998913036001">+998 91 303-60-01</a></div>';
+    if (nextBtn) nextBtn.disabled = true;
+    return;
+  }
+  if (nextBtn) nextBtn.disabled = false;
 
   // Render Session Cards
-  container.innerHTML = exams.map((ex, index) => {
+  container.innerHTML = exams.map(ex => {
     const dt = new Date(ex.exam_date);
     const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
     const priceStr = (ex.price_uzs || 150000).toLocaleString('ru-RU') + ' сум';
-
-    const isFirst = index === 0;
-    if (isFirst && !selectedSession) {
-      selectedSession = {
-        id: ex.id,
-        title: ex.title,
-        dateStr: `${dateStr}, ${timeStr}`,
-        price: ex.price_uzs || 150000,
-        priceStr: priceStr
-      };
-    }
+    const seatsLeft = Math.max(0, Number(ex.seats_left) || 0);
+    const isFull = seatsLeft === 0;
 
     return `
-      <div class="session-card ${isFirst ? 'selected' : ''}" onclick="pickSession(${ex.id}, this)">
+      <div class="session-card ${isFull ? 'full' : ''}" data-exam-id="${escapeHtml(ex.id)}">
         <div>
           <div class="session-date">${dateStr} в ${timeStr}</div>
           <div class="session-meta">
@@ -183,31 +157,37 @@ async function loadMockSessions() {
         <div class="session-seats">
           <div class="session-seats-num" style="color: var(--gold); font-size: 1.1rem;">${priceStr}</div>
           <div class="session-seats-label">Стоимость участия</div>
+          <div class="session-seats-label">${isFull ? 'Мест нет' : `Свободных мест: ${seatsLeft} из ${escapeHtml(ex.max_seats)}`}</div>
         </div>
       </div>
     `;
   }).join('');
+
+  // Only sessions with free seats can be picked
+  container.querySelectorAll('.session-card:not(.full)').forEach(card => {
+    card.addEventListener('click', () => pickSession(Number(card.dataset.examId), card));
+  });
 }
 
 window.pickSession = function(id, el) {
+  const sessionObj = loadedSessions.find(s => s.id === id);
+  if (!sessionObj || !(Number(sessionObj.seats_left) > 0)) return;
+
   document.querySelectorAll('.session-card').forEach(c => c.classList.remove('selected'));
   if (el) el.classList.add('selected');
 
-  const sessionObj = loadedSessions.find(s => s.id === id);
-  if (sessionObj) {
-    const dt = new Date(sessionObj.exam_date);
-    const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-    const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    const priceStr = (sessionObj.price_uzs || 150000).toLocaleString('ru-RU') + ' сум';
+  const dt = new Date(sessionObj.exam_date);
+  const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  const priceStr = (sessionObj.price_uzs || 150000).toLocaleString('ru-RU') + ' сум';
 
-    selectedSession = {
-      id: sessionObj.id,
-      title: sessionObj.title,
-      dateStr: `${dateStr}, ${timeStr}`,
-      price: sessionObj.price_uzs || 150000,
-      priceStr: priceStr
-    };
-  }
+  selectedSession = {
+    id: sessionObj.id,
+    title: sessionObj.title,
+    dateStr: `${dateStr}, ${timeStr}`,
+    price: sessionObj.price_uzs || 150000,
+    priceStr: priceStr
+  };
 };
 
 // ── Populate Summary Step 3 ──
@@ -247,9 +227,16 @@ window.submitRegistration = async function() {
   });
   if (error) {
     console.warn('Could not save exam registration:', error);
-    if (error.code === 'EXAM_FULL') alert('К сожалению, все места на этот экзамен заняты. Выберите другую дату.');
-    else if (error.code === 'EXAM_CLOSED') alert('Запись на этот экзамен закрыта. Выберите другую дату.');
-    else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+    if (error.code === 'EXAM_FULL' || error.code === 'EXAM_CLOSED') {
+      alert(error.code === 'EXAM_FULL'
+        ? 'К сожалению, все места на этот экзамен заняты. Выберите другую дату.'
+        : 'Запись на этот экзамен закрыта. Выберите другую дату.');
+      // Refresh the seat counts and let the student pick another session
+      await loadMockSessions();
+      goToStep(2);
+    } else {
+      alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+    }
     return;
   }
 

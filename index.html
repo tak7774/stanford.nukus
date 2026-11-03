@@ -655,51 +655,8 @@
   </div>
 
   <div class="mock-grid reveal" id="publicMockExamsGrid">
-    <div class="mock-card">
-      <div>
-        <div class="mock-tag-bar">
-          <span class="mock-badge badge-ielts">IELTS Simulation</span>
-          <span class="mock-badge badge-general">Открыта запись</span>
-        </div>
-        <div class="mock-title">IELTS Full Mock Test</div>
-        <p class="mock-desc">Полный пробный экзамен (Listening, Reading, Writing, Speaking) в реальном формате.</p>
-        <div class="mock-details">
-          <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> Скоро сессия</div>
-          <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> 10:00 (Длительность: 180 мин)</div>
-          <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> Stanford Center, Нукус</div>
-        </div>
-      </div>
-      <div>
-        <div class="mock-seats-wrap">
-          <div class="mock-seats-info"><span>Мест осталось</span> <span>18 из 30</span></div>
-          <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: 60%;"></div></div>
-        </div>
-        <button class="mock-btn" onclick="openPublicMockModal('IELTS Full Mock Test')">Зарегистрироваться на Mock</button>
-      </div>
-    </div>
-
-    <div class="mock-card">
-      <div>
-        <div class="mock-tag-bar">
-          <span class="mock-badge badge-ielts">IELTS Academic</span>
-          <span class="mock-badge badge-general">Открыта запись</span>
-        </div>
-        <div class="mock-title">IELTS Academic Practice Session</div>
-        <p class="mock-desc">Сфокусированная проверка модулей Writing & Speaking с разбором от инспектора 9.0.</p>
-        <div class="mock-details">
-          <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> Скоро сессия</div>
-          <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> 14:00 (Длительность: 120 мин)</div>
-          <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> Stanford Center, Нукус</div>
-        </div>
-      </div>
-      <div>
-        <div class="mock-seats-wrap">
-          <div class="mock-seats-info"><span>Мест осталось</span> <span>10 из 25</span></div>
-          <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: 40%;"></div></div>
-        </div>
-        <button class="mock-btn" onclick="openPublicMockModal('IELTS Academic Practice Session')">Зарегистрироваться на Mock</button>
-      </div>
-    </div>
+    <!-- Filled by main.js with real sessions from the database -->
+    <div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Загрузка сессий...</div>
   </div>
 </section>
 

@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db import transaction
 from django.db.models import Count, Max
 from django.http import Http404, HttpResponse
+from django.utils import timezone
 from django.views.decorators.http import require_GET
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -45,13 +46,18 @@ class PublicView:
 
 
 class PublicMockExamList(PublicView, generics.ListAPIView):
-    """GET /api/mock-exams/ — exams that are not cancelled, soonest first, with seat counts."""
+    """GET /api/mock-exams/ — only open sessions (status 'upcoming' and date not passed),
+    soonest first, with seat counts."""
 
     serializer_class = PublicMockExamSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return exams_with_counts().exclude(status="cancelled").order_by("exam_date")
+        return (
+            exams_with_counts()
+            .filter(status="upcoming", exam_date__gte=timezone.now())
+            .order_by("exam_date")
+        )
 
 
 class PublicNewsList(PublicView, generics.ListAPIView):

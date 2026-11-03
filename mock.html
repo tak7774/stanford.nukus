@@ -119,6 +119,10 @@
   .session-seats { text-align: right; }
   .session-seats-num { font-weight: 700; font-size: 0.95rem; color: var(--navy); }
   .session-seats-label { font-size: 0.76rem; color: var(--text-soft); }
+  .session-card.full { opacity: 0.55; cursor: not-allowed; }
+  .session-card.full:hover { border-color: var(--line); box-shadow: none; }
+  .session-empty { padding: 20px; text-align: center; color: var(--text-soft); font-size: 0.92rem; border: 1px dashed var(--line); border-radius: 10px; }
+  .session-empty a { color: var(--gold); font-weight: 700; }
 
   /* PAYMENT SUMMARY & OPTIONS */
   .payment-summary { background: #F3F4F6; border-radius: 10px; padding: 24px; margin-bottom: 28px; border: 1px solid var(--line); }
@@ -140,6 +144,7 @@
     background: var(--navy); color: var(--gold); padding: 16px 36px; border-radius: 8px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: background .2s, transform .1s; display: inline-flex; align-items: center; gap: 10px;
   }
   .btn-primary:hover { background: var(--navy-soft); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .btn-secondary {
     background: #E5E7EB; color: var(--text); padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: background .2s;
   }
@@ -278,26 +283,14 @@
         <div class="form-group">
           <label class="form-label">Доступные сессии Mock Exam <span>*</span></label>
           <div class="session-list" id="sessionsContainer">
-            <!-- Dynamic session items rendered via mock.js -->
-            <div class="session-card selected">
-              <div>
-                <div class="session-date">25 Августа, 2026 в 10:00</div>
-                <div class="session-meta">
-                  <span class="session-badge">IELTS Full Simulation</span>
-                  <span>📍 Stanford Main Center, Нукус</span>
-                </div>
-              </div>
-              <div class="session-seats">
-                <div class="session-seats-num">18 / 30</div>
-                <div class="session-seats-label">Свободных мест</div>
-              </div>
-            </div>
+            <!-- Real sessions from the database are rendered here by mock.js -->
+            <div class="session-empty">Загрузка сессий...</div>
           </div>
         </div>
 
         <div class="btn-wrap">
           <button type="button" class="btn-secondary" onclick="goToStep(1)">← Назад</button>
-          <button type="button" class="btn-primary" onclick="goToStep(3)">Перейти к оплате →</button>
+          <button type="button" class="btn-primary" id="step2NextBtn" onclick="goToStep(3)">Перейти к оплате →</button>
         </div>
       </div>
 

@@ -29,9 +29,12 @@ class PublicApiTests(APITestCase):
     def setUp(self):
         cache.clear()
 
-    def test_mock_exam_list_hides_cancelled_and_counts_seats(self):
+    def test_mock_exam_list_only_open_sessions_and_counts_seats(self):
         exam = make_exam()
         make_exam(title="Cancelled", status="cancelled")
+        make_exam(title="In progress", status="in_progress")
+        make_exam(title="Completed", status="completed")
+        make_exam(title="Past", exam_date=timezone.now() - timedelta(hours=1))
         ExamRegistration.objects.create(exam=exam, full_name="A", phone="1")
 
         res = self.client.get("/api/mock-exams/")
