@@ -294,7 +294,7 @@ async function loadGallery() {
 
   grid.innerHTML = photos.map(p => {
     const sizeClass = p.size === 'tall' || p.size === 'wide' ? ' ' + p.size : '';
-    return `<div class="gallery-item${sizeClass} reveal visible"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Educational Centre')}" loading="lazy"/></div>`;
+    return `<div class="gallery-item${sizeClass}"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Educational Centre')}" loading="lazy"/></div>`;
   }).join('');
 }
 
