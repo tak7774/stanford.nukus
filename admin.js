@@ -21,21 +21,27 @@ async function api(method, path, body) {
   try {
     const res = await fetch('/api/' + path, opts);
     const data = res.status === 204 ? null : await res.json().catch(() => ({}));
-    if (!res.ok) return { error: { status: res.status, ...(data || {}) } };
+    if (!res.ok) {
+      const error = { status: res.status, ...(data || {}) };
+      error.message = errorMessage(error);
+      return { error };
+    }
     return { data };
   } catch (e) {
-    return { error: { detail: 'Network error — check your connection.' } };
+    return { error: { message: 'Network error — check your connection.' } };
   }
 }
 
-function showApiError(error) {
-  if (!error) return;
-  if (error.detail) { alert(error.detail); return; }
+// Turns an API error into one readable message (error.message).
+function errorMessage(error) {
+  if (!error) return '';
+  if (error.message) return error.message;
+  if (error.detail) return error.detail;
   // Field validation errors look like { title: ["This field is required."] }
   const msgs = Object.entries(error)
     .filter(([k]) => k !== 'status')
     .map(([k, v]) => `${k}: ${[].concat(v).join(' ')}`);
-  if (msgs.length) { alert(msgs.join('\n')); return; }
+  if (msgs.length) return msgs.join('; ');
   const byStatus = {
     401: 'Сессия истекла — войдите заново.',
     403: 'Нет доступа — войдите заново.',
@@ -43,7 +49,14 @@ function showApiError(error) {
     413: 'Файл слишком большой.',
     500: 'Ошибка на сервере. Попробуйте ещё раз.'
   };
-  alert(byStatus[error.status] || ('Ошибка ' + (error.status || '') + ' — что-то пошло не так.'));
+  return byStatus[error.status] || ('Ошибка ' + (error.status || '') + ' — что-то пошло не так.');
+}
+
+// Every failed save/delete shows a red toast; the success toast is not shown
+// and the modal stays open, so nothing typed is lost.
+function showApiError(error) {
+  if (!error) return;
+  toast(errorMessage(error), 'error');
 }
 
 // ── State ──
@@ -112,10 +125,15 @@ function navigate(page) {
 }
 
 // ── Toast ──
-function toast(msg) {
-  toastEl.textContent = '✅ ' + msg; // plain text, never parsed as HTML
+// toast('Saved') = green; toast(error.message, 'error') = red.
+let toastTimer = null;
+function toast(msg, type) {
+  const isError = type === 'error';
+  toastEl.textContent = (isError ? '⚠️ ' : '✅ ') + msg; // plain text, never parsed as HTML
+  toastEl.classList.toggle('error', isError);
   toastEl.classList.add('active');
-  setTimeout(() => toastEl.classList.remove('active'), 3000);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('active'), isError ? 6000 : 3000);
 }
 
 // ── Modal ──
@@ -233,8 +251,8 @@ function openExamModal(editId) {
   `);
 
   if (isEdit) {
-    api('GET', 'admin/exams/' + editId + '/').then(({ data: e }) => {
-      if (!e) return;
+    api('GET', 'admin/exams/' + editId + '/').then(({ data: e, error }) => {
+      if (error) { showApiError(error); closeModal(); return; }
       const dt = new Date(e.exam_date);
       const dateVal = dt.toISOString().slice(0, 10);
       const timeVal = dt.toTimeString().slice(0, 5);
@@ -299,10 +317,11 @@ async function deleteExam(id) {
 }
 
 async function viewExamRegs(examId) {
-  const [{ data: exam }, { data: regs }] = await Promise.all([
+  const [{ data: exam }, { data: regs, error }] = await Promise.all([
     api('GET', 'admin/exams/' + examId + '/'),
     api('GET', 'admin/exams/' + examId + '/registrations/')
   ]);
+  if (error) { showApiError(error); return; }
   const regsList = regs || [];
 
   openModal(`
@@ -387,7 +406,7 @@ async function loadStudents() {
 
 async function updateStudentStatus(id, status) {
   const { error } = await api('PATCH', 'admin/students/' + id + '/', { status });
-  if (error) { showApiError(error); return; }
+  if (error) { showApiError(error); loadStudents(); return; } // reload so the dropdown shows the saved value
   toast('Status updated to ' + status);
   loadStudents();
 }
@@ -428,8 +447,8 @@ function openNewsModal(editId) {
   openModal(`<div class="modal-title">${isEdit ? 'Edit Post' : 'New Post'}<button class="modal-close" onclick="closeModal()">✕</button></div><div id="newsFormBody">Loading...</div>`);
 
   if (isEdit) {
-    api('GET', 'admin/news/' + editId + '/').then(({ data: n }) => {
-      if (!n) return;
+    api('GET', 'admin/news/' + editId + '/').then(({ data: n, error }) => {
+      if (error) { showApiError(error); closeModal(); return; }
       fillNewsForm(n.title, n.body || '', editId);
     });
   } else {
