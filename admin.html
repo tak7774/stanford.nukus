@@ -5,7 +5,6 @@
 <title>Stanford Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#0B0F1A;--bg2:#111827;--bg3:#1F2937;--bg4:#374151;
@@ -144,6 +143,15 @@ select.form-control{cursor:pointer}
 
 /* filter bar */
 .filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.gallery-admin-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.gallery-admin-card img{width:100%;height:160px;object-fit:cover;display:block;background:var(--bg3)}
+.gallery-admin-body{padding:12px;display:flex;flex-direction:column;gap:8px}
+.gallery-admin-body .form-control{padding:8px 10px;font-size:.8rem}
+.gallery-admin-actions{display:flex;gap:6px;flex-wrap:wrap}
+.gallery-pos{font-size:.72rem;color:var(--text3)}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:border-color .2s;color:var(--text2)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);color:var(--text)}
 .filter-bar select{padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.82rem;outline:none}
 .filter-bar select:focus{border-color:var(--gold)}
 
@@ -194,6 +202,7 @@ select.form-control{cursor:pointer}
       <button class="nav-item" data-page="exams"><span class="icon">📝</span> Mock Exams</button>
       <button class="nav-item" data-page="students"><span class="icon">👥</span> Students</button>
       <button class="nav-item" data-page="news"><span class="icon">📰</span> News</button>
+      <button class="nav-item" data-page="gallery"><span class="icon">🖼️</span> Gallery</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info">

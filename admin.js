@@ -1,12 +1,50 @@
 // ============================================================
 // Stanford Admin Panel — Full Admin Logic
-// Supabase auth + Mock Exams + Students + News
+// Django API (/api/...) + Mock Exams + Students + News
 // ============================================================
 
-const SUPABASE_URL = "https://nzbravxsxttloyicwcyq.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56YnJhdnhzeHR0bG95aWN3Y3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTg3NzAsImV4cCI6MjEwMTgzNDc3MH0.YFZfZRWHTAvxTYRDcmokgpvmjT9iflpA4KGJMcnMrFY";
+// ── API helper ──
+// Uses the Django login session cookie. Every change (POST/PATCH/DELETE)
+// sends the CSRF token Django gave us, as Django requires.
+function getCookie(name) {
+  const m = document.cookie.match('(^|;)\\s*' + name + '=([^;]*)');
+  return m ? decodeURIComponent(m[2]) : null;
+}
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+async function api(method, path, body) {
+  const opts = { method, credentials: 'same-origin', headers: {} };
+  if (body !== undefined) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  if (method !== 'GET') opts.headers['X-CSRFToken'] = getCookie('csrftoken') || '';
+  try {
+    const res = await fetch('/api/' + path, opts);
+    const data = res.status === 204 ? null : await res.json().catch(() => ({}));
+    if (!res.ok) return { error: { status: res.status, ...(data || {}) } };
+    return { data };
+  } catch (e) {
+    return { error: { detail: 'Network error — check your connection.' } };
+  }
+}
+
+function showApiError(error) {
+  if (!error) return;
+  if (error.detail) { alert(error.detail); return; }
+  // Field validation errors look like { title: ["This field is required."] }
+  const msgs = Object.entries(error)
+    .filter(([k]) => k !== 'status')
+    .map(([k, v]) => `${k}: ${[].concat(v).join(' ')}`);
+  if (msgs.length) { alert(msgs.join('\n')); return; }
+  const byStatus = {
+    401: 'Сессия истекла — войдите заново.',
+    403: 'Нет доступа — войдите заново.',
+    404: 'Сервер не нашёл этот адрес (возможно, сервер нужно перезапустить).',
+    413: 'Файл слишком большой.',
+    500: 'Ошибка на сервере. Попробуйте ещё раз.'
+  };
+  alert(byStatus[error.status] || ('Ошибка ' + (error.status || '') + ' — что-то пошло не так.'));
+}
 
 // ── State ──
 let session = null; // { email, role }
@@ -34,23 +72,16 @@ async function doLogin() {
 
   if (!email || !pw) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  const { data, error } = await api('POST', 'auth/login/', { email, password: pw });
+  if (error) { errEl.textContent = error.detail || 'Login failed'; errEl.style.display = 'block'; return; }
 
-  const { data: roleRow } = await sb.from('staff_roles').select('role').eq('email', email).single();
-  if (!roleRow) {
-    errEl.textContent = 'You are not listed in staff_roles. Ask the owner to add you.';
-    errEl.style.display = 'block';
-    await sb.auth.signOut();
-    return;
-  }
-
-  session = { email, role: roleRow.role };
+  session = { email: data.email, role: data.role };
+  $('loginPassword').value = '';
   showApp();
 }
 
 async function doLogout() {
-  await sb.auth.signOut();
+  await api('POST', 'auth/logout/');
   session = null;
   appLayout.style.display = 'none';
   loginWrap.style.display = 'flex';
@@ -76,7 +107,7 @@ function navigate(page) {
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   $('sidebar').classList.remove('open');
-  const views = { dashboard: renderDashboard, exams: renderExams, students: renderStudents, news: renderNews };
+  const views = { dashboard: renderDashboard, exams: renderExams, students: renderStudents, news: renderNews, gallery: renderGallery };
   (views[page] || renderDashboard)();
 }
 
@@ -115,25 +146,18 @@ const statusBadge = { new: 'badge-gold', contacted: 'badge-blue', enrolled: 'bad
 async function renderDashboard() {
   mainContent.innerHTML = '<div class="page-header"><h1>Dashboard</h1><p>Overview of your centre</p></div><div class="stats-grid" id="dashStats">Loading...</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="dashCards"></div>';
 
-  const [exams, students, news, examRegs] = await Promise.all([
-    sb.from('mock_exams').select('*').order('exam_date', { ascending: false }),
-    sb.from('trial_registrations').select('*').order('created_at', { ascending: false }),
-    sb.from('news').select('*').order('created_at', { ascending: false }),
-    sb.from('exam_registrations').select('*').order('registered_at', { ascending: false })
-  ]);
+  const { data: d, error } = await api('GET', 'admin/dashboard/');
+  if (error) { $('dashStats').textContent = error.detail || 'Could not load dashboard'; return; }
 
-  const examsData = exams.data || [];
-  const studentsData = students.data || [];
-  const newsData = news.data || [];
-  const examRegsData = examRegs.data || [];
-
-  const upcomingExams = examsData.filter(e => e.status === 'upcoming').length;
-  const newStudents = studentsData.filter(s => s.status === 'new').length;
+  const studentsData = d.recent_students;
+  const examRegsData = d.recent_exam_registrations;
+  const upcomingExams = d.upcoming_exams;
+  const newStudents = d.new_students;
 
   $('dashStats').innerHTML = `
-    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${examsData.length}</div><div class="stat-label">Total Mock Exams</div></div>
+    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${d.total_exams}</div><div class="stat-label">Total Mock Exams</div></div>
     <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-num">${upcomingExams}</div><div class="stat-label">Upcoming Exams</div></div>
-    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${studentsData.length}</div><div class="stat-label">Trial Registrations</div></div>
+    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${d.total_students}</div><div class="stat-label">Trial Registrations</div></div>
     <div class="stat-card"><div class="stat-icon purple">🆕</div><div class="stat-num">${newStudents}</div><div class="stat-label">New (uncontacted)</div></div>
   `;
 
@@ -172,9 +196,8 @@ async function renderExams() {
 async function loadExamsList() {
   const filterEl = $('examFilter');
   const filter = filterEl ? filterEl.value : '';
-  let q = sb.from('mock_exams').select('*').order('exam_date', { ascending: false });
-  if (filter) q = q.eq('status', filter);
-  const { data } = await q;
+  const { data, error } = await api('GET', 'admin/exams/' + (filter ? '?status=' + encodeURIComponent(filter) : ''));
+  if (error) { $('examsList').textContent = error.detail || 'Could not load exams'; return; }
   const exams = data || [];
 
   if (!exams.length) {
@@ -182,10 +205,9 @@ async function loadExamsList() {
     return;
   }
 
-  // Get registration counts
-  const { data: regCounts } = await sb.from('exam_registrations').select('exam_id');
+  // Registration counts come with each exam from the API
   const counts = {};
-  (regCounts || []).forEach(r => { counts[r.exam_id] = (counts[r.exam_id] || 0) + 1; });
+  exams.forEach(e => { counts[e.id] = e.registered; });
 
   $('examsList').innerHTML = '<div class="card"><table><thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
     exams.map(e => `<tr>
@@ -208,7 +230,7 @@ function openExamModal(editId) {
   `);
 
   if (isEdit) {
-    sb.from('mock_exams').select('*').eq('id', editId).single().then(({ data: e }) => {
+    api('GET', 'admin/exams/' + editId + '/').then(({ data: e }) => {
       if (!e) return;
       const dt = new Date(e.exam_date);
       const dateVal = dt.toISOString().slice(0, 10);
@@ -254,29 +276,30 @@ async function saveExam(editId) {
   if (!title || !date || !time) { alert('Title, date, and time are required'); return; }
 
   const examDate = new Date(date + 'T' + time).toISOString();
-  const row = { title, description: desc || null, course_type: course, exam_date: examDate, duration_minutes: dur, max_seats: seats, status, created_by: session.email };
+  const row = { title, description: desc || null, course_type: course, exam_date: examDate, duration_minutes: dur, max_seats: seats, status };
 
-  if (editId) {
-    await sb.from('mock_exams').update(row).eq('id', editId);
-    toast('Exam updated');
-  } else {
-    await sb.from('mock_exams').insert([row]);
-    toast('Exam created');
-  }
+  const { error } = editId
+    ? await api('PATCH', 'admin/exams/' + editId + '/', row)
+    : await api('POST', 'admin/exams/', row);
+  if (error) { showApiError(error); return; }
+  toast(editId ? 'Exam updated' : 'Exam created');
   closeModal();
   renderExams();
 }
 
 async function deleteExam(id) {
   if (!confirm('Delete this exam and all its registrations?')) return;
-  await sb.from('mock_exams').delete().eq('id', id);
+  const { error } = await api('DELETE', 'admin/exams/' + id + '/');
+  if (error) { showApiError(error); return; }
   toast('Exam deleted');
   renderExams();
 }
 
 async function viewExamRegs(examId) {
-  const { data: exam } = await sb.from('mock_exams').select('*').eq('id', examId).single();
-  const { data: regs } = await sb.from('exam_registrations').select('*').eq('exam_id', examId).order('registered_at', { ascending: false });
+  const [{ data: exam }, { data: regs }] = await Promise.all([
+    api('GET', 'admin/exams/' + examId + '/'),
+    api('GET', 'admin/exams/' + examId + '/registrations/')
+  ]);
   const regsList = regs || [];
 
   openModal(`
@@ -304,7 +327,8 @@ async function viewExamRegs(examId) {
 }
 
 window.togglePayStatus = async function(regId, newStatus, examId) {
-  await sb.from('exam_registrations').update({ payment_status: newStatus }).eq('id', regId);
+  const { error } = await api('PATCH', 'admin/exam-registrations/' + regId + '/', { payment_status: newStatus });
+  if (error) { showApiError(error); return; }
   toast('Payment status updated');
   if (examId) viewExamRegs(examId);
 };
@@ -329,10 +353,11 @@ async function renderStudents() {
 async function loadStudents() {
   const sf = $('studFilter')?.value || '';
   const cf = $('studCourseFilter')?.value || '';
-  let q = sb.from('trial_registrations').select('*').order('created_at', { ascending: false });
-  if (sf) q = q.eq('status', sf);
-  if (cf) q = q.eq('course', cf);
-  const { data } = await q;
+  const params = new URLSearchParams();
+  if (sf) params.set('status', sf);
+  if (cf) params.set('course', cf);
+  const { data, error } = await api('GET', 'admin/students/?' + params.toString());
+  if (error) { $('studentsList').textContent = error.detail || 'Could not load students'; return; }
   const students = data || [];
 
   if (!students.length) {
@@ -359,7 +384,8 @@ async function loadStudents() {
 }
 
 async function updateStudentStatus(id, status) {
-  await sb.from('trial_registrations').update({ status }).eq('id', id);
+  const { error } = await api('PATCH', 'admin/students/' + id + '/', { status });
+  if (error) { showApiError(error); return; }
   toast('Status updated to ' + status);
   loadStudents();
 }
@@ -374,7 +400,8 @@ async function renderNews() {
 }
 
 async function loadNews() {
-  const { data } = await sb.from('news').select('*').order('created_at', { ascending: false });
+  const { data, error } = await api('GET', 'admin/news/');
+  if (error) { $('newsList').textContent = error.detail || 'Could not load news'; return; }
   const news = data || [];
 
   if (!news.length) {
@@ -399,7 +426,7 @@ function openNewsModal(editId) {
   openModal(`<div class="modal-title">${isEdit ? 'Edit Post' : 'New Post'}<button class="modal-close" onclick="closeModal()">✕</button></div><div id="newsFormBody">Loading...</div>`);
 
   if (isEdit) {
-    sb.from('news').select('*').eq('id', editId).single().then(({ data: n }) => {
+    api('GET', 'admin/news/' + editId + '/').then(({ data: n }) => {
       if (!n) return;
       fillNewsForm(n.title, n.body || '', editId);
     });
@@ -422,22 +449,179 @@ async function saveNews(editId) {
   const body = $('newsBody').value.trim();
   if (!title) { alert('Title is required'); return; }
 
-  if (editId) {
-    await sb.from('news').update({ title, body }).eq('id', editId);
-    toast('Post updated');
-  } else {
-    await sb.from('news').insert([{ title, body }]);
-    toast('Post published');
-  }
+  const { error } = editId
+    ? await api('PATCH', 'admin/news/' + editId + '/', { title, body })
+    : await api('POST', 'admin/news/', { title, body });
+  if (error) { showApiError(error); return; }
+  toast(editId ? 'Post updated' : 'Post published');
   closeModal();
   renderNews();
 }
 
 async function deleteNews(id) {
   if (!confirm('Delete this news post?')) return;
-  await sb.from('news').delete().eq('id', id);
+  const { error } = await api('DELETE', 'admin/news/' + id + '/');
+  if (error) { showApiError(error); return; }
   toast('Post deleted');
   renderNews();
+}
+
+
+// ════════════════════════════════════════════
+// GALLERY («Жизнь центра изнутри» on the main site)
+// ════════════════════════════════════════════
+const sizeLabels = { normal: 'Обычное (1×1)', tall: 'Высокое (1×2)', wide: 'Широкое (2×1)' };
+
+// Upload a file with FormData (multipart). The api() helper only sends JSON.
+async function apiUpload(method, path, formData) {
+  try {
+    const res = await fetch('/api/' + path, {
+      method, credentials: 'same-origin',
+      headers: { 'X-CSRFToken': getCookie('csrftoken') || '' },
+      body: formData
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { data } : { error: { status: res.status, ...data } };
+  } catch (e) {
+    return { error: { detail: 'Network error — check your connection.' } };
+  }
+}
+
+// Shrink big phone photos in the browser before uploading (faster, and
+// Vercel accepts at most ~4.5 MB per request). The server compresses again.
+async function shrinkImage(file, maxSide = 2000, quality = 0.88) {
+  let bitmap = null;
+  try { bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { return file; }
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  if (scale === 1 && file.size < 3.5 * 1024 * 1024) return file;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+  return blob ? new File([blob], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file;
+}
+
+let galleryPhotos = [];
+
+async function renderGallery() {
+  mainContent.innerHTML = `
+    <div class="page-header"><h1>Gallery</h1><p>Фото для раздела «Жизнь центра изнутри» на главной странице. Пока здесь нет фото, на сайте показываются стандартные картинки.</p></div>
+    <div class="card">
+      <div class="card-title">Добавить фото</div>
+      <div class="upload-zone" id="uploadZone">📷 Нажмите или перетащите сюда фото (можно несколько)<br><span style="font-size:.78rem;color:var(--text3)">JPG, PNG или WEBP · большие фото уменьшаются автоматически</span></div>
+      <input type="file" id="galleryFile" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
+      <div class="form-row" style="margin-top:14px">
+        <div class="form-group"><label>Подпись (необязательно)</label><input class="form-control" id="galleryCaption" placeholder="например: Урок для детей"/></div>
+        <div class="form-group"><label>Размер на сайте</label><select class="form-control" id="gallerySize">${Object.entries(sizeLabels).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
+      </div>
+      <div id="uploadStatus" style="font-size:.84rem;color:var(--text2)"></div>
+    </div>
+    <div id="galleryList">Loading...</div>
+  `;
+
+  const zone = $('uploadZone');
+  const input = $('galleryFile');
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); uploadPhotos(e.dataTransfer.files); });
+  input.addEventListener('change', () => { uploadPhotos(input.files); input.value = ''; });
+
+  await loadGallery();
+}
+
+async function uploadPhotos(fileList) {
+  const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  const status = $('uploadStatus');
+  let ok = 0;
+  for (let i = 0; i < files.length; i++) {
+    status.textContent = `Загрузка ${i + 1} из ${files.length}...`;
+    const fd = new FormData();
+    fd.append('image', await shrinkImage(files[i]));
+    fd.append('caption', $('galleryCaption').value.trim());
+    fd.append('size', $('gallerySize').value);
+    const { error } = await apiUpload('POST', 'admin/gallery/', fd);
+    if (error) { status.textContent = ''; showApiError(error); break; }
+    ok++;
+  }
+  status.textContent = '';
+  if (ok) { toast(ok === 1 ? 'Фото добавлено' : `Добавлено фото: ${ok}`); $('galleryCaption').value = ''; }
+  loadGallery();
+}
+
+async function loadGallery() {
+  const { data, error } = await api('GET', 'admin/gallery/');
+  if (error) { $('galleryList').textContent = error.detail || 'Could not load photos'; return; }
+  galleryPhotos = data || [];
+
+  if (!galleryPhotos.length) {
+    $('galleryList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🖼️</div><h3>Фото пока нет</h3><p>На сайте сейчас показываются стандартные картинки</p></div></div>';
+    return;
+  }
+
+  $('galleryList').innerHTML = '<div class="gallery-admin-grid">' + galleryPhotos.map((p, i) => `
+    <div class="gallery-admin-card">
+      <img src="${p.url}" alt="${esc(p.caption || '')}" loading="lazy"/>
+      <div class="gallery-admin-body">
+        <span class="gallery-pos">#${i + 1} на сайте · ${p.width}×${p.height}</span>
+        <input class="form-control" value="${esc(p.caption || '')}" placeholder="Подпись" onchange="updatePhoto(${p.id}, { caption: this.value.trim() })"/>
+        <select class="form-control" onchange="updatePhoto(${p.id}, { size: this.value })">
+          ${Object.entries(sizeLabels).map(([v, l]) => `<option value="${v}" ${p.size === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select>
+        <div class="gallery-admin-actions">
+          <button class="btn btn-sm btn-secondary" title="Раньше" onclick="movePhoto(${p.id}, -1)" ${i === 0 ? 'disabled' : ''}>←</button>
+          <button class="btn btn-sm btn-secondary" title="Позже" onclick="movePhoto(${p.id}, 1)" ${i === galleryPhotos.length - 1 ? 'disabled' : ''}>→</button>
+          <button class="btn btn-sm btn-secondary" onclick="replacePhoto(${p.id})">🔄 Заменить</button>
+          ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deletePhoto(${p.id})">🗑</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+async function updatePhoto(id, changes) {
+  const { error } = await api('PATCH', 'admin/gallery/' + id + '/', changes);
+  if (error) { showApiError(error); return; }
+  toast('Сохранено');
+}
+
+async function movePhoto(id, direction) {
+  const ids = galleryPhotos.map(p => p.id);
+  const i = ids.indexOf(id);
+  const j = i + direction;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  const { error } = await api('POST', 'admin/gallery/reorder/', { ids });
+  if (error) { showApiError(error); return; }
+  loadGallery();
+}
+
+function replacePhoto(id) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/jpeg,image/png,image/webp';
+  input.addEventListener('change', async () => {
+    if (!input.files.length) return;
+    const fd = new FormData();
+    fd.append('image', await shrinkImage(input.files[0]));
+    const { error } = await apiUpload('PATCH', 'admin/gallery/' + id + '/', fd);
+    if (error) { showApiError(error); return; }
+    toast('Фото заменено');
+    loadGallery();
+  });
+  input.click();
+}
+
+async function deletePhoto(id) {
+  if (!confirm('Удалить это фото с сайта?')) return;
+  const { error } = await api('DELETE', 'admin/gallery/' + id + '/');
+  if (error) { showApiError(error); return; }
+  toast('Фото удалено');
+  loadGallery();
 }
 
 // ── Expose globals for inline onclick handlers ──
@@ -448,19 +632,19 @@ window.updateStudentStatus = updateStudentStatus;
 window.openNewsModal = openNewsModal;
 window.deleteNews = deleteNews;
 window.closeModal = closeModal;
+window.updatePhoto = updatePhoto;
+window.movePhoto = movePhoto;
+window.replacePhoto = replacePhoto;
+window.deletePhoto = deletePhoto;
 
 // ── Init ──
-// Check if already logged in
+// Check if already logged in (this call also gives us Django's CSRF cookie)
 (async () => {
-  const { data: { session: authSession } } = await sb.auth.getSession();
-  if (authSession?.user) {
-    const email = authSession.user.email;
-    const { data: roleRow } = await sb.from('staff_roles').select('role').eq('email', email).single();
-    if (roleRow) {
-      session = { email, role: roleRow.role };
-      showApp();
-      return;
-    }
+  const { data } = await api('GET', 'auth/me/');
+  if (data && data.authenticated) {
+    session = { email: data.email, role: data.role };
+    showApp();
+    return;
   }
   loginWrap.style.display = 'flex';
 })();

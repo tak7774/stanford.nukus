@@ -2,18 +2,23 @@
 // Stanford Educational Centre — Main Public Script
 // ============================================================
 
-// ── Supabase Configuration ──
-const SUPABASE_URL = "https://nzbravxsxttloyicwcyq.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56YnJhdnhzeHR0bG95aWN3Y3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTg3NzAsImV4cCI6MjEwMTgzNDc3MH0.YFZfZRWHTAvxTYRDcmokgpvmjT9iflpA4KGJMcnMrFY";
-
-let publicSb = null;
-try {
-  if (window.supabase) {
-    publicSb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ── Backend API (Django on the same site: /api/...) ──
+// Returns { data } on success or { error } with the server's JSON (e.g. { code: 'EXAM_FULL' }).
+async function apiRequest(method, path, body) {
+  try {
+    const res = await fetch('/api/' + path, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { data } : { error: { status: res.status, ...data } };
+  } catch (e) {
+    return { error: { code: 'NETWORK', detail: String(e) } };
   }
-} catch(e) {
-  console.warn("Supabase init warning:", e);
 }
+const apiGet = path => apiRequest('GET', path);
+const apiPost = (path, body) => apiRequest('POST', path, body);
 
 // ── Global Helper Functions (Exposed to Window for Inline Event Handlers) ──
 
@@ -136,15 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!valid) return;
 
-      // Save to Supabase trial_registrations
-      if (publicSb) {
-        const { error } = await publicSb.from('trial_registrations').insert([{
+      // Save trial registration via the Django API
+      {
+        const { error } = await apiPost('trial-registrations/', {
           full_name: nameInput.value.trim(),
           phone: phoneInput.value.trim(),
           course: courseInput.value
-        }]);
+        });
         if (error) {
-          console.warn('Could not save trial registration to DB:', error);
+          console.warn('Could not save trial registration:', error);
           alert('Не удалось отправить заявку. Позвоните нам: +998 91 303-60-01');
           return;
         }
@@ -173,27 +178,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!name || !phone) return;
 
-      if (publicSb) {
+      {
         let error;
         if (examId && !isNaN(parseInt(examId))) {
-          ({ error } = await publicSb.from('exam_registrations').insert([{
+          ({ error } = await apiPost('exam-registrations/', {
             exam_id: parseInt(examId),
             full_name: name,
             phone: phone
-          }]));
+          }));
         } else {
-          // Also insert into trial_registrations with mock exam tag if exam_id not provided
-          ({ error } = await publicSb.from('trial_registrations').insert([{
+          // No exam id: save as a trial registration tagged with the mock exam title
+          ({ error } = await apiPost('trial-registrations/', {
             full_name: `${name} [Mock: ${examTitle}]`,
             phone: phone,
             course: 'ielts'
-          }]));
+          }));
         }
         if (error) {
           console.warn('Could not save exam registration:', error);
-          const msg = error.message || '';
-          if (msg.includes('EXAM_FULL')) alert('К сожалению, все места на этот экзамен заняты.');
-          else if (msg.includes('EXAM_CLOSED')) alert('Запись на этот экзамен закрыта.');
+          if (error.code === 'EXAM_FULL') alert('К сожалению, все места на этот экзамен заняты.');
+          else if (error.code === 'EXAM_CLOSED') alert('Запись на этот экзамен закрыта.');
           else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
           loadPublicMockExams();
           return;
@@ -207,27 +211,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Fetch & Render Live Mock Exams from Supabase ──
+  // ── Fetch & Render Live Mock Exams from the API ──
   loadPublicMockExams();
+
+  // ── Gallery photos uploaded in the admin panel ──
+  loadGallery();
 });
 
 async function loadPublicMockExams() {
   const container = document.getElementById('publicMockExamsGrid');
-  if (!container || !publicSb) return;
+  if (!container) return;
 
   try {
-    const { data: exams, error } = await publicSb
-      .from('mock_exams')
-      .select('*')
-      .neq('status', 'cancelled')
-      .order('exam_date', { ascending: true });
+    const { data: exams, error } = await apiGet('mock-exams/');
 
     if (error || !exams || exams.length === 0) return;
 
-    // Fetch counts
-    const { data: regCounts } = await publicSb.rpc('get_exam_seat_counts');
+    // Seat counts come with each exam from the API
     const counts = {};
-    (regCounts || []).forEach(r => { counts[r.exam_id] = r.registered; });
+    exams.forEach(e => { counts[e.id] = e.registered; });
 
     const html = exams.map(e => {
       const registered = counts[e.id] || 0;
@@ -272,6 +274,20 @@ async function loadPublicMockExams() {
   } catch(e) {
     console.warn("Error loading mock exams:", e);
   }
+}
+
+// Replaces the default gallery pictures with the photos uploaded in admin.html.
+// If there are none yet (or the API is unreachable), the default pictures stay.
+async function loadGallery() {
+  const grid = document.querySelector('#gallery .gallery-grid');
+  if (!grid) return;
+  const { data: photos, error } = await apiGet('gallery/');
+  if (error || !photos || photos.length === 0) return;
+
+  grid.innerHTML = photos.map(p => {
+    const sizeClass = p.size === 'tall' || p.size === 'wide' ? ' ' + p.size : '';
+    return `<div class="gallery-item${sizeClass} reveal visible"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Educational Centre')}" loading="lazy"/></div>`;
+  }).join('');
 }
 
 function escapeHtml(str) {

@@ -92,3 +92,66 @@ dashboard with the publish form and news list.
   want to rotate them later — the anon key is safe to expose in the browser
   by design (RLS is what protects your data), but keep this in mind for
   any *service role* key, which must never be used in frontend code.
+
+---
+
+# Backend (Django) — added November 2026
+
+The website no longer talks to Supabase directly. All data goes through a
+Django API at `/api/...`, which connects to the same Supabase Postgres
+database (existing tables and data are kept).
+
+```
+index.html / mock.html / admin.html   → served by Vercel as before
+api/index.py + vercel.json            → runs Django on Vercel for /api/*
+backend/                              → Django project
+  config/settings.py                  → settings (reads backend/.env)
+  core/models.py                      → the 5 existing tables
+  core/views.py, core/urls.py         → the API
+  core/tests.py                       → automated tests
+requirements.txt                      → Python packages (used by Vercel)
+```
+
+## API
+
+| Method | URL | Who |
+|---|---|---|
+| GET | `/api/mock-exams/` | public (with seat counts) |
+| GET | `/api/news/` | public |
+| POST | `/api/trial-registrations/` | public |
+| POST | `/api/exam-registrations/` | public → `409 {code: EXAM_FULL / EXAM_CLOSED}` |
+| GET/POST | `/api/auth/me/`, `/api/auth/login/`, `/api/auth/logout/` | admin login |
+| GET… | `/api/admin/dashboard/`, `/api/admin/exams/`, `/api/admin/students/`, `/api/admin/news/`, `/api/admin/exam-registrations/<id>/` | staff only; DELETE = owner only |
+| — | `/api/django-admin/` | Django's built-in admin (backup tool) |
+
+Admin login: a Django user whose email is listed in `staff_roles`
+(`owner` or `editor`). A Django superuser counts as owner.
+
+## Run locally (Windows)
+
+```
+cd backend
+python -m venv .venv
+.venv\Scripts\pip install -r ..\requirements.txt
+copy .env.example .env        (then fill in values)
+.venv\Scripts\python manage.py migrate
+.venv\Scripts\python manage.py test core
+.venv\Scripts\python manage.py runserver
+```
+
+Open http://127.0.0.1:8000/ (site), /mock.html, /admin.html.
+With `DATABASE_URL` empty, a local SQLite test database is used.
+
+## Create an admin login
+
+```
+.venv\Scripts\python manage.py createsuperuser
+```
+
+Use your email as the username and email. Add editors from
+`/api/django-admin/` (Users → add; then Staff roles → add their email).
+
+## Vercel environment variables
+
+`DATABASE_URL` (Supabase transaction pooler URI, port 6543),
+`DJANGO_SECRET_KEY` (long random string), `DJANGO_DEBUG=0`.

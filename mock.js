@@ -2,16 +2,20 @@
 // Stanford Educational Centre — Mock Exam Multi-Step Portal
 // ============================================================
 
-const SUPABASE_URL = "https://nzbravxsxttloyicwcyq.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56YnJhdnhzeHR0bG95aWN3Y3lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyNTg3NzAsImV4cCI6MjEwMTgzNDc3MH0.YFZfZRWHTAvxTYRDcmokgpvmjT9iflpA4KGJMcnMrFY";
-
-let publicSb = null;
-try {
-  if (window.supabase) {
-    publicSb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ── Backend API (Django on the same site: /api/...) ──
+// Returns { data } on success or { error } with the server's JSON (e.g. { code: 'EXAM_FULL' }).
+async function apiRequest(method, path, body) {
+  try {
+    const res = await fetch('/api/' + path, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok ? { data } : { error: { status: res.status, ...data } };
+  } catch (e) {
+    return { error: { code: 'NETWORK', detail: String(e) } };
   }
-} catch(e) {
-  console.warn("Supabase init error:", e);
 }
 
 // ── State ──
@@ -117,20 +121,11 @@ async function loadMockSessions() {
   if (!container) return;
 
   let exams = [];
-  if (publicSb) {
-    try {
-      const { data, error } = await publicSb
-        .from('mock_exams')
-        .select('*')
-        .neq('status', 'cancelled')
-        .order('exam_date', { ascending: true });
-
-      if (!error && data && data.length > 0) {
-        exams = data;
-      }
-    } catch(e) {
-      console.warn("Could not fetch mock_exams from DB:", e);
-    }
+  const { data, error } = await apiRequest('GET', 'mock-exams/');
+  if (!error && data && data.length > 0) {
+    exams = data;
+  } else if (error) {
+    console.warn("Could not fetch mock exams:", error);
   }
 
   // Fallback demo sessions if DB is empty or connecting
@@ -232,7 +227,7 @@ function populateSummary() {
   if (priceEl && selectedSession) priceEl.textContent = selectedSession.priceStr;
 }
 
-// ── Submit Registration to Supabase & Generate Ticket ──
+// ── Submit Registration to the API & Generate Ticket ──
 window.submitRegistration = async function() {
   const fname = document.getElementById('regFirstName').value.trim();
   const lname = document.getElementById('regLastName').value.trim();
@@ -240,34 +235,29 @@ window.submitRegistration = async function() {
   const phone = document.getElementById('regPhone').value.trim();
   const passport = document.getElementById('regPassport').value.trim();
 
-  const ticketNo = 'ST-' + new Date().getFullYear() + '-MOCK-' + Math.floor(1000 + Math.random() * 9000);
-
-  // Save to Supabase exam_registrations
-  if (publicSb) {
-    {
-      const { error } = await publicSb.from('exam_registrations').insert([{
-        exam_id: selectedSession ? selectedSession.id : null,
-        full_name: `${fname} ${lname}`,
-        phone: phone,
-        first_name: fname,
-        last_name: lname,
-        birth_date: dob,
-        gender: selectedGender,
-        passport_id: passport,
-        payment_status: selectedPayMethod === 'cash' ? 'pending' : 'paid',
-        payment_method: selectedPayMethod,
-        amount_paid: selectedSession ? selectedSession.price : 150000
-      }]);
-      if (error) {
-        console.warn('Could not insert exam registration into DB:', error);
-        const msg = error.message || '';
-        if (msg.includes('EXAM_FULL')) alert('К сожалению, все места на этот экзамен заняты. Выберите другую дату.');
-        else if (msg.includes('EXAM_CLOSED')) alert('Запись на этот экзамен закрыта. Выберите другую дату.');
-        else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
-        return;
-      }
-    }
+  // Save registration. Payment status and amount are decided by the server
+  // (always 'pending' until an admin verifies it in the admin panel).
+  const { data: saved, error } = await apiRequest('POST', 'exam-registrations/', {
+    exam_id: selectedSession ? selectedSession.id : null,
+    full_name: `${fname} ${lname}`,
+    phone: phone,
+    first_name: fname,
+    last_name: lname,
+    birth_date: dob || null,
+    gender: selectedGender,
+    passport_id: passport,
+    payment_method: selectedPayMethod
+  });
+  if (error) {
+    console.warn('Could not save exam registration:', error);
+    if (error.code === 'EXAM_FULL') alert('К сожалению, все места на этот экзамен заняты. Выберите другую дату.');
+    else if (error.code === 'EXAM_CLOSED') alert('Запись на этот экзамен закрыта. Выберите другую дату.');
+    else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+    return;
   }
+
+  // Ticket number is based on the saved registration id, so staff can look it up
+  const ticketNo = 'ST-' + new Date().getFullYear() + '-MOCK-' + String(saved.id).padStart(4, '0');
 
   // Populate Digital Ticket (Step 4)
   const tNoEl = document.getElementById('tNo');
@@ -287,8 +277,8 @@ window.submitRegistration = async function() {
       tStatusEl.textContent = '🟡 Оплата при входе (Наличными)';
       tStatusEl.style.color = '#B38600';
     } else {
-      tStatusEl.textContent = `🟢 Оплачено (${selectedPayMethod.toUpperCase()})`;
-      tStatusEl.style.color = 'var(--green)';
+      tStatusEl.textContent = `🟡 Ожидает подтверждения оплаты (${selectedPayMethod.toUpperCase()})`;
+      tStatusEl.style.color = '#B38600';
     }
   }
 
