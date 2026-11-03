@@ -40,6 +40,18 @@ ROWS = [
     ("fact1", "балл IELTS нашего преподавателя", "oqıtıwshımızdıń IELTS balı", "our teacher's IELTS score"),
     ("fact2", "лет в Нукусе", "jıl Nókiste", "years in Nukus"),
     ("fact3", "каждый день", "hár kúni", "every day"),
+    ("about-title", "О нас", "Biz haqqımızda", "About us"),
+    ("about-desc", "Языковой центр в Нукусе: английский для детей и взрослых и подготовка к IELTS.",
+     "Nókistegi til orayı: balalar hám úlkenler ushın inglis tili hám IELTS-ke tayarlıq.",
+     "A language centre in Nukus: English for children and adults, and IELTS preparation."),
+    ("about-link", "Записаться на пробный урок", "Sınaq sabaqqa jazılıw", "Book a trial lesson"),
+    ("fact4", "человек в группе", "adam toparda", "students per group"),
+    ("fact5", "курса — от детей до IELTS", "kurs — balalardan IELTS-ke shekem", "courses, from kids to IELTS"),
+    ("adv-mock-title", "IELTS CD Mock на компьютере", "Kompyuterde IELTS CD Mock", "IELTS CD Mock on a computer"),
+    ("adv-mock-text", "Пробный экзамен в формате настоящего: все 4 части, результат по каждой и билет онлайн.",
+     "Haqıyqıy imtihan formatındaǵı sınaq imtihanı: barlıq 4 bólim, hár biri boyınsha nátiyje hám onlayn bilet.",
+     "A practice exam in the real format: all 4 parts, a score for each and an online ticket."),
+    ("adv-mock-btn", "Выбрать дату", "Sáneni tańlaw", "Choose a date"),
 
     # ── Why ──
     ("why-title", "Почему Stanford", "Nege Stanford", "Why Stanford"),
