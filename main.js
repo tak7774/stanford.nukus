@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const phoneField = document.getElementById('trialFieldPhone');
       const phoneInput = document.getElementById('trialPhone');
       const phoneDigits = phoneInput ? phoneInput.value.replace(/\D/g, '') : '';
-      if (phoneDigits.length < 12){ // +998 + 9 digits if(phoneField) phoneField.classList.add('invalid'); valid = false; }
+      if (phoneDigits.length < 12){ /* +998 + 9 digits */ if(phoneField) phoneField.classList.add('invalid'); valid = false; }
       else if(phoneField) phoneField.classList.remove('invalid');
 
       const courseField = document.getElementById('trialFieldCourse');
