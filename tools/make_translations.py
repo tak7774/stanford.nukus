@@ -52,6 +52,8 @@ ROWS = [
      "Haqıyqıy imtihan formatındaǵı sınaq imtihanı: barlıq 4 bólim, hár biri boyınsha nátiyje hám onlayn bilet.",
      "A practice exam in the real format: all 4 parts, a score for each and an online ticket."),
     ("adv-mock-btn", "Выбрать дату", "Sáneni tańlaw", "Choose a date"),
+  ("theme-toggle", "Тёмная тема", "Qarańǵı tema", "Dark mode"),
+  ("footer-photo", "Фото", "Súwret", "Photo"),
 
     # ── Why ──
     ("why-title", "Почему Stanford", "Nege Stanford", "Why Stanford"),
