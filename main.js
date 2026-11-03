@@ -70,7 +70,7 @@ window.openPublicMockModal = function(examTitle, examId) {
   const formBody = document.getElementById('pmFormBody');
   const successMsg = document.getElementById('pmSuccessMsg');
 
-  if (selectedName) selectedName.textContent = examTitle ? `Экзамен: ${examTitle}` : 'Заполните форму для бронирования места';
+  if (selectedName) selectedName.textContent = examTitle ? `${t('pm-exam-prefix')}: ${examTitle}` : t('pm-sub-default');
   if (titleVal) titleVal.value = examTitle || 'IELTS Mock Exam';
   if (idVal) idVal.value = examId || '';
 
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (error) {
           console.warn('Could not save trial registration:', error);
-          alert('Не удалось отправить заявку. Позвоните нам: +998 91 303-60-01');
+          alert(t('alert-trial-fail'));
           return;
         }
       }
@@ -195,9 +195,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (error) {
           console.warn('Could not save exam registration:', error);
-          if (error.code === 'EXAM_FULL') alert('К сожалению, все места на этот экзамен заняты.');
-          else if (error.code === 'EXAM_CLOSED') alert('Запись на этот экзамен закрыта.');
-          else alert('Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01');
+          if (error.code === 'EXAM_FULL') alert(t('alert-exam-full'));
+          else if (error.code === 'EXAM_CLOSED') alert(t('alert-exam-closed'));
+          else alert(t('alert-exam-fail'));
           loadPublicMockExams();
           return;
         }
@@ -218,63 +218,84 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 const MOCK_COURSE_LABELS = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English' };
-const NO_SESSIONS_HTML = '<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Сейчас нет открытых сессий. Позвоните: <a href="tel:+998913036001" style="color: var(--text); font-weight: 700;">+998 91 303-60-01</a></div>';
+
+// Current page language ('ru' or 'en') and a lookup into the translations object below.
+function currentLang() { return document.documentElement.lang === 'en' ? 'en' : 'ru'; }
+function t(key) {
+  const lang = currentLang();
+  return (translations[lang] && translations[lang][key]) ?? translations.ru[key] ?? key;
+}
+
+function noSessionsHtml() {
+  return `<div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">${t('mock-none')} <a href="tel:+998913036001" style="color: var(--text); font-weight: 700;">+998 91 303-60-01</a></div>`;
+}
+
+// Exams from the last API call, so the cards can be redrawn when the language changes (no new request).
+// null = not loaded yet, [] = loaded (or failed) with nothing open.
+let lastMockExams = null;
 
 async function loadPublicMockExams() {
   const container = document.getElementById('publicMockExamsGrid');
   if (!container) return;
 
-  try {
-    // The API only returns exams with status 'upcoming' whose date has not passed.
-    const { data: exams, error } = await apiGet('mock-exams/');
+  // The API only returns exams with status 'upcoming' whose date has not passed.
+  const { data: exams, error } = await apiGet('mock-exams/');
+  if (error) console.warn('Could not load mock exams:', error);
+  lastMockExams = (!error && Array.isArray(exams)) ? exams : [];
+  renderMockExams();
+}
 
-    if (error || !exams || exams.length === 0) {
-      if (error) console.warn('Could not load mock exams:', error);
-      container.innerHTML = NO_SESSIONS_HTML;
+function renderMockExams() {
+  const container = document.getElementById('publicMockExamsGrid');
+  if (!container || lastMockExams === null) return;
+
+  try {
+    if (lastMockExams.length === 0) {
+      container.innerHTML = noSessionsHtml();
       return;
     }
 
-    // Seat counts come with each exam from the API
-    const counts = {};
-    exams.forEach(e => { counts[e.id] = e.registered; });
+    const locale = currentLang() === 'en' ? 'en-GB' : 'ru-RU';
 
-    const html = exams.map(e => {
-      const registered = counts[e.id] || 0;
+    const html = lastMockExams.map(e => {
+      // Seat counts come with each exam from the API
+      const registered = e.registered || 0;
       const maxSeats = e.max_seats || 30;
       const leftSeats = Math.max(0, maxSeats - registered);
       const percentage = Math.min(100, Math.round((registered / maxSeats) * 100));
 
       const dt = new Date(e.exam_date);
-      const dateStr = dt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-      const timeStr = dt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = dt.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+      const timeStr = dt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
       const courseBadgeClass = e.course_type === 'ielts' ? 'badge-ielts' : 'badge-general';
       const courseLabel = MOCK_COURSE_LABELS[e.course_type] || 'IELTS Preparation';
       const isFull = leftSeats <= 0;
 
+      // Title, description and location are typed in the admin panel, so they show as entered.
       return `
         <div class="mock-card">
           <div>
             <div class="mock-tag-bar">
               <span class="mock-badge ${courseBadgeClass}">${escapeHtml(courseLabel)}</span>
-              <span class="mock-badge badge-general">${isFull ? 'Мест нет' : 'Открыта запись'}</span>
+              <span class="mock-badge badge-general">${isFull ? t('mock-full') : t('mock-open')}</span>
             </div>
             <div class="mock-title">${escapeHtml(e.title)}</div>
-            <p class="mock-desc">${escapeHtml(e.description || 'Пробный экзамен IELTS в условиях реального тестирования с индивидуальным разбором результатов.')}</p>
+            <p class="mock-desc">${escapeHtml(e.description || t('mock-default-desc'))}</p>
             <div class="mock-details">
-              <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> ${dateStr}</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${timeStr} (${escapeHtml(e.duration_minutes || 120)} мин)</div>
-              <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> ${escapeHtml(e.location || 'Stanford Center, Нукус')}</div>
+              <div class="mock-detail-item"><span class="mock-detail-icon">📅</span> ${escapeHtml(dateStr)}</div>
+              <div class="mock-detail-item"><span class="mock-detail-icon">⏰</span> ${escapeHtml(timeStr)} (${escapeHtml(e.duration_minutes || 120)} ${t('mock-min')})</div>
+              <div class="mock-detail-item"><span class="mock-detail-icon">📍</span> ${escapeHtml(e.location || t('mock-default-location'))}</div>
             </div>
           </div>
           <div>
             <div class="mock-seats-wrap">
-              <div class="mock-seats-info"><span>Мест осталось</span> <span>${escapeHtml(leftSeats)} из ${escapeHtml(maxSeats)}</span></div>
+              <div class="mock-seats-info"><span>${t('mock-seats-left')}</span> <span>${escapeHtml(leftSeats)} ${t('mock-seats-of')} ${escapeHtml(maxSeats)}</span></div>
               <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: ${percentage}%;"></div></div>
             </div>
             ${isFull
-              ? '<button class="mock-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Мест нет</button>'
-              : `<button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">Зарегистрироваться на Mock</button>`}
+              ? `<button class="mock-btn" disabled style="opacity: 0.5; cursor: not-allowed;">${t('mock-full')}</button>`
+              : `<button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">${t('mock-register-btn')}</button>`}
           </div>
         </div>
       `;
@@ -287,8 +308,8 @@ async function loadPublicMockExams() {
       btn.addEventListener('click', () => openPublicMockModal(btn.dataset.examTitle, Number(btn.dataset.examId)));
     });
   } catch(e) {
-    console.warn("Error loading mock exams:", e);
-    container.innerHTML = NO_SESSIONS_HTML;
+    console.warn("Error rendering mock exams:", e);
+    container.innerHTML = noSessionsHtml();
   }
 }
 
@@ -395,6 +416,16 @@ const translations = {
     'course4-price':'380 000 <sub>сум/мес</sub>','course4-duration':'4 занятия в неделю',
     'course-btn':'Записаться',
     'mock-title':'Mock Exam','mock-desc':'Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.',
+    'mock-loading':'Загрузка сессий...','mock-none':'Сейчас нет открытых сессий. Позвоните:',
+    'mock-open':'Открыта запись','mock-full':'Мест нет','mock-min':'мин',
+    'mock-default-desc':'Пробный экзамен IELTS в условиях реального тестирования с индивидуальным разбором результатов.',
+    'mock-default-location':'Stanford Center, Нукус','mock-seats-left':'Мест осталось','mock-seats-of':'из',
+    'mock-register-btn':'Зарегистрироваться на Mock',
+    'pm-exam-prefix':'Экзамен','pm-sub-default':'Заполните форму для бронирования места',
+    'alert-trial-fail':'Не удалось отправить заявку. Позвоните нам: +998 91 303-60-01',
+    'alert-exam-full':'К сожалению, все места на этот экзамен заняты.',
+    'alert-exam-closed':'Запись на этот экзамен закрыта.',
+    'alert-exam-fail':'Не удалось зарегистрироваться. Позвоните нам: +998 91 303-60-01',
     'pm-modal-title':'Запись на Mock Exam','pm-name-label':'Ваше Имя и Фамилия','pm-phone-label':'Номер телефона','pm-submit-btn':'Подтвердить запись',
     'pm-success-head':'Заявка принята!','pm-success-sub':'Вы успешно зарегистрировались на Mock Exam. Наш администратор свяжется с вами по указанному номеру для подтверждения места.',
     'quiz-title':'Подбор курса','quiz-desc':'Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.',
@@ -471,6 +502,16 @@ const translations = {
     'course4-price':'380,000 <sub>UZS/mo</sub>','course4-duration':'4 lessons a week',
     'course-btn':'Enroll',
     'mock-title':'Mock Exam','mock-desc':'Experience real IELTS exam conditions with expert evaluation across all modules.',
+    'mock-loading':'Loading sessions...','mock-none':'No open sessions right now. Call us:',
+    'mock-open':'Registration open','mock-full':'Fully booked','mock-min':'min',
+    'mock-default-desc':'A practice IELTS exam in real test conditions, with a personal review of your results.',
+    'mock-default-location':'Stanford Center, Nukus','mock-seats-left':'Seats left','mock-seats-of':'of',
+    'mock-register-btn':'Register for the Mock',
+    'pm-exam-prefix':'Exam','pm-sub-default':'Fill in the form to book your seat',
+    'alert-trial-fail':'Could not send your request. Please call us: +998 91 303-60-01',
+    'alert-exam-full':'Sorry, all seats for this exam are taken.',
+    'alert-exam-closed':'Registration for this exam is closed.',
+    'alert-exam-fail':'Could not register. Please call us: +998 91 303-60-01',
     'pm-modal-title':'Mock Exam Registration','pm-name-label':'Full Name','pm-phone-label':'Phone Number','pm-submit-btn':'Confirm Registration',
     'pm-success-head':'Registration Received!','pm-success-sub':'You have successfully registered for the Mock Exam. Our administrator will contact you shortly.',
     'quiz-title':'Find your course','quiz-desc':'Answer a couple of questions and we\'ll point you to the right program.',
@@ -538,4 +579,6 @@ window.setLanguage = function(lang) {
   // Round switcher shows the current language
   const toggle = document.getElementById('langToggle');
   if (toggle) toggle.textContent = lang.toUpperCase();
+  // Mock exam cards are built in JS, so redraw them in the new language
+  renderMockExams();
 };
