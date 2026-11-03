@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="color-scheme" content="light"/>
+<script src="theme.js"></script>
 <title>IELTS CD Mock Exam — запись | Stanford Language Center</title>
 <meta name="description" content="Запись на IELTS CD Mock Exam в Stanford Language Center, Нукус: выберите день в календаре, получите билет и узнайте результат онлайн."/>
 <link rel="icon" type="image/png" href="favicon.png"/>
@@ -19,20 +21,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#141416; --ink-2:#2A2B30; --paper:#FFFFFF; --mist:#F4F5F6; --line:#E6E8EC; --muted:#777E90;
+    --ink:#141416; --ink-2:#2A2B30; --text:#141416; --nav-bg:rgba(255,255,255,.92); --paper:#FFFFFF; --mist:#F4F5F6; --line:#E6E8EC; --muted:#777E90;
     --yellow:#FFB703; --yellow-deep:#EBA600; --yellow-soft:#FFF4D6; --warn:#B54708;
     --r-lg:28px; --r-md:18px; --r-sm:12px; --pill:999px; --gutter:24px; --nav-h:56px; --nav-top:12px;
     --shadow:0 8px 28px rgba(20,20,22,.07);
     --ease:cubic-bezier(.2,.8,.2,1);
   }
+  :root[data-theme="dark"]{
+    --ink:#26272C; --ink-2:#33343A; --text:#F2F2F3; --paper:#0E0E10; --mist:#17171A; --line:#2A2B30; --muted:#9AA0AE;
+    --yellow-soft:#3A2F10; --nav-bg:rgba(24,24,27,.9); --shadow:0 8px 28px rgba(0,0,0,.45);
+  }
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
   html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
-  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--text); font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   img{ display:block; max-width:100%; }
   a{ color:inherit; }
   button,input,select,textarea{ font:inherit; color:inherit; }
   button{ cursor:pointer; }
-  :focus-visible{ outline:2.5px solid var(--ink); outline-offset:3px; border-radius:6px; }
+  :focus-visible{ outline:2.5px solid var(--text); outline-offset:3px; border-radius:6px; }
   [hidden]{ display:none !important; }
   .icon{ width:18px; height:18px; flex-shrink:0; }
   .wrap{ max-width:calc(1140px + var(--gutter) * 2); margin:0 auto; padding:0 var(--gutter); }
@@ -46,11 +52,28 @@
   .btn-yellow{ background:var(--yellow); color:var(--ink); }
   .btn-yellow:hover{ background:var(--yellow-deep); }
   .btn-ghost{ background:none; border-color:var(--line); }
-  .btn-ghost:hover{ border-color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--text); }
+
+  .for-dark{ display:none; }
+  :root[data-theme="dark"] .for-light{ display:none; }
+  :root[data-theme="dark"] .for-dark{ display:block; }
+  :root[data-theme="dark"] .btn-ink{ background:#F2F2F3; color:#141416; }
+  :root[data-theme="dark"] .btn-ink:hover:not(:disabled){ background:#fff; }
+  :root[data-theme="dark"] .lang-switch button:hover{ background:#26272C; }
+  :root[data-theme="dark"] .lang-switch button.active, :root[data-theme="dark"] .seg input:checked + span{ background:var(--yellow); color:#141416; }
+  .theme-toggle{ width:36px; height:36px; border:none; border-radius:50%; background:var(--mist); display:flex; align-items:center; justify-content:center; transition:background-color .2s; }
+  .theme-toggle:hover{ background:var(--yellow); color:#141416; }
+  .theme-toggle .i-sun{ display:none; }
+  :root[data-theme="dark"] .theme-toggle .i-sun{ display:block; }
+  :root[data-theme="dark"] .theme-toggle .i-moon{ display:none; }
+  /* The ticket and the result stay yellow, so their text stays dark in both themes */
+  .ticket{ color:#141416; }
+  .t-no{ color:var(--text); }
+  .lk-band.overall{ color:#141416; }
 
   /* ── Header ── */
   header{ position:sticky; top:var(--nav-top); z-index:100; margin-top:var(--nav-top); }
-  .nav-inner{ height:var(--nav-h); display:flex; align-items:center; gap:16px; padding:0 8px 0 20px; background:rgba(255,255,255,.92); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-radius:var(--pill); box-shadow:var(--shadow); }
+  .nav-inner{ height:var(--nav-h); display:flex; align-items:center; gap:16px; padding:0 8px 0 20px; background:var(--nav-bg); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-radius:var(--pill); box-shadow:var(--shadow); }
   .logo img{ height:28px; width:auto; }
   .nav-right{ margin-left:auto; display:flex; align-items:center; gap:8px; }
   .nav-home{ font-weight:600; font-size:13.5px; text-decoration:none; padding:7px 12px; border-radius:var(--pill); transition:background-color .2s; }
@@ -64,7 +87,7 @@
   .intro{ padding:40px 0 28px; text-align:center; max-width:640px; margin:0 auto; }
   .intro h1{ font-size:30px; text-transform:uppercase; letter-spacing:0; margin-bottom:8px; }
   .intro p{ color:var(--muted); font-size:15px; }
-  .intro a{ color:var(--ink); font-weight:700; text-decoration:underline; text-decoration-color:var(--yellow); text-decoration-thickness:2px; text-underline-offset:4px; }
+  .intro a{ color:var(--text); font-weight:700; text-decoration:underline; text-decoration-color:var(--yellow); text-decoration-thickness:2px; text-underline-offset:4px; }
 
   /* ── Steps indicator (a real sequence, so numbers are information) ── */
   .steps{ display:flex; gap:8px; list-style:none; margin-bottom:20px; counter-reset:step; }
@@ -72,7 +95,7 @@
   .steps li::before{ counter-increment:step; content:counter(step); flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--paper); display:flex; align-items:center; justify-content:center; font-size:12px; }
   .steps li.active{ background:var(--ink); color:#fff; }
   .steps li.active::before{ background:var(--yellow); color:var(--ink); }
-  .steps li.done{ color:var(--ink); }
+  .steps li.done{ color:var(--text); }
   .steps li.done::before{ content:'✓'; background:var(--yellow); }
 
   /* ── Panels ── */
@@ -95,7 +118,7 @@
   .field{ margin-bottom:14px; border:none; }
   .field-label{ display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
   .input{ width:100%; height:44px; padding:0 14px; border-radius:var(--r-sm); border:1.5px solid transparent; background:var(--paper); font-size:14.5px; outline:none; transition:border-color .2s; }
-  .input:focus{ border-color:var(--ink); }
+  .input:focus{ border-color:var(--text); }
   .field-error{ display:none; font-size:0.82rem; color:var(--warn); margin-top:6px; font-weight:600; }
   .field.invalid .input{ border-color:var(--warn); background:#FFF8F3; }
   .field.invalid .field-error{ display:block; }
@@ -130,16 +153,16 @@
   .legend i{ width:14px; height:14px; border-radius:4px; display:inline-block; }
   .sessions h3{ font-size:16px; margin-bottom:14px; letter-spacing:-0.02em; }
   .sessions-empty{ color:var(--muted); background:var(--paper); border-radius:var(--r-md); padding:24px; }
-  .sessions-empty a{ color:var(--ink); font-weight:700; }
+  .sessions-empty a{ color:var(--text); font-weight:700; }
   .session{ width:100%; display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:6px 16px; align-items:center; text-align:left; background:var(--paper); border:1.5px solid transparent; border-radius:var(--r-md); padding:14px 16px; margin-bottom:8px; transition:border-color .2s; }
   .session:hover{ border-color:#CFCFD4; }
-  .session[aria-pressed="true"]{ border-color:var(--ink); }
+  .session[aria-pressed="true"]{ border-color:var(--text); }
   .session-time{ font-size:22px; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums; }
   .session-title{ font-weight:700; line-height:1.3; }
   .session-meta{ font-size:0.86rem; color:var(--muted); }
   .session-price{ font-weight:800; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .session-radio{ width:22px; height:22px; border-radius:50%; border:2px solid #CFCFD4; justify-self:end; position:relative; }
-  .session[aria-pressed="true"] .session-radio{ border-color:var(--ink); background:var(--ink); }
+  .session[aria-pressed="true"] .session-radio{ border-color:var(--text); background:var(--text); }
   .session[aria-pressed="true"] .session-radio::after{ content:''; position:absolute; inset:5px; border-radius:50%; background:var(--yellow); }
   .session-error{ color:var(--warn); font-weight:600; font-size:0.9rem; margin-top:8px; }
 
@@ -154,14 +177,14 @@
   .pay-title{ font-size:16px; margin-bottom:14px; letter-spacing:-0.02em; }
   .pay-opt{ display:flex; align-items:center; gap:16px; background:var(--paper); border:1.5px solid transparent; border-radius:var(--r-md); padding:12px 16px; margin-bottom:8px; cursor:pointer; transition:border-color .2s; position:relative; }
   .pay-opt:hover{ border-color:#CFCFD4; }
-  .pay-opt:has(input:checked){ border-color:var(--ink); }
+  .pay-opt:has(input:checked){ border-color:var(--text); }
   .pay-opt input{ position:absolute; opacity:0; }
   .pay-opt:has(input:focus-visible){ outline:2.5px solid var(--ink); outline-offset:2px; }
   .pay-mark{ width:40px; height:40px; border-radius:12px; background:var(--mist); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.78rem; flex-shrink:0; }
   .pay-opt b{ display:block; }
   .pay-opt small{ color:var(--muted); font-size:0.86rem; }
   .pay-dot{ margin-left:auto; width:22px; height:22px; border-radius:50%; border:2px solid #CFCFD4; flex-shrink:0; position:relative; }
-  .pay-opt:has(input:checked) .pay-dot{ border-color:var(--ink); background:var(--ink); }
+  .pay-opt:has(input:checked) .pay-dot{ border-color:var(--text); background:var(--text); }
   .pay-opt:has(input:checked) .pay-dot::after{ content:''; position:absolute; inset:5px; border-radius:50%; background:var(--yellow); }
 
   /* ── Ticket: the speech bubble again ── */
@@ -198,11 +221,11 @@
   .lk-band.overall small{ color:#5C4A0A; }
   .lk-band.overall b{ font-size:28px; }
   .btn-text{ background:none; border:none; font-weight:700; padding:12px 0 0; text-decoration:underline; text-underline-offset:5px; text-decoration-color:var(--line); text-decoration-thickness:2px; }
-  .btn-text:hover{ text-decoration-color:var(--ink); }
+  .btn-text:hover{ text-decoration-color:var(--text); }
 
   footer{ border-top:1px solid var(--line); padding:28px 0; font-size:0.86rem; color:var(--muted); }
   footer .wrap{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-  footer a{ color:var(--ink); font-weight:600; text-decoration:none; }
+  footer a{ color:var(--text); font-weight:600; text-decoration:none; }
 
   @media (max-width:900px){
     .cal-layout, .sum-layout, .lookup{ grid-template-columns:minmax(0,1fr); }
@@ -244,6 +267,7 @@
 
   @media print{
     header, .intro, .steps, .lookup, footer, .t-actions{ display:none !important; }
+    .t-no{ background:#fff; color:#141416; }
     body{ background:#fff; }
     .panel{ background:none; padding:0; }
     .ticket{ animation:none; border:2px solid var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -253,14 +277,17 @@
 <body data-title-key="m-page-title">
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="20 6 9 17 4 12"/></symbol>
 </svg>
 
 <header>
   <div class="wrap nav-inner">
-    <a href="index.html" class="logo" aria-label="Stanford language center"><img src="images/logo-row-black.png" alt="" width="167" height="36"/></a>
+    <a href="index.html" class="logo" aria-label="Stanford language center"><img class="for-light" src="images/logo-row-black.png" alt="" width="167" height="36"/><img class="for-dark" src="images/logo-row-white.png" alt="" width="167" height="36"/></a>
     <div class="nav-right">
       <a href="index.html" class="nav-home" data-i18n="nav-home">На главную</a>
+      <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-aria="theme-toggle" aria-label="Тёмная тема"><svg class="icon i-moon"><use href="#i-moon"/></svg><svg class="icon i-sun"><use href="#i-sun"/></svg></button>
       <div class="lang-switch" role="group" data-i18n-aria="lang-label" aria-label="Язык сайта">
         <button type="button" data-lang="ru" lang="ru">RU</button>
         <button type="button" data-lang="kaa" lang="kaa" title="Qaraqalpaqsha">QQ</button>
