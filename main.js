@@ -304,7 +304,7 @@ function renderResults() {
 
   const track = document.getElementById('resultsTrack');
   // Repeat the set until it is wider than the screen, then add one hidden copy for a seamless loop.
-  const cardWidth = window.innerWidth <= 767 ? 210 : 256;
+  const cardWidth = window.innerWidth <= 767 ? 182 : 210;
   const times = Math.max(1, Math.ceil((window.innerWidth * 1.1) / (results.length * cardWidth)));
   let set = '';
   for (let i = 0; i < times; i++) set += results.map(r => resultCard(r, i > 0)).join('');
