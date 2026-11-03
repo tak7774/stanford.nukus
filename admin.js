@@ -113,7 +113,7 @@ function navigate(page) {
 
 // ── Toast ──
 function toast(msg) {
-  toastEl.innerHTML = '✅ ' + msg;
+  toastEl.textContent = '✅ ' + msg; // plain text, never parsed as HTML
   toastEl.classList.add('active');
   setTimeout(() => toastEl.classList.remove('active'), 3000);
 }
@@ -155,17 +155,17 @@ async function renderDashboard() {
   const newStudents = d.new_students;
 
   $('dashStats').innerHTML = `
-    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${d.total_exams}</div><div class="stat-label">Total Mock Exams</div></div>
-    <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-num">${upcomingExams}</div><div class="stat-label">Upcoming Exams</div></div>
-    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${d.total_students}</div><div class="stat-label">Trial Registrations</div></div>
-    <div class="stat-card"><div class="stat-icon purple">🆕</div><div class="stat-num">${newStudents}</div><div class="stat-label">New (uncontacted)</div></div>
+    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${esc(d.total_exams)}</div><div class="stat-label">Total Mock Exams</div></div>
+    <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-num">${esc(upcomingExams)}</div><div class="stat-label">Upcoming Exams</div></div>
+    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${esc(d.total_students)}</div><div class="stat-label">Trial Registrations</div></div>
+    <div class="stat-card"><div class="stat-icon purple">🆕</div><div class="stat-num">${esc(newStudents)}</div><div class="stat-label">New (uncontacted)</div></div>
   `;
 
   // Recent activity
   const recentStudents = studentsData.slice(0, 5).map(s => `
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--green)"></div>
-      <div><div class="activity-text"><strong>${esc(s.full_name)}</strong> registered for ${courseLabels[s.course] || s.course}</div><div class="activity-time">${fmtRelative(s.created_at)}</div></div>
+      <div><div class="activity-text"><strong>${esc(s.full_name)}</strong> registered for ${esc(courseLabels[s.course] || s.course)}</div><div class="activity-time">${fmtRelative(s.created_at)}</div></div>
     </div>`).join('');
 
   const recentExamRegs = examRegsData.slice(0, 5).map(r => `
@@ -180,7 +180,10 @@ async function renderDashboard() {
   `;
 }
 
-function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+// Escape a value for use inside HTML text AND inside quoted attributes.
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 
 // ════════════════════════════════════════════
 // MOCK EXAMS
@@ -211,11 +214,11 @@ async function loadExamsList() {
 
   $('examsList').innerHTML = '<div class="card"><table><thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
     exams.map(e => `<tr>
-      <td><strong style="color:var(--text)">${esc(e.title)}</strong>${e.description ? '<br><span style="font-size:.78rem;color:var(--text3)">' + esc(e.description).substring(0, 60) + '</span>' : ''}</td>
-      <td><span class="badge ${courseBadge[e.course_type] || 'badge-gray'}">${courseLabels[e.course_type] || e.course_type}</span></td>
-      <td>${fmtDateTime(e.exam_date)}<br><span style="font-size:.75rem;color:var(--text3)">${e.duration_minutes} min</span></td>
-      <td>${counts[e.id] || 0} / ${e.max_seats}</td>
-      <td><span class="badge ${statusBadge[e.status] || 'badge-gray'}">${e.status}</span></td>
+      <td><strong style="color:var(--text)">${esc(e.title)}</strong>${e.description ? '<br><span style="font-size:.78rem;color:var(--text3)">' + esc(e.description.substring(0, 60)) + '</span>' : ''}</td>
+      <td><span class="badge ${courseBadge[e.course_type] || 'badge-gray'}">${esc(courseLabels[e.course_type] || e.course_type)}</span></td>
+      <td>${fmtDateTime(e.exam_date)}<br><span style="font-size:.75rem;color:var(--text3)">${esc(e.duration_minutes)} min</span></td>
+      <td>${esc(counts[e.id] || 0)} / ${esc(e.max_seats)}</td>
+      <td><span class="badge ${statusBadge[e.status] || 'badge-gray'}">${esc(e.status)}</span></td>
       <td><button class="btn btn-sm btn-secondary" onclick="viewExamRegs(${e.id})">👥 Regs</button> <button class="btn btn-sm btn-secondary" onclick="openExamModal(${e.id})">✏️</button>${session.role === 'owner' ? ` <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">🗑</button>` : ''}</td>
     </tr>`).join('') + '</tbody></table></div>';
 }
@@ -251,12 +254,12 @@ function fillExamForm(title, desc, course, date, time, dur, seats, status, editI
       <div class="form-group"><label>Status</label><select class="form-control" id="exStatus"><option value="upcoming" ${status==='upcoming'?'selected':''}>Upcoming</option><option value="in_progress" ${status==='in_progress'?'selected':''}>In Progress</option><option value="completed" ${status==='completed'?'selected':''}>Completed</option><option value="cancelled" ${status==='cancelled'?'selected':''}>Cancelled</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Date</label><input class="form-control" id="exDate" type="date" value="${date}"/></div>
-      <div class="form-group"><label>Time</label><input class="form-control" id="exTime" type="time" value="${time}"/></div>
+      <div class="form-group"><label>Date</label><input class="form-control" id="exDate" type="date" value="${esc(date)}"/></div>
+      <div class="form-group"><label>Time</label><input class="form-control" id="exTime" type="time" value="${esc(time)}"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Duration (minutes)</label><input class="form-control" id="exDur" type="number" value="${dur}"/></div>
-      <div class="form-group"><label>Max Seats</label><input class="form-control" id="exSeats" type="number" value="${seats}"/></div>
+      <div class="form-group"><label>Duration (minutes)</label><input class="form-control" id="exDur" type="number" value="${esc(dur)}"/></div>
+      <div class="form-group"><label>Max Seats</label><input class="form-control" id="exSeats" type="number" value="${esc(seats)}"/></div>
     </div>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveExamBtn">${editId ? 'Save Changes' : 'Create Exam'}</button></div>
   `;
@@ -308,7 +311,7 @@ async function viewExamRegs(examId) {
       regsList.map(r => `
         <tr style="border-bottom:1px solid var(--border)">
           <td style="color:var(--text); font-weight:600; padding:10px 4px;">${esc(r.full_name || ((r.first_name || '') + ' ' + (r.last_name || '')))}</td>
-          <td><a href="tel:${r.phone}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
+          <td><a href="tel:${esc(r.phone)}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
           <td style="font-size:0.84rem; color:var(--text2);">${esc(r.gender || '-')} / ${r.birth_date ? esc(r.birth_date) : '-'}</td>
           <td>
             <span class="badge badge-${r.payment_status === 'verified' ? 'green' : 'gold'}">
@@ -367,9 +370,9 @@ async function loadStudents() {
   $('studentsList').innerHTML = '<div class="card"><table><thead><tr><th>Name</th><th>Phone</th><th>Course</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
     students.map(s => `<tr>
       <td style="color:var(--text);font-weight:500">${esc(s.full_name)}</td>
-      <td><a href="tel:${s.phone}" style="color:var(--gold)">${esc(s.phone)}</a></td>
-      <td><span class="badge ${courseBadge[s.course] || 'badge-gray'}">${courseLabels[s.course] || s.course}</span></td>
-      <td><span class="badge ${statusBadge[s.status] || 'badge-gray'}">${s.status}</span></td>
+      <td><a href="tel:${esc(s.phone)}" style="color:var(--gold)">${esc(s.phone)}</a></td>
+      <td><span class="badge ${courseBadge[s.course] || 'badge-gray'}">${esc(courseLabels[s.course] || s.course)}</span></td>
+      <td><span class="badge ${statusBadge[s.status] || 'badge-gray'}">${esc(s.status)}</span></td>
       <td>${fmtDate(s.created_at)}</td>
       <td>
         <select class="form-control" style="width:auto;padding:5px 8px;font-size:.75rem" onchange="updateStudentStatus(${s.id}, this.value)">
@@ -565,9 +568,9 @@ async function loadGallery() {
 
   $('galleryList').innerHTML = '<div class="gallery-admin-grid">' + galleryPhotos.map((p, i) => `
     <div class="gallery-admin-card">
-      <img src="${p.url}" alt="${esc(p.caption || '')}" loading="lazy"/>
+      <img src="${esc(p.url)}" alt="${esc(p.caption || '')}" loading="lazy"/>
       <div class="gallery-admin-body">
-        <span class="gallery-pos">#${i + 1} на сайте · ${p.width}×${p.height}</span>
+        <span class="gallery-pos">#${i + 1} на сайте · ${esc(p.width)}×${esc(p.height)}</span>
         <input class="form-control" value="${esc(p.caption || '')}" placeholder="Подпись" onchange="updatePhoto(${p.id}, { caption: this.value.trim() })"/>
         <select class="form-control" onchange="updatePhoto(${p.id}, { size: this.value })">
           ${Object.entries(sizeLabels).map(([v, l]) => `<option value="${v}" ${p.size === v ? 'selected' : ''}>${l}</option>`).join('')}

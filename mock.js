@@ -279,9 +279,7 @@ window.submitRegistration = async function() {
   goToStep(4);
 };
 
+// Escape a value for use inside HTML text AND inside quoted attributes.
 function escapeHtml(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
+  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }

@@ -264,13 +264,18 @@ async function loadPublicMockExams() {
               <div class="mock-seats-info"><span>Мест осталось</span> <span>${leftSeats} из ${maxSeats}</span></div>
               <div class="mock-progress-bar"><div class="mock-progress-fill" style="width: ${percentage}%;"></div></div>
             </div>
-            <button class="mock-btn" onclick="openPublicMockModal('${escapeHtml(e.title)}', ${e.id})">Зарегистрироваться на Mock</button>
+            <button class="mock-btn" data-exam-id="${escapeHtml(e.id)}" data-exam-title="${escapeHtml(e.title)}">Зарегистрироваться на Mock</button>
           </div>
         </div>
       `;
     }).join('');
 
     container.innerHTML = html;
+
+    // Attach click handlers in JS (not onclick="...") so a title containing ' or " can't break the page.
+    container.querySelectorAll('.mock-btn[data-exam-id]').forEach(btn => {
+      btn.addEventListener('click', () => openPublicMockModal(btn.dataset.examTitle, Number(btn.dataset.examId)));
+    });
   } catch(e) {
     console.warn("Error loading mock exams:", e);
   }
@@ -290,11 +295,9 @@ async function loadGallery() {
   }).join('');
 }
 
+// Escape a value for use inside HTML text AND inside quoted attributes.
 function escapeHtml(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
+  return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 // ── i18n Translation Engine ──
