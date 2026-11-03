@@ -120,7 +120,7 @@ function navigate(page) {
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   $('sidebar').classList.remove('open');
-  const views = { dashboard: renderDashboard, exams: renderExams, students: renderStudents, news: renderNews, gallery: renderGallery };
+  const views = { dashboard: renderDashboard, exams: renderExams, students: renderStudents, news: renderNews, gallery: renderGallery, results: renderResults, teachers: renderTeachers };
   (views[page] || renderDashboard)();
 }
 
@@ -137,7 +137,11 @@ function toast(msg, type) {
 }
 
 // ── Modal ──
-function openModal(html) { modalContent.innerHTML = html; modalOverlay.classList.add('active'); }
+function openModal(html, wide) {
+  modalContent.innerHTML = html;
+  modalContent.classList.toggle('wide', !!wide);
+  modalOverlay.classList.add('active');
+}
 function closeModal() { modalOverlay.classList.remove('active'); }
 modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
 
@@ -154,16 +158,28 @@ function fmtRelative(d) {
   return Math.floor(hrs / 24) + 'd ago';
 }
 
-const courseLabels = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English' };
-const formatLabels = { paper: 'Paper', computer: 'Computer' };
-const courseBadge = { ielts: 'badge-red', general: 'badge-blue', advanced: 'badge-purple', kids: 'badge-green' };
+const courseLabels = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English', unsure: 'Не знает — помочь выбрать' };
+const courseBadge = { ielts: 'badge-gold', general: 'badge-blue', advanced: 'badge-purple', kids: 'badge-green', unsure: 'badge-gray' };
+const sourceLabels = { course_card: 'Карточка курса', apply_form: 'Форма «Оставить заявку»' };
+const timeLabels = { morning: 'Утро', day: 'День', evening: 'Вечер' };
+
+// IELTS bands: 0–9 in steps of 0.5. Overall = average rounded the IELTS way
+// (x.25 → x.5, x.75 → next whole). The server calculates the same; this is only a preview.
+const BAND_VALUES = Array.from({ length: 19 }, (_, i) => (i / 2).toFixed(1));
+function isBand(v) { const n = Number(v); return v !== '' && v !== null && !isNaN(n) && n >= 0 && n <= 9 && Math.round(n * 2) === n * 2; }
+function ieltsOverall(bands) {
+  if (bands.some(b => !isBand(b))) return null;
+  const avg = bands.reduce((a, b) => a + Number(b), 0) / 4;
+  return (Math.floor(avg * 2 + 0.5) / 2).toFixed(1);
+}
+function bandText(v) { return (v === null || v === undefined || v === '') ? '—' : Number(v).toFixed(1); }
 const statusBadge = { new: 'badge-gold', contacted: 'badge-blue', enrolled: 'badge-green', declined: 'badge-gray', upcoming: 'badge-blue', in_progress: 'badge-gold', completed: 'badge-green', cancelled: 'badge-gray' };
 
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
 async function renderDashboard() {
-  mainContent.innerHTML = '<div class="page-header"><h1>Dashboard</h1><p>Overview of your centre</p></div><div class="stats-grid" id="dashStats">Loading...</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" id="dashCards"></div>';
+  mainContent.innerHTML = '<div class="page-header"><h1>Dashboard</h1><p>Overview of your centre</p></div><div class="stats-grid" id="dashStats">Loading...</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px" id="dashCards"></div>';
 
   const { data: d, error } = await api('GET', 'admin/dashboard/');
   if (error) { $('dashStats').textContent = error.detail || 'Could not load dashboard'; return; }
@@ -336,36 +352,74 @@ async function viewExamRegs(examId) {
   ]);
   if (error) { showApiError(error); return; }
   const regsList = regs || [];
+  const genderLabels = { male: 'М', female: 'Ж' };
+  const scoreInput = (r, band) => `<input class="score-input" inputmode="decimal" data-reg="${r.id}" data-band="${band}" value="${r[band] === null || r[band] === undefined ? '' : Number(r[band]).toFixed(1)}" placeholder="—" aria-label="${band}"/>`;
 
   openModal(`
-    <div class="modal-title">${esc(exam?.title || 'Exam')} — Registrations (${regsList.length})<button class="modal-close" onclick="closeModal()">✕</button></div>
-    ${regsList.length ? '<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse;"><thead><tr style="text-align:left; border-bottom:1px solid var(--border)"><th>Ticket</th><th>Candidate Name</th><th>Phone</th><th>Format</th><th>Gender / DOB</th><th>Payment</th><th>Method</th><th>Action</th></tr></thead><tbody>' +
+    <div class="modal-title">${esc(exam?.title || 'Exam')} — записи (${regsList.length})<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
+    ${regsList.length ? `<p class="hint" style="margin:-8px 0 16px">Баллы L / R / W / S: от 0 до 9 с шагом 0.5. Overall считается автоматически. Студент увидит результат на сайте по номеру билета и телефону.</p>
+    <div class="table-wrap"><table><thead><tr><th>Билет</th><th>Кандидат</th><th>Телефон</th><th>Пол</th><th>Оплата</th><th>Был?</th><th>L</th><th>R</th><th>W</th><th>S</th><th>Overall</th><th></th></tr></thead><tbody>` +
       regsList.map(r => `
-        <tr style="border-bottom:1px solid var(--border)">
-          <td><code style="background:var(--bg3); padding:2px 6px; border-radius:4px; font-size:0.78rem; white-space:nowrap;">${esc(r.ticket_no || '—')}</code></td>
-          <td style="color:var(--text); font-weight:600; padding:10px 4px;">${esc(r.full_name || ((r.first_name || '') + ' ' + (r.last_name || '')))}</td>
-          <td><a href="tel:${esc(r.phone)}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
-          <td style="font-size:0.84rem; color:var(--text2);">${esc(formatLabels[r.format] || r.format || '—')}</td>
-          <td style="font-size:0.84rem; color:var(--text2);">${esc(r.gender || '-')} / ${r.birth_date ? esc(r.birth_date) : '-'}</td>
-          <td>
-            <span class="badge badge-${r.payment_status === 'verified' ? 'green' : 'gold'}">
-              ${r.payment_status === 'verified' ? 'VERIFIED' : 'PENDING'}
-            </span>
+        <tr data-row="${r.id}">
+          <td><code style="background:var(--bg3);padding:3px 7px;border-radius:6px;font-size:.78rem;white-space:nowrap">${esc(r.ticket_no || '—')}</code></td>
+          <td style="color:var(--text);font-weight:600">${esc(r.full_name || ((r.first_name || '') + ' ' + (r.last_name || '')))}</td>
+          <td><a href="tel:${esc(r.phone)}" style="font-weight:500;white-space:nowrap">${esc(r.phone)}</a></td>
+          <td>${esc(genderLabels[r.gender] || '—')}</td>
+          <td style="white-space:nowrap">
+            <span class="badge badge-${r.payment_status === 'verified' ? 'green' : 'gold'}">${r.payment_status === 'verified' ? 'Оплачено' : 'Ожидает'}</span>
+            <span class="muted" style="font-size:.75rem">${esc((r.payment_method || '').toUpperCase())}</span><br>
+            ${r.payment_status !== 'verified'
+              ? `<button class="btn btn-sm btn-primary" style="margin-top:6px" onclick="togglePayStatus(${r.id}, 'verified', ${examId})">Подтвердить оплату</button>`
+              : `<button class="btn btn-sm btn-secondary" style="margin-top:6px" onclick="togglePayStatus(${r.id}, 'pending', ${examId})">Сбросить</button>`}
           </td>
-          <td style="font-size:0.82rem; font-weight:600;">${esc((r.payment_method || 'Click').toUpperCase())}</td>
           <td>
-            ${r.payment_status !== 'verified' ? `<button class="btn btn-sm btn-primary" onclick="togglePayStatus(${r.id}, 'verified', ${examId})">Подтвердить оплату</button>` : `<button class="btn btn-sm btn-secondary" onclick="togglePayStatus(${r.id}, 'pending', ${examId})">Сбросить</button>`}
+            <select class="form-control" style="height:34px;width:auto;font-size:.8rem;padding:0 8px" data-attended="${r.id}">
+              <option value="" ${r.attended === null || r.attended === undefined ? 'selected' : ''}>—</option>
+              <option value="true" ${r.attended === true ? 'selected' : ''}>Да</option>
+              <option value="false" ${r.attended === false ? 'selected' : ''}>Нет</option>
+            </select>
           </td>
-        </tr>
-      `).join('') +
-      '</tbody></table></div>' : '<div class="empty-state"><div class="icon">👥</div><h3>No registrations yet</h3><p>Students can register from the public site</p></div>'}
-  `);
+          <td>${scoreInput(r, 'listening')}</td>
+          <td>${scoreInput(r, 'reading')}</td>
+          <td>${scoreInput(r, 'writing')}</td>
+          <td>${scoreInput(r, 'speaking')}</td>
+          <td><span class="overall-pill" data-overall="${r.id}">${bandText(r.overall)}</span></td>
+          <td><button class="btn btn-sm btn-dark" onclick="saveRegScores(${r.id}, ${examId})">Сохранить</button></td>
+        </tr>`).join('') +
+      '</tbody></table></div>' : '<div class="empty-state"><div class="icon">👥</div><h3>Записей пока нет</h3><p>Студенты записываются на сайте, на странице mock.html</p></div>'}
+  `, true);
+
+  // Live Overall preview while typing the four bands
+  modalContent.querySelectorAll('.score-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const id = inp.dataset.reg;
+      const vals = ['listening', 'reading', 'writing', 'speaking'].map(b => modalContent.querySelector(`.score-input[data-reg="${id}"][data-band="${b}"]`).value.trim().replace(',', '.'));
+      inp.classList.toggle('bad', inp.value.trim() !== '' && !isBand(inp.value.trim().replace(',', '.')));
+      const o = ieltsOverall(vals);
+      modalContent.querySelector(`[data-overall="${id}"]`).textContent = o ?? '—';
+    });
+  });
 }
+
+window.saveRegScores = async function(regId, examId) {
+  const body = {};
+  for (const band of ['listening', 'reading', 'writing', 'speaking']) {
+    const raw = modalContent.querySelector(`.score-input[data-reg="${regId}"][data-band="${band}"]`).value.trim().replace(',', '.');
+    if (raw !== '' && !isBand(raw)) { toast(`${band}: от 0 до 9 с шагом 0.5`, 'error'); return; }
+    body[band] = raw === '' ? null : raw;
+  }
+  const att = modalContent.querySelector(`[data-attended="${regId}"]`).value;
+  body.attended = att === '' ? null : att === 'true';
+  const { data, error } = await api('PATCH', 'admin/exam-registrations/' + regId + '/', body);
+  if (error) { showApiError(error); return; }
+  modalContent.querySelector(`[data-overall="${regId}"]`).textContent = bandText(data.overall);
+  toast(data.overall !== null ? `Сохранено. Overall ${bandText(data.overall)}` : 'Сохранено');
+};
 
 window.togglePayStatus = async function(regId, newStatus, examId) {
   const { error } = await api('PATCH', 'admin/exam-registrations/' + regId + '/', { payment_status: newStatus });
   if (error) { showApiError(error); return; }
-  toast('Payment status updated');
+  toast('Статус оплаты обновлён');
   if (examId) viewExamRegs(examId);
 };
 
@@ -374,10 +428,10 @@ window.togglePayStatus = async function(regId, newStatus, examId) {
 // ════════════════════════════════════════════
 async function renderStudents() {
   mainContent.innerHTML = `
-    <div class="page-header"><h1>Students</h1><p>Trial lesson registrations from the website</p></div>
+    <div class="page-header"><h1>Заявки</h1><p>Заявки с сайта: кнопка «Записаться» на карточке курса и форма «Оставить заявку». Заметка видна только сотрудникам.</p></div>
     <div class="filter-bar">
       <select id="studFilter"><option value="">All statuses</option><option value="new">🆕 New</option><option value="contacted">📞 Contacted</option><option value="enrolled">✅ Enrolled</option><option value="declined">❌ Declined</option></select>
-      <select id="studCourseFilter"><option value="">All courses</option><option value="ielts">IELTS</option><option value="general">General</option><option value="advanced">Advanced</option><option value="kids">Kids</option></select>
+      <select id="studCourseFilter"><option value="">All courses</option><option value="ielts">IELTS</option><option value="general">General</option><option value="advanced">Advanced</option><option value="kids">Kids</option><option value="unsure">Не знает</option></select>
     </div>
     <div id="studentsList">Loading...</div>
   `;
@@ -401,28 +455,43 @@ async function loadStudents() {
     return;
   }
 
-  $('studentsList').innerHTML = '<div class="card"><table><thead><tr><th>Name</th><th>Phone</th><th>Course</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>' +
+  $('studentsList').innerHTML = '<div class="card"><div class="table-wrap"><table><thead><tr><th>Имя</th><th>Телефон</th><th>Курс</th><th>Откуда</th><th>Время</th><th>Комментарий</th><th>Статус</th><th>Заметка сотрудника</th><th>Дата</th></tr></thead><tbody>' +
     students.map(s => `<tr>
-      <td style="color:var(--text);font-weight:500">${esc(s.full_name)}</td>
-      <td><a href="tel:${esc(s.phone)}" style="color:var(--gold)">${esc(s.phone)}</a></td>
+      <td style="color:var(--text);font-weight:600">${esc(s.full_name)}</td>
+      <td><a href="tel:${esc(s.phone)}" style="white-space:nowrap;font-weight:500">${esc(s.phone)}</a></td>
       <td><span class="badge ${courseBadge[s.course] || 'badge-gray'}">${esc(courseLabels[s.course] || s.course)}</span></td>
-      <td><span class="badge ${statusBadge[s.status] || 'badge-gray'}">${esc(s.status)}</span></td>
-      <td>${fmtDate(s.created_at)}</td>
+      <td style="font-size:.82rem">${esc(sourceLabels[s.source] || '—')}</td>
+      <td style="font-size:.82rem">${esc(timeLabels[s.preferred_time] || '—')}</td>
+      <td class="comment-cell">${s.comment ? esc(s.comment) : '<span class="muted">—</span>'}</td>
       <td>
-        <select class="form-control" style="width:auto;padding:5px 8px;font-size:.75rem" onchange="updateStudentStatus(${s.id}, this.value)">
-          <option value="new" ${s.status==='new'?'selected':''}>🆕 New</option>
-          <option value="contacted" ${s.status==='contacted'?'selected':''}>📞 Contacted</option>
-          <option value="enrolled" ${s.status==='enrolled'?'selected':''}>✅ Enrolled</option>
-          <option value="declined" ${s.status==='declined'?'selected':''}>❌ Declined</option>
+        <select class="form-control" style="width:auto;height:34px;padding:0 8px;font-size:.8rem" onchange="updateStudentStatus(${s.id}, this.value)">
+          <option value="new" ${s.status==='new'?'selected':''}>🆕 Новая</option>
+          <option value="contacted" ${s.status==='contacted'?'selected':''}>📞 Связались</option>
+          <option value="enrolled" ${s.status==='enrolled'?'selected':''}>✅ Записан</option>
+          <option value="declined" ${s.status==='declined'?'selected':''}>❌ Отказ</option>
         </select>
       </td>
-    </tr>`).join('') + '</tbody></table></div>';
+      <td><textarea class="note-input" rows="1" placeholder="Заметка…" data-note="${s.id}">${esc(s.staff_note || '')}</textarea></td>
+      <td style="white-space:nowrap">${fmtDate(s.created_at)}</td>
+    </tr>`).join('') + '</tbody></table></div></div>';
+
+  // Staff note is saved when the field loses focus (only if it changed)
+  $('studentsList').querySelectorAll('[data-note]').forEach(el => {
+    let saved = el.value;
+    el.addEventListener('blur', async () => {
+      if (el.value === saved) return;
+      const { error } = await api('PATCH', 'admin/students/' + el.dataset.note + '/', { staff_note: el.value.trim() });
+      if (error) { showApiError(error); return; }
+      saved = el.value;
+      toast('Заметка сохранена');
+    });
+  });
 }
 
 async function updateStudentStatus(id, status) {
   const { error } = await api('PATCH', 'admin/students/' + id + '/', { status });
   if (error) { showApiError(error); loadStudents(); return; } // reload so the dropdown shows the saved value
-  toast('Status updated to ' + status);
+  toast('Статус обновлён');
   loadStudents();
 }
 
@@ -545,7 +614,7 @@ let galleryPhotos = [];
 
 async function renderGallery() {
   mainContent.innerHTML = `
-    <div class="page-header"><h1>Gallery</h1><p>Фото для раздела «Жизнь центра изнутри» на главной странице. Пока здесь нет фото, на сайте показываются стандартные картинки.</p></div>
+    <div class="page-header"><h1>Галерея</h1><p>Фото для раздела «Галерея» на главной странице. Пока здесь нет фото, раздел на сайте скрыт.</p></div>
     <div class="card">
       <div class="card-title">Добавить фото</div>
       <div class="upload-zone" id="uploadZone">📷 Нажмите или перетащите сюда фото (можно несколько)<br><span style="font-size:.78rem;color:var(--text3)">JPG, PNG или WEBP · большие фото уменьшаются автоматически</span></div>
@@ -596,7 +665,7 @@ async function loadGallery() {
   galleryPhotos = data || [];
 
   if (!galleryPhotos.length) {
-    $('galleryList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🖼️</div><h3>Фото пока нет</h3><p>На сайте сейчас показываются стандартные картинки</p></div></div>';
+    $('galleryList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🖼️</div><h3>Фото пока нет</h3><p>Раздел «Галерея» на сайте скрыт, пока здесь нет ни одного фото</p></div></div>';
     return;
   }
 
@@ -660,6 +729,251 @@ async function deletePhoto(id) {
   loadGallery();
 }
 
+// ════════════════════════════════════════════
+// RESULTS («Результаты» marquee on the main site)
+// ════════════════════════════════════════════
+let resultsRows = [];
+
+async function renderResults() {
+  mainContent.innerHTML = `
+    <div class="page-header page-header-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+      <div><h1>Результаты</h1><p>Настоящие результаты IELTS студентов. На сайте показываются только опубликованные, в этом порядке. Если опубликованных нет — раздел «Результаты» на сайте скрыт.</p></div>
+      <button class="btn btn-primary" id="addResultBtn">+ Добавить результат</button>
+    </div>
+    <div id="resultsList">Загрузка…</div>`;
+  $('addResultBtn').addEventListener('click', () => openResultModal());
+  await loadResults();
+}
+
+async function loadResults() {
+  const { data, error } = await api('GET', 'admin/results/');
+  if (error) { $('resultsList').textContent = errorMessage(error); return; }
+  resultsRows = data || [];
+  if (!resultsRows.length) {
+    $('resultsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🏆</div><h3>Результатов пока нет</h3><p>Добавьте первый результат с фото сертификата</p></div></div>';
+    return;
+  }
+  $('resultsList').innerHTML = '<div class="card"><div class="table-wrap"><table><thead><tr><th>Фото</th><th>Студент</th><th>L / R / W / S</th><th>Overall</th><th>Курс</th><th>Дата экзамена</th><th>На сайте</th><th>Порядок</th><th></th></tr></thead><tbody>' +
+    resultsRows.map((r, i) => `<tr>
+      <td>${r.image_url ? `<img class="thumb" src="${esc(r.image_url)}" alt="" loading="lazy"/>` : '<span class="thumb" aria-hidden="true"></span>'}</td>
+      <td style="color:var(--text);font-weight:600">${esc(r.first_name)} ${r.last_name_initial ? esc(r.last_name_initial) + '.' : ''}</td>
+      <td class="bands">${[r.listening, r.reading, r.writing, r.speaking].map(bandText).join(' / ')}</td>
+      <td><span class="overall-pill">${bandText(r.overall)}</span></td>
+      <td><span class="badge ${courseBadge[r.course] || 'badge-gray'}">${esc(courseLabels[r.course] || r.course)}</span></td>
+      <td style="white-space:nowrap">${r.exam_date ? fmtDate(r.exam_date) : '—'}</td>
+      <td><label class="switch"><input type="checkbox" ${r.is_published ? 'checked' : ''} onchange="togglePublished('results', ${r.id}, this.checked)"/></label></td>
+      <td><span class="order-btns">
+        <button class="btn btn-sm btn-secondary" title="Выше" aria-label="Выше" onclick="moveRow('results', ${r.id}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn btn-sm btn-secondary" title="Ниже" aria-label="Ниже" onclick="moveRow('results', ${r.id}, 1)" ${i === resultsRows.length - 1 ? 'disabled' : ''}>↓</button>
+      </span></td>
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-secondary" onclick="openResultModal(${r.id})">✏️ Изменить</button>${session.role === 'owner' ? ` <button class="btn btn-sm btn-danger" onclick="deleteRow('results', ${r.id})" aria-label="Удалить">🗑</button>` : ''}</td>
+    </tr>`).join('') + '</tbody></table></div></div>';
+}
+
+function bandSelect(id, value, allowEmpty) {
+  const v = (value === null || value === undefined || value === '') ? '' : Number(value).toFixed(1);
+  return `<select class="form-control" id="${id}">${allowEmpty ? `<option value="" ${v === '' ? 'selected' : ''}>—</option>` : (v === '' ? '<option value="" selected disabled>—</option>' : '')}${BAND_VALUES.slice().reverse().map(b => `<option value="${b}" ${b === v ? 'selected' : ''}>${b}</option>`).join('')}</select>`;
+}
+
+// Photo picker shared by the result and teacher forms
+let pickedPhoto = null;   // File chosen in the form (null = keep the current one)
+let removePhoto = false;
+function photoPickerHtml(currentUrl, square) {
+  return `
+    <div class="form-group"><label>${square ? 'Фото преподавателя' : 'Фото сертификата (необязательно)'}</label>
+      <div class="photo-pick">
+        <img class="photo-preview ${square ? 'square' : ''}" id="photoPreview" src="${currentUrl ? esc(currentUrl) : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt=""/>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+          <button type="button" class="btn btn-sm btn-secondary" id="photoPickBtn">📷 Выбрать фото</button>
+          <button type="button" class="btn btn-sm btn-secondary" id="photoRemoveBtn" ${currentUrl ? '' : 'style="display:none"'}>Убрать фото</button>
+          <span class="hint">${square ? 'Лучше квадратное или вертикальное фото, лицо по центру.' : 'Вертикальное фото 9:16. Без фото карточка будет жёлтой.'}</span>
+        </div>
+      </div>
+      <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" style="display:none"/>
+    </div>`;
+}
+function wirePhotoPicker() {
+  pickedPhoto = null; removePhoto = false;
+  const input = $('photoFile');
+  $('photoPickBtn').addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    if (!input.files.length) return;
+    pickedPhoto = input.files[0]; removePhoto = false;
+    $('photoPreview').src = URL.createObjectURL(pickedPhoto);
+    $('photoRemoveBtn').style.display = '';
+  });
+  $('photoRemoveBtn').addEventListener('click', () => {
+    pickedPhoto = null; removePhoto = true; input.value = '';
+    $('photoPreview').src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    $('photoRemoveBtn').style.display = 'none';
+  });
+}
+async function appendPhoto(fd) {
+  if (pickedPhoto) fd.append('image', await shrinkImage(pickedPhoto));
+  else if (removePhoto) fd.append('remove_image', '1');
+}
+
+function openResultModal(editId) {
+  const r = resultsRows.find(x => x.id === editId) || { first_name: '', last_name_initial: '', listening: null, reading: null, writing: null, speaking: null, course: 'ielts', exam_date: '', is_published: false, image_url: null };
+  openModal(`
+    <div class="modal-title">${editId ? 'Изменить результат' : 'Новый результат'}<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label for="rFirst">Имя</label><input class="form-control" id="rFirst" value="${esc(r.first_name)}" placeholder="Как в сертификате"/></div>
+      <div class="form-group"><label for="rInitial">Первая буква фамилии</label><input class="form-control" id="rInitial" maxlength="2" value="${esc(r.last_name_initial)}" placeholder="например: К"/></div>
+    </div>
+    <div class="form-row-4">
+      <div class="form-group"><label for="rL">Listening</label>${bandSelect('rL', r.listening)}</div>
+      <div class="form-group"><label for="rR">Reading</label>${bandSelect('rR', r.reading)}</div>
+      <div class="form-group"><label for="rW">Writing</label>${bandSelect('rW', r.writing)}</div>
+      <div class="form-group"><label for="rS">Speaking</label>${bandSelect('rS', r.speaking)}</div>
+    </div>
+    <div class="overall-preview"><strong id="rOverall">—</strong><span>Overall считается автоматически по правилам IELTS</span></div>
+    <div class="form-row">
+      <div class="form-group"><label for="rCourse">Курс</label><select class="form-control" id="rCourse">${['ielts', 'general', 'advanced', 'kids'].map(c => `<option value="${c}" ${r.course === c ? 'selected' : ''}>${courseLabels[c]}</option>`).join('')}</select></div>
+      <div class="form-group"><label for="rDate">Дата экзамена</label><input class="form-control" type="date" id="rDate" value="${esc(r.exam_date || '')}"/></div>
+    </div>
+    ${photoPickerHtml(r.image_url, false)}
+    <label class="switch"><input type="checkbox" id="rPublished" ${r.is_published ? 'checked' : ''}/> Показывать на сайте</label>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-dark" id="saveResultBtn">${editId ? 'Сохранить' : 'Добавить'}</button></div>
+  `);
+  const updateOverall = () => { $('rOverall').textContent = ieltsOverall(['rL', 'rR', 'rW', 'rS'].map(id => $(id).value)) ?? '—'; };
+  ['rL', 'rR', 'rW', 'rS'].forEach(id => $(id).addEventListener('change', updateOverall));
+  updateOverall();
+  wirePhotoPicker();
+  $('saveResultBtn').addEventListener('click', () => saveResult(editId));
+}
+
+async function saveResult(editId) {
+  const bands = { listening: $('rL').value, reading: $('rR').value, writing: $('rW').value, speaking: $('rS').value };
+  if (!$('rFirst').value.trim()) { toast('Укажите имя', 'error'); return; }
+  if (Object.values(bands).some(v => !isBand(v))) { toast('Выберите все 4 балла', 'error'); return; }
+  const fd = new FormData();
+  fd.append('first_name', $('rFirst').value.trim());
+  fd.append('last_name_initial', $('rInitial').value.trim());
+  Object.entries(bands).forEach(([k, v]) => fd.append(k, v));
+  fd.append('course', $('rCourse').value);
+  fd.append('exam_date', $('rDate').value);
+  fd.append('is_published', $('rPublished').checked ? 'true' : 'false');
+  $('saveResultBtn').disabled = true;
+  await appendPhoto(fd);
+  const { error } = editId ? await apiUpload('PATCH', 'admin/results/' + editId + '/', fd) : await apiUpload('POST', 'admin/results/', fd);
+  if ($('saveResultBtn')) $('saveResultBtn').disabled = false;
+  if (error) { showApiError(error); return; }
+  toast(editId ? 'Результат сохранён' : 'Результат добавлен');
+  closeModal();
+  loadResults();
+}
+
+// ════════════════════════════════════════════
+// TEACHERS («Преподаватели» on the main site)
+// ════════════════════════════════════════════
+let teacherRows = [];
+
+async function renderTeachers() {
+  mainContent.innerHTML = `
+    <div class="page-header page-header-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+      <div><h1>Преподаватели</h1><p>На сайте показываются только опубликованные преподаватели, в этом порядке. Если опубликованных нет — раздел на сайте скрыт.</p></div>
+      <button class="btn btn-primary" id="addTeacherBtn">+ Добавить преподавателя</button>
+    </div>
+    <div id="teachersList">Загрузка…</div>`;
+  $('addTeacherBtn').addEventListener('click', () => openTeacherModal());
+  await loadTeachers();
+}
+
+async function loadTeachers() {
+  const { data, error } = await api('GET', 'admin/teachers/');
+  if (error) { $('teachersList').textContent = errorMessage(error); return; }
+  teacherRows = data || [];
+  if (!teacherRows.length) {
+    $('teachersList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🎓</div><h3>Преподавателей пока нет</h3><p>Добавьте преподавателя с настоящим фото</p></div></div>';
+    return;
+  }
+  $('teachersList').innerHTML = '<div class="card"><div class="table-wrap"><table><thead><tr><th>Фото</th><th>Имя</th><th>Специализация</th><th>IELTS</th><th>Опыт</th><th>Теги</th><th>На сайте</th><th>Порядок</th><th></th></tr></thead><tbody>' +
+    teacherRows.map((t, i) => `<tr>
+      <td>${t.image_url ? `<img class="thumb round" src="${esc(t.image_url)}" alt="" loading="lazy"/>` : '<span class="thumb round" aria-hidden="true"></span>'}</td>
+      <td style="color:var(--text);font-weight:600">${esc(t.name)}</td>
+      <td style="font-size:.84rem">${esc(t.role || '—')}</td>
+      <td>${t.ielts_band !== null && t.ielts_band !== undefined ? `<span class="overall-pill">${bandText(t.ielts_band)}</span>` : '—'}</td>
+      <td style="white-space:nowrap">${t.experience_years !== null && t.experience_years !== undefined ? esc(t.experience_years) + ' лет' : '—'}</td>
+      <td style="font-size:.8rem">${esc(t.tags || '—')}</td>
+      <td><label class="switch"><input type="checkbox" ${t.is_published ? 'checked' : ''} onchange="togglePublished('teachers', ${t.id}, this.checked)"/></label></td>
+      <td><span class="order-btns">
+        <button class="btn btn-sm btn-secondary" title="Выше" aria-label="Выше" onclick="moveRow('teachers', ${t.id}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn btn-sm btn-secondary" title="Ниже" aria-label="Ниже" onclick="moveRow('teachers', ${t.id}, 1)" ${i === teacherRows.length - 1 ? 'disabled' : ''}>↓</button>
+      </span></td>
+      <td style="white-space:nowrap"><button class="btn btn-sm btn-secondary" onclick="openTeacherModal(${t.id})">✏️ Изменить</button>${session.role === 'owner' ? ` <button class="btn btn-sm btn-danger" onclick="deleteRow('teachers', ${t.id})" aria-label="Удалить">🗑</button>` : ''}</td>
+    </tr>`).join('') + '</tbody></table></div></div>';
+}
+
+function openTeacherModal(editId) {
+  const t = teacherRows.find(x => x.id === editId) || { name: '', role: '', ielts_band: null, experience_years: null, tags: '', is_published: false, image_url: null };
+  openModal(`
+    <div class="modal-title">${editId ? 'Изменить преподавателя' : 'Новый преподаватель'}<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
+    <div class="form-group"><label for="tName">Имя и фамилия</label><input class="form-control" id="tName" value="${esc(t.name)}"/></div>
+    <div class="form-group"><label for="tRole">Специализация</label><input class="form-control" id="tRole" value="${esc(t.role)}" placeholder="например: IELTS, Speaking"/></div>
+    <div class="form-row">
+      <div class="form-group"><label for="tBand">Балл IELTS (если есть)</label>${bandSelect('tBand', t.ielts_band, true)}</div>
+      <div class="form-group"><label for="tYears">Опыт, лет</label><input class="form-control" type="number" min="0" max="60" id="tYears" value="${t.experience_years ?? ''}"/></div>
+    </div>
+    <div class="form-group"><label for="tTags">Теги</label><input class="form-control" id="tTags" value="${esc(t.tags)}" placeholder="через запятую: IELTS, Kids, Grammar"/></div>
+    ${photoPickerHtml(t.image_url, true)}
+    <label class="switch"><input type="checkbox" id="tPublished" ${t.is_published ? 'checked' : ''}/> Показывать на сайте</label>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-dark" id="saveTeacherBtn">${editId ? 'Сохранить' : 'Добавить'}</button></div>
+  `);
+  wirePhotoPicker();
+  $('saveTeacherBtn').addEventListener('click', () => saveTeacher(editId));
+}
+
+async function saveTeacher(editId) {
+  if (!$('tName').value.trim()) { toast('Укажите имя', 'error'); return; }
+  const fd = new FormData();
+  fd.append('name', $('tName').value.trim());
+  fd.append('role', $('tRole').value.trim());
+  fd.append('ielts_band', $('tBand').value);
+  fd.append('experience_years', $('tYears').value.trim());
+  fd.append('tags', $('tTags').value.trim());
+  fd.append('is_published', $('tPublished').checked ? 'true' : 'false');
+  $('saveTeacherBtn').disabled = true;
+  await appendPhoto(fd);
+  const { error } = editId ? await apiUpload('PATCH', 'admin/teachers/' + editId + '/', fd) : await apiUpload('POST', 'admin/teachers/', fd);
+  if ($('saveTeacherBtn')) $('saveTeacherBtn').disabled = false;
+  if (error) { showApiError(error); return; }
+  toast(editId ? 'Сохранено' : 'Преподаватель добавлен');
+  closeModal();
+  loadTeachers();
+}
+
+// Shared by results and teachers
+const rowPages = {
+  results: { rows: () => resultsRows, reload: () => loadResults() },
+  teachers: { rows: () => teacherRows, reload: () => loadTeachers() },
+};
+
+async function togglePublished(kind, id, published) {
+  const { error } = await api('PATCH', `admin/${kind}/${id}/`, { is_published: published });
+  if (error) { showApiError(error); rowPages[kind].reload(); return; }
+  toast(published ? 'Показано на сайте' : 'Скрыто с сайта');
+  rowPages[kind].reload();
+}
+
+async function moveRow(kind, id, direction) {
+  const ids = rowPages[kind].rows().map(r => r.id);
+  const i = ids.indexOf(id), j = i + direction;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  const { error } = await api('POST', `admin/${kind}/reorder/`, { ids });
+  if (error) { showApiError(error); return; }
+  rowPages[kind].reload();
+}
+
+async function deleteRow(kind, id) {
+  if (!confirm('Удалить навсегда?')) return;
+  const { error } = await api('DELETE', `admin/${kind}/${id}/`);
+  if (error) { showApiError(error); return; }
+  toast('Удалено');
+  rowPages[kind].reload();
+}
+
 // ── Expose globals for inline onclick handlers ──
 window.openExamModal = openExamModal;
 window.deleteExam = deleteExam;
@@ -672,6 +986,11 @@ window.updatePhoto = updatePhoto;
 window.movePhoto = movePhoto;
 window.replacePhoto = replacePhoto;
 window.deletePhoto = deletePhoto;
+window.openResultModal = openResultModal;
+window.openTeacherModal = openTeacherModal;
+window.togglePublished = togglePublished;
+window.moveRow = moveRow;
+window.deleteRow = deleteRow;
 
 // ── Init ──
 // Check if already logged in (this call also gives us Django's CSRF cookie)
