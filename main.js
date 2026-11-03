@@ -77,8 +77,7 @@ async function sendLead(payload, button) {
 // ════════ Header ════════
 function initHeader() {
   const navbar = document.getElementById('navbar');
-  const hero = document.getElementById('hero');
-  const update = () => navbar.classList.toggle('scrolled', window.scrollY > (hero ? hero.offsetHeight - 90 : 40));
+  const update = () => navbar.classList.toggle('scrolled', window.scrollY > 8);
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update, { passive: true });
   update();

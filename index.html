@@ -19,7 +19,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="images/hero.jpg" fetchpriority="high">
 <style>
   :root{
     --ink:#141416;
@@ -78,14 +77,11 @@
   .link-under:hover{ text-decoration-color:var(--ink); }
 
   /* ════════ HEADER ════════ */
-  #navbar{ position:fixed; top:0; left:0; right:0; z-index:200; height:var(--nav-h); color:#fff; transition:background-color .3s, color .3s, box-shadow .3s; }
+  #navbar{ position:fixed; top:0; left:0; right:0; z-index:200; height:var(--nav-h); color:var(--ink); transition:background-color .3s, color .3s, box-shadow .3s; }
   #navbar.scrolled, body.menu-open #navbar{ background:rgba(255,255,255,.94); color:var(--ink); box-shadow:0 1px 0 var(--line); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); }
   .nav-inner{ height:100%; display:flex; align-items:center; gap:28px; }
   .logo{ display:block; flex-shrink:0; position:relative; height:36px; width:167px; }
   .logo img{ position:absolute; inset:0; height:36px; width:auto; transition:opacity .3s; }
-  .logo .logo-dark{ opacity:0; }
-  #navbar.scrolled .logo .logo-dark, body.menu-open .logo .logo-dark{ opacity:1; }
-  #navbar.scrolled .logo .logo-light, body.menu-open .logo .logo-light{ opacity:0; }
   .nav-links{ display:flex; align-items:center; gap:4px; list-style:none; margin-left:auto; }
   .nav-links a{ display:block; padding:8px 12px; border-radius:var(--pill); text-decoration:none; font-weight:600; font-size:0.93rem; transition:background-color .2s; }
   .nav-links a:hover{ background:rgba(127,127,127,.14); }
@@ -104,30 +100,32 @@
   body.menu-open .hamburger span:nth-child(3){ transform:translateY(-5px) rotate(-45deg); }
 
   /* ════════ HERO ════════ */
-  #hero{ position:relative; min-height:max(640px, 100svh); display:flex; align-items:flex-end; color:#fff; background:var(--ink); overflow:hidden; isolation:isolate; }
-  .hero-photo{ position:absolute; inset:0; z-index:-2; }
-  .hero-photo img{ width:100%; height:100%; object-fit:cover; object-position:center 35%; }
-  #hero::before{ content:''; position:absolute; inset:0; z-index:-1;
-    background:linear-gradient(180deg, rgba(20,20,22,.55) 0%, rgba(20,20,22,0) 26%, rgba(20,20,22,0) 48%, rgba(20,20,22,.72) 100%); }
-  .hero-content{ width:100%; padding-top:calc(var(--nav-h) + 48px); padding-bottom:56px; }
+  #hero{ position:relative; background:var(--paper); overflow:hidden; }
+  .hero-content{ padding-top:calc(var(--nav-h) + 72px); padding-bottom:16px; display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:40px 48px; align-items:end; }
   /* The speech bubble from the logo: the one bold shape on the page */
-  .bubble{ position:relative; background:var(--yellow); color:var(--ink); border-radius:40px; padding:44px 48px 40px; max-width:680px; transform-origin:0% 100%; }
+  .bubble{ position:relative; background:var(--yellow); color:var(--ink); border-radius:40px; padding:48px 52px 44px; transform-origin:0% 100%; }
   .bubble::after{ content:''; position:absolute; left:40px; bottom:-30px; width:58px; height:40px; background:var(--yellow); clip-path:polygon(18% 0, 100% 0, 0 100%); }
-  .hero-title{ font-size:clamp(2.6rem,5.4vw,4.4rem); letter-spacing:-0.04em; line-height:1; margin-bottom:18px; }
-  .hero-sub{ font-size:1.12rem; line-height:1.5; max-width:34em; color:#3A3B40; margin-bottom:28px; }
+  .hero-title{ font-size:clamp(2.6rem,5.6vw,4.6rem); letter-spacing:-0.045em; line-height:.98; margin-bottom:20px; }
+  .hero-sub{ font-size:1.12rem; line-height:1.5; max-width:32em; color:#3A2E05; margin-bottom:30px; }
   .hero-btns{ display:flex; flex-wrap:wrap; gap:12px; }
   .hero-btns .btn-line{ color:var(--ink); }
   .hero-btns .btn-line:hover{ background:rgba(20,20,22,.07); }
-  .hero-facts{ display:flex; flex-wrap:wrap; gap:14px 0; margin-top:58px; list-style:none; }
-  .hero-facts li{ display:flex; align-items:baseline; gap:8px; padding:0 22px; border-left:1.5px solid rgba(255,255,255,.35); font-size:0.95rem; color:rgba(255,255,255,.88); }
+  /* The reply: a dark bubble with its tail on the right, like the other side of a conversation */
+  .reply{ position:relative; background:var(--ink); color:#fff; border-radius:32px; padding:30px 32px; margin-bottom:64px; transform-origin:100% 100%; }
+  .reply::after{ content:''; position:absolute; right:36px; bottom:-26px; width:48px; height:34px; background:var(--ink); clip-path:polygon(0 0, 82% 0, 100% 100%); }
+  .reply-num{ display:block; font-size:clamp(3.6rem,6vw,5.2rem); font-weight:800; letter-spacing:-0.05em; line-height:.9; color:var(--yellow); font-variant-numeric:tabular-nums; margin-bottom:10px; }
+  .reply-text{ font-weight:600; font-size:1.02rem; line-height:1.4; }
+  .hero-facts{ grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:14px 0; list-style:none; margin-top:12px; }
+  .hero-facts li{ display:flex; align-items:baseline; gap:8px; padding:0 22px; border-left:1.5px solid var(--line); font-size:0.95rem; color:var(--muted); }
   .hero-facts li:first-child{ padding-left:0; border-left:none; }
-  .hero-facts b{ font-size:1.35rem; font-weight:800; color:#fff; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  .hero-facts b{ font-size:1.35rem; font-weight:800; color:var(--ink); letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
   /* One page-load moment: the bubble pops from its tail, then its content settles */
   @media (prefers-reduced-motion:no-preference){
     .bubble{ animation:bubble-pop .7s var(--ease) .1s both; }
+    .reply{ animation:bubble-pop .6s var(--ease) .75s both; }
     .bubble > *{ animation:rise .6s var(--ease) both; }
     .bubble > :nth-child(1){ animation-delay:.32s; } .bubble > :nth-child(2){ animation-delay:.4s; } .bubble > :nth-child(3){ animation-delay:.48s; }
-    .hero-facts{ animation:fade .8s ease .7s both; }
+    .hero-facts{ animation:fade .8s ease 1s both; }
   }
   @keyframes bubble-pop{ from{ opacity:0; transform:scale(.86); } to{ opacity:1; transform:none; } }
   @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
@@ -357,6 +355,8 @@
     .nav-actions{ margin-left:auto; }
     .nav-actions .nav-enroll{ display:none; }
     body.menu-open{ overflow:hidden; }
+    .hero-content{ grid-template-columns:1fr; }
+    .reply{ margin:0 0 24px auto; max-width:360px; }
     .why-list{ grid-template-columns:repeat(2,1fr); }
     .team-grid{ grid-template-columns:repeat(3,1fr); }
     .mock-grid{ grid-template-columns:1fr; }
@@ -372,13 +372,14 @@
     .logo img{ height:30px; }
     .lang-switch button{ width:32px; height:28px; font-size:0.7rem; }
     .sec-head{ grid-template-columns:1fr; gap:12px; margin-bottom:32px; }
-    #hero{ min-height:max(600px, 100svh); }
-    .hero-content{ padding-bottom:36px; }
+    .hero-content{ padding-top:calc(var(--nav-h) + 28px); padding-bottom:8px; gap:44px; }
     .bubble{ border-radius:28px; padding:28px 24px 26px; }
+    .reply{ border-radius:24px; padding:22px 24px; margin:0 0 0 18%; }
+    .reply::after{ right:26px; bottom:-22px; width:40px; height:28px; }
     .bubble::after{ left:26px; bottom:-24px; width:44px; height:30px; }
     .hero-sub{ font-size:1rem; margin-bottom:22px; }
     .hero-btns .btn{ width:100%; }
-    .hero-facts{ margin-top:44px; flex-direction:column; gap:10px; }
+    .hero-facts{ margin-top:4px; flex-direction:column; gap:10px; }
     .hero-facts li{ padding:0; border:none; }
     .why-list{ grid-template-columns:1fr; gap:28px; }
     .course-list{ padding:4px 20px; border-radius:var(--r-md); }
@@ -432,7 +433,6 @@
 <header id="navbar">
   <div class="wrap nav-inner">
     <a href="#hero" class="logo" aria-label="Stanford language center">
-      <img class="logo-light" src="images/logo-row-white.png" alt="" width="167" height="36"/>
       <img class="logo-dark" src="images/logo-row-black.png" alt="" width="167" height="36"/>
     </a>
     <ul class="nav-links" id="navLinks">
@@ -459,7 +459,6 @@
 <main>
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-photo"><img src="images/hero.jpg" alt="" fetchpriority="high" onerror="this.remove()"/></div>
   <div class="wrap hero-content">
     <div class="bubble">
       <h1 class="hero-title" data-i18n="hero-title">Английский и IELTS в Нукусе</h1>
@@ -469,8 +468,11 @@
         <a href="mock.html" class="btn btn-line" data-i18n="hero-mock">Записаться на Mock</a>
       </div>
     </div>
+    <div class="reply">
+      <b class="reply-num">9.0</b>
+      <span class="reply-text" data-i18n="fact1">балл IELTS нашего преподавателя</span>
+    </div>
     <ul class="hero-facts">
-      <li><b>9.0</b><span data-i18n="fact1">балл IELTS нашего преподавателя</span></li>
       <li><b>5</b><span data-i18n="fact2">лет в Нукусе</span></li>
       <li><b>09:00–19:00</b><span data-i18n="fact3">каждый день</span></li>
     </ul>
