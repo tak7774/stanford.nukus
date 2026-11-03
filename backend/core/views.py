@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db import transaction
-from django.db.models import Count, Max
+import re
+
+from django.db.models import BooleanField, Count, ExpressionWrapper, Max, Q
 from django.http import Http404, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
@@ -14,18 +16,32 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from . import telegram
 from .images import ImageError, process_upload
-from .models import ExamRegistration, GalleryPhoto, MockExam, News, TrialRegistration
+from .models import (
+    ExamRegistration,
+    GalleryPhoto,
+    MockExam,
+    News,
+    StudentResult,
+    Teacher,
+    TrialRegistration,
+)
 from .permissions import get_role
 from .serializers import (
     DEFAULT_EXAM_PRICE_UZS,
     AdminExamRegistrationSerializer,
     AdminMockExamSerializer,
+    AdminStudentResultSerializer,
+    AdminTeacherSerializer,
     AdminTrialRegistrationSerializer,
     GalleryPhotoSerializer,
+    MockResultLookupSerializer,
     NewsSerializer,
     PublicExamRegistrationSerializer,
     PublicMockExamSerializer,
+    PublicStudentResultSerializer,
+    PublicTeacherSerializer,
     PublicTrialRegistrationSerializer,
 )
 
@@ -69,11 +85,16 @@ class PublicNewsList(PublicView, generics.ListAPIView):
 
 
 class PublicTrialRegistrationCreate(PublicView, generics.CreateAPIView):
-    """POST /api/trial-registrations/ — trial lesson form on the main site."""
+    """POST /api/trial-registrations/ — both lead forms on the main site
+    (source "course_card" = course modal, "apply_form" = «Оставить заявку»)."""
 
     serializer_class = PublicTrialRegistrationSerializer
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "public_forms"
+
+    def perform_create(self, serializer):
+        lead = serializer.save()
+        telegram.send_after_commit(telegram.trial_lead_text(lead))
 
 
 class PublicExamRegistrationCreate(PublicView, APIView):
@@ -110,17 +131,215 @@ class PublicExamRegistrationCreate(PublicView, APIView):
             # amount_paid stays empty until then; the price goes into amount_due.
             registration = serializer.save(
                 exam=exam,
+                format="computer",  # all mocks are computer-delivered (CD)
                 payment_status="pending",
                 amount_due=exam.price_uzs or DEFAULT_EXAM_PRICE_UZS,
                 amount_paid=None,
             )
             # ticket_no is created by a database trigger; read it back.
             registration.refresh_from_db(fields=["ticket_no"])
+            telegram.send_after_commit(telegram.exam_registration_text(registration))
 
         return Response(
             PublicExamRegistrationSerializer(registration).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+def phone_digits(value):
+    """Last 9 digits of a phone number, so "+998 90 123-45-67" and "901234567" match."""
+    return re.sub(r"\D", "", str(value or ""))[-9:]
+
+
+class MockResultLookup(PublicView, APIView):
+    """POST /api/mock-results/lookup/ {ticket_no, phone} — a student checks their mock result.
+
+    Both the ticket number AND the phone must match. A wrong pair gets the same
+    404 as an unknown ticket, so the endpoint cannot be used to test numbers.
+    Rate-limited (scope "result_lookup").
+      200 {"ready": true, listening, reading, writing, speaking, overall, ...}
+      200 {"ready": false}       found, but staff have not entered the scores yet
+      404 {"code": "NOT_FOUND"}
+    """
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "result_lookup"
+
+    def post(self, request):
+        data = MockResultLookupSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        ticket = data.validated_data["ticket_no"].strip().upper()
+        phone = phone_digits(data.validated_data["phone"])
+        not_found = Response({"code": "NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+        if len(phone) < 9 or not ticket:
+            return not_found
+        reg = ExamRegistration.objects.select_related("exam").filter(ticket_no__iexact=ticket).first()
+        if reg is None or phone_digits(reg.phone) != phone:
+            return not_found
+        result = {
+            "ready": reg.overall is not None,
+            "first_name": reg.first_name or (reg.full_name or "").split(" ")[0],
+            "exam_title": reg.exam.title if reg.exam else "",
+            "exam_date": reg.exam.exam_date if reg.exam else None,
+            "ticket_no": reg.ticket_no,
+        }
+        if reg.overall is not None:
+            for band in ("listening", "reading", "writing", "speaking", "overall"):
+                result[band] = float(getattr(reg, band))
+        return Response(result)
+
+
+# ════════════════════════════════════════════
+# RESULTS & TEACHERS — photo stored in the database, like the gallery
+# ════════════════════════════════════════════
+
+def with_has_image(qs):
+    """Never load the photo bytes for lists; only note whether there is one."""
+    return qs.defer("image").annotate(
+        has_image=ExpressionWrapper(Q(image__isnull=False), output_field=BooleanField())
+    )
+
+
+def photo_response(model, pk, request):
+    """The photo of a published row; staff may also see photos of unpublished rows."""
+    qs = model.objects.filter(pk=pk)
+    if get_role(request.user) is None:
+        qs = qs.filter(is_published=True)
+    row = qs.only("image", "content_type").first()
+    if row is None or row.image is None:
+        raise Http404
+    response = HttpResponse(bytes(row.image), content_type=row.content_type)
+    # The URL changes (?v=) whenever the photo changes, so it can be cached for long.
+    response["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
+
+
+@require_GET
+def result_image(request, pk):
+    """GET /api/results/<id>/image/"""
+    return photo_response(StudentResult, pk, request)
+
+
+@require_GET
+def teacher_image(request, pk):
+    """GET /api/teachers/<id>/image/"""
+    return photo_response(Teacher, pk, request)
+
+
+class PublicResultList(PublicView, generics.ListAPIView):
+    """GET /api/results/ — published results, in the order set in the admin panel."""
+
+    serializer_class = PublicStudentResultSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return with_has_image(StudentResult.objects.filter(is_published=True)).order_by("position", "id")
+
+
+class PublicTeacherList(PublicView, generics.ListAPIView):
+    """GET /api/teachers/ — published teachers, in the order set in the admin panel."""
+
+    serializer_class = PublicTeacherSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        return with_has_image(Teacher.objects.filter(is_published=True)).order_by("position", "id")
+
+
+class PhotoRowAdminMixin:
+    """Admin create/update for models with an optional photo.
+
+    Multipart fields: the normal fields, plus `image` (a new photo) or
+    `remove_image=1` (delete the current photo).
+    """
+
+    model = None
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+    pagination_class = None
+
+    def get_queryset(self):
+        return with_has_image(self.model.objects.all()).order_by("position", "id")
+
+    def photo_fields(self):
+        upload = self.request.FILES.get("image")
+        if upload is not None:
+            try:
+                data, width, height = process_upload(upload)
+            except ImageError as e:
+                raise ValidationError({"detail": str(e)})
+            return dict(image=data, content_type="image/jpeg", width=width, height=height)
+        if str(self.request.data.get("remove_image", "")).lower() in ("1", "true"):
+            return dict(image=None, width=0, height=0)
+        return {}
+
+    def perform_create(self, serializer):
+        last = self.model.objects.aggregate(m=Max("position"))["m"]
+        serializer.save(position=(last + 1) if last is not None else 0, **self.photo_fields())
+
+    def perform_update(self, serializer):
+        fields = self.photo_fields()
+        row = serializer.save(**fields)
+        if "image" in fields:  # the list annotation is stale after a photo change
+            row.has_image = fields["image"] is not None
+
+
+class AdminResultList(PhotoRowAdminMixin, generics.ListCreateAPIView):
+    """GET/POST /api/admin/results/"""
+
+    model = StudentResult
+    serializer_class = AdminStudentResultSerializer
+
+
+class AdminResultDetail(PhotoRowAdminMixin, generics.RetrieveUpdateDestroyAPIView):
+    """GET/PATCH/DELETE /api/admin/results/<id>/ — DELETE is owner-only."""
+
+    model = StudentResult
+    serializer_class = AdminStudentResultSerializer
+
+
+class AdminTeacherList(PhotoRowAdminMixin, generics.ListCreateAPIView):
+    """GET/POST /api/admin/teachers/"""
+
+    model = Teacher
+    serializer_class = AdminTeacherSerializer
+
+
+class AdminTeacherDetail(PhotoRowAdminMixin, generics.RetrieveUpdateDestroyAPIView):
+    """GET/PATCH/DELETE /api/admin/teachers/<id>/ — DELETE is owner-only."""
+
+    model = Teacher
+    serializer_class = AdminTeacherSerializer
+
+
+class ReorderView(APIView):
+    """POST {"ids": [3, 1, 2]} — new display order."""
+
+    model = None
+    serializer_class = None
+
+    def post(self, request):
+        ids = request.data.get("ids")
+        if not isinstance(ids, list) or not all(isinstance(i, int) for i in ids):
+            return Response({"detail": "ids must be a list of ids"}, status=400)
+        with transaction.atomic():
+            for position, pk in enumerate(ids):
+                self.model.objects.filter(pk=pk).update(position=position)
+        qs = with_has_image(self.model.objects.all()).order_by("position", "id")
+        return Response(self.serializer_class(qs, many=True).data)
+
+
+class AdminResultReorder(ReorderView):
+    """POST /api/admin/results/reorder/"""
+
+    model = StudentResult
+    serializer_class = AdminStudentResultSerializer
+
+
+class AdminTeacherReorder(ReorderView):
+    """POST /api/admin/teachers/reorder/"""
+
+    model = Teacher
+    serializer_class = AdminTeacherSerializer
 
 
 # ════════════════════════════════════════════
@@ -240,7 +459,8 @@ class AdminExamRegistrationList(generics.ListAPIView):
 
 
 class AdminExamRegistrationDetail(generics.RetrieveUpdateAPIView):
-    """PATCH /api/admin/exam-registrations/<id>/ {payment_status}"""
+    """PATCH /api/admin/exam-registrations/<id>/ {payment_status, listening, reading,
+    writing, speaking, attended} — overall is calculated by the server."""
 
     serializer_class = AdminExamRegistrationSerializer
     queryset = ExamRegistration.objects.all()
@@ -263,7 +483,7 @@ class AdminStudentList(generics.ListAPIView):
 
 
 class AdminStudentDetail(generics.RetrieveUpdateAPIView):
-    """PATCH /api/admin/students/<id>/ {status}"""
+    """PATCH /api/admin/students/<id>/ {status, staff_note}"""
 
     serializer_class = AdminTrialRegistrationSerializer
     queryset = TrialRegistration.objects.all()

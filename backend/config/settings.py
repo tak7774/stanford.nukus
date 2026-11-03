@@ -139,6 +139,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_THROTTLE_RATES": {
         "public_forms": "30/hour",
+        "result_lookup": "10/hour",
         "login": "10/minute",
     },
 }

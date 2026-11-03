@@ -1,9 +1,12 @@
-"""Models for the 5 tables that already exist in Supabase.
+"""Models for the tables in Supabase.
 
 Column names match what admin.js / main.js / mock.js already use, so existing
 data keeps working. The first migration (0001) only creates a table if it
 is missing, so on Supabase the existing tables and their data are left as-is.
 """
+from decimal import ROUND_FLOOR, Decimal
+
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -12,6 +15,20 @@ COURSE_CHOICES = [
     ("general", "General English"),
     ("advanced", "Advanced English"),
     ("kids", "Kids English"),
+]
+
+# Trial lead forms on the website: "unsure" lets staff help pick a course.
+LEAD_COURSE_CHOICES = COURSE_CHOICES + [("unsure", "Не знаю — помогите выбрать")]
+
+LEAD_SOURCE_CHOICES = [
+    ("course_card", "Course card"),   # "Записаться" on a course card (name + phone only)
+    ("apply_form", "Apply form"),     # "Оставить заявку" block at the bottom of the page
+]
+
+PREFERRED_TIME_CHOICES = [
+    ("morning", "Утро"),
+    ("day", "День"),
+    ("evening", "Вечер"),
 ]
 
 EXAM_STATUS_CHOICES = [
@@ -71,8 +88,14 @@ class News(models.Model):
 class TrialRegistration(models.Model):
     full_name = models.TextField()
     phone = models.TextField()
-    course = models.TextField(choices=COURSE_CHOICES)
+    course = models.TextField(choices=LEAD_COURSE_CHOICES)
     status = models.TextField(choices=STUDENT_STATUS_CHOICES, default="new")
+    # Which website form the lead came from (empty for leads made before these forms).
+    source = models.TextField(choices=LEAD_SOURCE_CHOICES, null=True, blank=True)
+    preferred_time = models.TextField(choices=PREFERRED_TIME_CHOICES, null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    # Written by staff in admin.html; never shown on the website.
+    staff_note = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -81,6 +104,35 @@ class TrialRegistration(models.Model):
 
     def __str__(self):
         return f"{self.full_name} — {self.course}"
+
+
+# ── IELTS band scores ──
+
+def validate_band(value):
+    """0–9 in steps of 0.5."""
+    if value is None:
+        return
+    value = Decimal(str(value))
+    if value < 0 or value > 9 or (value * 2) % 1 != 0:
+        raise ValidationError("Балл должен быть от 0 до 9 с шагом 0.5.")
+
+
+def ielts_overall(listening, reading, writing, speaking):
+    """Average of the four bands, rounded the IELTS way to the nearest 0.5.
+
+    x.25 rounds up to x.5 and x.75 rounds up to the next whole band
+    (e.g. 6.25 -> 6.5, 6.75 -> 7.0, 6.125 -> 6.0). None if any band is missing.
+    """
+    bands = [listening, reading, writing, speaking]
+    if any(b is None for b in bands):
+        return None
+    avg = sum(Decimal(str(b)) for b in bands) / 4
+    halves = (avg * 2 + Decimal("0.5")).to_integral_value(rounding=ROUND_FLOOR)
+    return (halves / 2).quantize(Decimal("0.1"))
+
+
+def band_field(**kw):
+    return models.DecimalField(max_digits=3, decimal_places=1, validators=[validate_band], **kw)
 
 
 class MockExam(models.Model):
@@ -121,8 +173,10 @@ class ExamRegistration(models.Model):
     phone = models.TextField()
     first_name = models.TextField(null=True, blank=True)
     last_name = models.TextField(null=True, blank=True)
+    # No longer asked for or saved; the column is kept so old rows are not lost.
     birth_date = models.DateField(null=True, blank=True)
     gender = models.TextField(null=True, blank=True)
+    # All mocks are computer-delivered (CD) now; the server always saves "computer".
     format = models.TextField(choices=EXAM_FORMAT_CHOICES, null=True, blank=True)
     # Filled in by a database trigger on insert: ST-<year>-MOCK-<id padded to 4>.
     ticket_no = models.TextField(unique=True, null=True, blank=True, editable=False)
@@ -133,6 +187,13 @@ class ExamRegistration(models.Model):
     # amount_due: the exam price at sign-up. amount_paid: only set once staff confirm payment.
     amount_due = models.IntegerField(null=True, blank=True)
     amount_paid = models.IntegerField(null=True, blank=True)
+    # Mock result, entered by staff after the exam. overall is calculated on save.
+    listening = band_field(null=True, blank=True)
+    reading = band_field(null=True, blank=True)
+    writing = band_field(null=True, blank=True)
+    speaking = band_field(null=True, blank=True)
+    overall = band_field(null=True, blank=True, editable=False)
+    attended = models.BooleanField(null=True, blank=True)
     registered_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -142,6 +203,17 @@ class ExamRegistration(models.Model):
 
     def __str__(self):
         return f"{self.full_name} → {self.exam_id}"
+
+    def save(self, *args, **kwargs):
+        set_overall(self, kwargs)
+        super().save(*args, **kwargs)
+
+
+def set_overall(obj, save_kwargs):
+    """Recalculate obj.overall before saving (also when only some fields are saved)."""
+    obj.overall = ielts_overall(obj.listening, obj.reading, obj.writing, obj.speaking)
+    if save_kwargs.get("update_fields") is not None:
+        save_kwargs["update_fields"] = set(save_kwargs["update_fields"]) | {"overall"}
 
 
 GALLERY_SIZE_CHOICES = [
@@ -180,3 +252,84 @@ class GalleryPhoto(models.Model):
         # The version (?v=) changes when the photo is replaced, so browsers and
         # Vercel's CDN can cache each version forever.
         return f"/api/gallery/{self.pk}/image/?v={int(self.updated_at.timestamp())}"
+
+
+class ImageMixin(models.Model):
+    """A photo stored in the database, like GalleryPhoto (already resized and compressed)."""
+
+    image = models.BinaryField(null=True, blank=True)
+    content_type = models.TextField(default="image/jpeg")
+    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    image_url_prefix = ""  # e.g. "/api/results/"
+
+    class Meta:
+        abstract = True
+
+    @property
+    def image_url(self):
+        # Lists annotate has_image, so the photo bytes are never loaded just to build a URL.
+        has_image = getattr(self, "has_image", None)
+        if has_image is None:
+            has_image = self.image is not None
+        if not has_image:
+            return None
+        return f"{self.image_url_prefix}{self.pk}/image/?v={int(self.updated_at.timestamp())}"
+
+
+class StudentResult(ImageMixin):
+    """A real IELTS result in the «Результаты» marquee. Hidden from the site until is_published."""
+
+    first_name = models.TextField()
+    last_name_initial = models.TextField(blank=True, default="")
+    listening = band_field()
+    reading = band_field()
+    writing = band_field()
+    speaking = band_field()
+    overall = band_field(editable=False)
+    course = models.TextField(choices=COURSE_CHOICES, default="ielts")
+    exam_date = models.DateField(null=True, blank=True)
+    is_published = models.BooleanField(default=False)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    image_url_prefix = "/api/results/"
+
+    class Meta:
+        db_table = "student_results"
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name_initial} — {self.overall}"
+
+    def save(self, *args, **kwargs):
+        set_overall(self, kwargs)
+        super().save(*args, **kwargs)
+
+
+class Teacher(ImageMixin):
+    """A teacher card in the «Преподаватели» section. Hidden from the site until is_published."""
+
+    name = models.TextField()
+    role = models.TextField(blank=True, default="")  # specialty, e.g. "IELTS, Speaking"
+    ielts_band = band_field(null=True, blank=True)
+    experience_years = models.IntegerField(null=True, blank=True)
+    tags = models.TextField(blank=True, default="")  # comma-separated, e.g. "IELTS, Kids"
+    is_published = models.BooleanField(default=False)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    image_url_prefix = "/api/teachers/"
+
+    class Meta:
+        db_table = "teachers"
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def tag_list(self):
+        return [t.strip() for t in self.tags.split(",") if t.strip()]

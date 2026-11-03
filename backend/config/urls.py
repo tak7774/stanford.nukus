@@ -15,13 +15,15 @@ if settings.DEBUG:
     # http://127.0.0.1:8000/ . On Vercel these files are served by Vercel itself.
     SITE_FILE_TYPES = {".html", ".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".webp"}
 
+    SITE_FOLDERS = {settings.REPO_ROOT.resolve(), (settings.REPO_ROOT / "images").resolve()}
+
     def site_file(request, name="index.html"):
         file = (settings.REPO_ROOT / name).resolve()
-        if file.parent != settings.REPO_ROOT.resolve() or file.suffix.lower() not in SITE_FILE_TYPES or not file.is_file():
+        if file.parent not in SITE_FOLDERS or file.suffix.lower() not in SITE_FILE_TYPES or not file.is_file():
             raise Http404
         return FileResponse(open(file, "rb"))
 
     urlpatterns += [
         path("", site_file),
-        re_path(r"^(?P<name>[\w.\-]+)$", site_file),
+        re_path(r"^(?P<name>(images/)?[\w.\-]+)$", site_file),
     ]

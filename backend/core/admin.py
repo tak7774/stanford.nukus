@@ -3,7 +3,7 @@ from django.contrib import admin
 
 from django.utils.html import format_html
 
-from .models import ExamRegistration, GalleryPhoto, MockExam, News, StaffRole, TrialRegistration
+from .models import ExamRegistration, GalleryPhoto, MockExam, News, StaffRole, StudentResult, Teacher, TrialRegistration
 
 
 @admin.register(StaffRole)
@@ -19,7 +19,7 @@ class NewsAdmin(admin.ModelAdmin):
 
 @admin.register(TrialRegistration)
 class TrialRegistrationAdmin(admin.ModelAdmin):
-    list_display = ["full_name", "phone", "course", "status", "created_at"]
+    list_display = ["full_name", "phone", "course", "source", "preferred_time", "status", "created_at"]
     list_filter = ["status", "course"]
     search_fields = ["full_name", "phone"]
 
@@ -62,3 +62,17 @@ class GalleryPhotoAdmin(admin.ModelAdmin):
         if not obj.pk:
             return ""
         return format_html('<img src="{}" style="height:60px;border-radius:4px">', obj.url)
+
+
+@admin.register(StudentResult)
+class StudentResultAdmin(admin.ModelAdmin):
+    list_display = ["first_name", "last_name_initial", "overall", "course", "exam_date", "is_published", "position"]
+    list_filter = ["is_published", "course"]
+    exclude = ["image", "content_type", "width", "height"]  # upload photos from admin.html → Результаты
+
+
+@admin.register(Teacher)
+class TeacherAdmin(admin.ModelAdmin):
+    list_display = ["name", "role", "ielts_band", "experience_years", "is_published", "position"]
+    list_filter = ["is_published"]
+    exclude = ["image", "content_type", "width", "height"]  # upload photos from admin.html → Преподаватели
