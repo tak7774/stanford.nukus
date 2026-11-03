@@ -51,9 +51,9 @@ class PublicExamRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             "id", "exam_id", "full_name", "phone", "first_name", "last_name",
             "birth_date", "gender", "payment_method",
-            "payment_status", "amount_paid", "registered_at",
+            "payment_status", "amount_due", "amount_paid", "registered_at",
         ]
-        read_only_fields = ["id", "payment_status", "amount_paid", "registered_at"]
+        read_only_fields = ["id", "payment_status", "amount_due", "amount_paid", "registered_at"]
 
 
 # ── Admin panel ──
@@ -87,10 +87,16 @@ class AdminExamRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             "id", "exam_id", "full_name", "phone", "first_name", "last_name",
             "birth_date", "gender", "payment_status",
-            "payment_method", "amount_paid", "registered_at",
+            "payment_method", "amount_due", "amount_paid", "registered_at",
         ]
         # The admin panel only changes the payment status.
         read_only_fields = [f for f in fields if f != "payment_status"]
+
+    def update(self, instance, validated_data):
+        # amount_paid is only filled in when staff confirm the payment.
+        new_status = validated_data.get("payment_status", instance.payment_status)
+        validated_data["amount_paid"] = instance.amount_due if new_status == "verified" else None
+        return super().update(instance, validated_data)
 
 
 class AdminTrialRegistrationSerializer(serializers.ModelSerializer):

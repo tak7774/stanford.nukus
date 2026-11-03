@@ -67,13 +67,15 @@ class PublicApiTests(APITestCase):
         self.assertEqual(res.status_code, 201)
         reg = ExamRegistration.objects.get()
         self.assertEqual(reg.payment_status, "pending")
-        self.assertEqual(reg.amount_paid, 150000)
+        self.assertIsNone(reg.amount_paid)
+        self.assertEqual(reg.amount_due, 150000)
         self.assertEqual(reg.payment_method, "click")
 
-    def test_amount_paid_uses_exam_price(self):
+    def test_amount_due_uses_exam_price(self):
         exam = make_exam(price_uzs=120000)
         res = self.client.post("/api/exam-registrations/", reg_payload(exam), format="json")
-        self.assertEqual(res.data["amount_paid"], 120000)
+        self.assertEqual(res.data["amount_due"], 120000)
+        self.assertIsNone(res.data["amount_paid"])
         self.assertEqual(self.client.get("/api/mock-exams/").data[0]["price_uzs"], 120000)
 
     def test_exam_full(self):
@@ -162,7 +164,7 @@ class AdminApiTests(APITestCase):
 
     def test_verify_payment(self):
         exam = make_exam()
-        reg = ExamRegistration.objects.create(exam=exam, full_name="A", phone="1")
+        reg = ExamRegistration.objects.create(exam=exam, full_name="A", phone="1", amount_due=150000)
         self.login("editor@stanford.uz", "pw-editor-123")
         res = self.client.get(f"/api/admin/exams/{exam.id}/registrations/")
         self.assertEqual(len(res.data), 1)
@@ -170,7 +172,15 @@ class AdminApiTests(APITestCase):
         self.assertEqual(res.status_code, 200)
         reg.refresh_from_db()
         self.assertEqual(reg.payment_status, "verified")
+        self.assertEqual(reg.amount_paid, 150000)  # set only when staff confirm
         self.assertEqual(reg.full_name, "A")  # read-only for admins
+
+        self.client.patch(f"/api/admin/exam-registrations/{reg.id}/", {"payment_status": "pending"}, format="json")
+        reg.refresh_from_db()
+        self.assertIsNone(reg.amount_paid)
+
+        res = self.client.patch(f"/api/admin/exam-registrations/{reg.id}/", {"payment_status": "paid"}, format="json")
+        self.assertEqual(res.status_code, 400)  # "paid" is no longer a valid status
 
     def test_students_filter_and_status(self):
         s = TrialRegistration.objects.create(full_name="A", phone="1", course="ielts")

@@ -101,10 +101,12 @@ class PublicExamRegistrationCreate(PublicView, APIView):
                     status=status.HTTP_409_CONFLICT,
                 )
             # Payment is never trusted from the browser: an admin verifies it in admin.html.
+            # amount_paid stays empty until then; the price goes into amount_due.
             registration = serializer.save(
                 exam=exam,
                 payment_status="pending",
-                amount_paid=exam.price_uzs or DEFAULT_EXAM_PRICE_UZS,
+                amount_due=exam.price_uzs or DEFAULT_EXAM_PRICE_UZS,
+                amount_paid=None,
             )
 
         return Response(

@@ -311,13 +311,13 @@ async function viewExamRegs(examId) {
           <td><a href="tel:${r.phone}" style="color:var(--gold); font-weight:500;">${esc(r.phone)}</a></td>
           <td style="font-size:0.84rem; color:var(--text2);">${esc(r.gender || '-')} / ${r.birth_date ? esc(r.birth_date) : '-'}</td>
           <td>
-            <span class="badge badge-${r.payment_status === 'paid' ? 'green' : (r.payment_status === 'verified' ? 'purple' : 'gold')}">
-              ${r.payment_status ? r.payment_status.toUpperCase() : 'PENDING'}
+            <span class="badge badge-${r.payment_status === 'verified' ? 'green' : 'gold'}">
+              ${r.payment_status === 'verified' ? 'VERIFIED' : 'PENDING'}
             </span>
           </td>
           <td style="font-size:0.82rem; font-weight:600;">${esc((r.payment_method || 'Click').toUpperCase())}</td>
           <td>
-            ${r.payment_status !== 'verified' ? `<button class="btn btn-sm btn-primary" onclick="togglePayStatus(${r.id}, 'verified', ${examId})">Verify 🟢</button>` : `<button class="btn btn-sm btn-secondary" onclick="togglePayStatus(${r.id}, 'pending', ${examId})">Reset 🟡</button>`}
+            ${r.payment_status !== 'verified' ? `<button class="btn btn-sm btn-primary" onclick="togglePayStatus(${r.id}, 'verified', ${examId})">Подтвердить оплату</button>` : `<button class="btn btn-sm btn-secondary" onclick="togglePayStatus(${r.id}, 'pending', ${examId})">Сбросить</button>`}
           </td>
         </tr>
       `).join('') +

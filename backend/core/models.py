@@ -28,9 +28,10 @@ STUDENT_STATUS_CHOICES = [
     ("declined", "Declined"),
 ]
 
+# Click/Payme are not integrated yet, so nothing is "paid" automatically:
+# a registration stays "pending" until staff confirm the payment in admin.html.
 PAYMENT_STATUS_CHOICES = [
     ("pending", "Pending"),
-    ("paid", "Paid"),
     ("verified", "Verified"),
 ]
 
@@ -124,6 +125,8 @@ class ExamRegistration(models.Model):
         choices=PAYMENT_STATUS_CHOICES, default="pending", null=True, blank=True
     )
     payment_method = models.TextField(null=True, blank=True)
+    # amount_due: the exam price at sign-up. amount_paid: only set once staff confirm payment.
+    amount_due = models.IntegerField(null=True, blank=True)
     amount_paid = models.IntegerField(null=True, blank=True)
     registered_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(default=timezone.now)

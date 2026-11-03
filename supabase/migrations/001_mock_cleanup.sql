@@ -12,4 +12,10 @@ begin;
 -- They cannot be recovered afterwards (unless you have a backup).
 alter table exam_registrations drop column if exists passport_id;
 
+-- ── 2. Stop marking unpaid registrations as paid ──
+-- Click/Payme are not connected yet, so no one has really paid online.
+-- amount_due = the price at sign-up; amount_paid is filled only when staff confirm payment.
+alter table exam_registrations add column if not exists amount_due integer;
+update exam_registrations set payment_status = 'pending' where payment_status = 'paid';
+
 commit;

@@ -268,22 +268,11 @@ window.submitRegistration = async function() {
   if (tExamEl && selectedSession) tExamEl.textContent = selectedSession.title;
   if (tDateEl && selectedSession) tDateEl.textContent = selectedSession.dateStr;
   if (tStatusEl) {
-    if (selectedPayMethod === 'cash') {
-      tStatusEl.textContent = '🟡 Оплата при входе (Наличными)';
-      tStatusEl.style.color = '#B38600';
-    } else {
-      tStatusEl.textContent = `🟡 Ожидает подтверждения оплаты (${selectedPayMethod.toUpperCase()})`;
-      tStatusEl.style.color = '#B38600';
-    }
-  }
-
-  // Redirect to Payment Portal if Click or Payme selected
-  if (selectedPayMethod === 'click') {
-    // Simulated Click Checkout launcher
-    console.log("Redirecting to Click payment portal...");
-  } else if (selectedPayMethod === 'payme') {
-    // Simulated Payme Checkout launcher
-    console.log("Redirecting to Payme payment portal...");
+    // Click/Payme are not connected yet, so every registration waits for payment
+    // until staff confirm it in the admin panel. Never show "paid" here.
+    const methodLabels = { click: 'CLICK', payme: 'PAYME', cash: 'Наличные' };
+    tStatusEl.textContent = `🟡 Ожидает оплаты (${methodLabels[selectedPayMethod] || 'Наличные'})`;
+    tStatusEl.style.color = '#B38600';
   }
 
   // Show Step 4 Ticket
