@@ -58,8 +58,27 @@
   .nav-links a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--red); transition:width .25s ease; }
   .nav-links a:hover::after{ width:100%; }
 
+  /* Mock Exam: gold outlined pill with a pulsing dot */
+  .nav-links a.nav-mock{
+    display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
+    padding:7px 16px; border:1.5px solid var(--gold); border-radius:100px;
+    color:var(--navy); font-weight:600;
+    transition: background .2s, color .2s, transform .2s;
+  }
+  .nav-links a.nav-mock::after{ display:none; }
+  .nav-links a.nav-mock::before{
+    content:''; width:7px; height:7px; border-radius:50%; background:var(--gold); flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(201,162,39,0.6); animation:mockPulse 1.8s ease-out infinite;
+  }
+  .nav-links a.nav-mock:hover{ background:var(--gold); color:var(--navy); transform:translateY(-1px); }
+  .nav-links a.nav-mock:hover::before{ background:var(--navy); }
+  @keyframes mockPulse{
+    0%{ box-shadow:0 0 0 0 rgba(201,162,39,0.6); }
+    70%{ box-shadow:0 0 0 7px rgba(201,162,39,0); }
+    100%{ box-shadow:0 0 0 0 rgba(201,162,39,0); }
+  }
+
   .nav-right{ display:flex; align-items:center; gap:16px; }
-  .nav-phone{ font-size:0.82rem; font-weight:600; text-decoration:none; color:var(--navy); display:flex; align-items:center; gap:6px; }
   .lang-switch{ display:flex; align-items:center; gap:2px; background:var(--navy-dim); border:1px solid var(--line); border-radius:100px; padding:3px; }
   .lang-btn{ border:none; background:transparent; font-family:'Inter',sans-serif; color:var(--text-soft); font-size:0.7rem; font-weight:700; letter-spacing:0.03em; padding:6px 12px; border-radius:100px; cursor:pointer; transition:background .2s, color .2s; }
   .lang-btn.active{ background:var(--navy); color:#fff; }
@@ -76,6 +95,23 @@
   .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
   .hamburger.open span:nth-child(2){ opacity:0; }
   .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  /* Medium screens: tighten the menu so everything fits on one line */
+  @media (min-width: 1025px) and (max-width: 1240px){
+    nav, nav.scrolled{ padding-left:28px; padding-right:28px; }
+    .nav-links{ gap:18px; }
+    .nav-right{ gap:10px; }
+    .nav-links a.nav-mock{ padding:6px 12px; }
+    .nav-cta{ padding:10px 16px; }
+  }
+  @media (min-width: 1025px) and (max-width: 1080px){
+    nav, nav.scrolled{ padding-left:18px; padding-right:18px; }
+    .nav-links{ gap:12px; }
+    .nav-links a{ font-size:0.8rem; }
+    .nav-links a.nav-mock{ padding:5px 10px; gap:6px; }
+    .lang-btn{ padding:5px 9px; }
+    .nav-cta{ padding:9px 12px; font-size:0.78rem; }
+  }
 
   /* ---------- HERO ---------- */
   #hero{
@@ -405,7 +441,8 @@
     .contact-wrap{ grid-template-columns:1fr; gap:40px; }
     .footer-top{ grid-template-columns:1fr 1fr; }
   }
-  @media (max-width: 900px){
+  /* Navbar switches to the hamburger menu at tablet width */
+  @media (max-width: 1024px){
     nav{ padding:16px 22px; }
     nav.scrolled{ padding:12px 22px; }
     .nav-links{
@@ -416,6 +453,8 @@
     .nav-links.open{ transform:translateX(0); }
     .nav-right{ flex-direction:column; align-items:flex-start; gap:16px; margin-top:auto; }
     .hamburger{ display:flex; }
+  }
+  @media (max-width: 900px){
     #hero{ padding:120px 24px 70px; }
     .hero-info-bar{ gap:24px; }
     section{ padding:76px 24px; }
@@ -510,9 +549,9 @@
   </a>
   <ul class="nav-links" id="navLinks">
     <li><a href="#courses" data-i18n="nav-courses">Курсы</a></li>
-    <li><a href="mock.html" data-i18n="nav-mock-exams">Mock Exam</a></li>
     <li><a href="#results" data-i18n="nav-results">Результаты</a></li>
     <li><a href="#instructors" data-i18n="nav-instructors">Преподаватели</a></li>
+    <li><a href="mock.html" class="nav-mock" data-i18n="nav-mock-exams">Mock Exam</a></li>
     <li><a href="#testimonials" data-i18n="nav-testimonials">Отзывы</a></li>
     <li><a href="#faq" data-i18n="nav-faq">Вопросы</a></li>
     <li><a href="#contact" data-i18n="nav-contact">Контакты</a></li>
@@ -521,7 +560,6 @@
         <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
         <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
       </div>
-      <a href="tel:+998913036001" class="nav-phone">📞 +998 91 303‑60‑01</a>
       <a href="#contact" class="nav-cta" data-i18n="nav-enroll">Записаться</a>
     </li>
   </ul>
