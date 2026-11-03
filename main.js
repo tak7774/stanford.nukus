@@ -113,29 +113,6 @@ function initFaq() {
   });
 }
 
-// ════════ Quiz ════════
-let quizCourse = null;
-function initQuiz() {
-  const show = id => {
-    document.querySelectorAll('.quiz-step, .quiz-result').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  };
-  document.querySelectorAll('[data-quiz-next]').forEach(b => b.addEventListener('click', () => show(b.dataset.quizNext)));
-  document.querySelectorAll('[data-quiz]').forEach(b => b.addEventListener('click', () => {
-    quizCourse = b.dataset.quiz;
-    renderQuizResult();
-    show('quizResult');
-  }));
-  document.getElementById('quizRestart').addEventListener('click', () => { quizCourse = null; show('quizStep1'); });
-  document.getElementById('quizEnroll').addEventListener('click', e => openCourseModal(quizCourse, e));
-}
-function renderQuizResult() {
-  if (!quizCourse) return;
-  const k = COURSE_KEYS[quizCourse];
-  document.getElementById('quizResultName').textContent = t(k + '-name');
-  document.getElementById('quizResultDesc').textContent = t(k + '-desc');
-}
-
 // ════════ Course modal (name + phone; course sent automatically) ════════
 let modalCourse = null;
 let modalReturnFocus = null;
@@ -204,11 +181,9 @@ function initApplyForm() {
     const name = form.name.value.trim();
     const phone = form.phone.value.trim();
     const course = form.course.value;
-    const time = (form.querySelector('input[name=time]:checked') || {}).value || '';
     let ok = setInvalid(form, 'name', !name);
     ok = setInvalid(form, 'phone', !phoneIsComplete(phone)) && ok;
     ok = setInvalid(form, 'course', !course) && ok;
-    ok = setInvalid(form, 'time', !time) && ok;
     if (!ok) {
       const first = form.querySelector('.field.invalid');
       (first.querySelector('.input, input') || first).focus();
@@ -216,7 +191,7 @@ function initApplyForm() {
     }
     const sent = await sendLead({
       full_name: name, phone, course, source: 'apply_form',
-      preferred_time: time, comment: form.comment.value.trim()
+      comment: form.comment.value.trim()
     }, form.querySelector('[type=submit]'));
     if (!sent) return;
     form.reset();
@@ -229,47 +204,6 @@ function initApplyForm() {
     form.hidden = false;
     form.name.focus();
   });
-}
-
-// ════════ Mock exams → mock.html?exam=<id> ════════
-let mockExams = null; // null = loading, [] = none
-async function loadMockExams() {
-  const { data, error } = await apiRequest('GET', 'mock-exams/');
-  if (error) console.warn('Could not load mock exams:', error);
-  mockExams = (!error && Array.isArray(data)) ? data : [];
-  renderMockExams();
-}
-function renderMockExams() {
-  const grid = document.getElementById('mockGrid');
-  if (mockExams === null) return;
-  if (!mockExams.length) {
-    grid.innerHTML = `<p class="mock-empty">${escapeHtml(t('mock-none'))} <a href="tel:+998913036001">+998 91 303-60-01</a></p>`;
-    return;
-  }
-  grid.innerHTML = mockExams.slice(0, 4).map(e => {
-    const dt = new Date(e.exam_date);
-    const p = I18N.tashkentParts(dt);
-    const max = e.max_seats || 0;
-    const left = Math.max(0, Number(e.seats_left) || 0);
-    const taken = max ? Math.min(100, Math.round(((max - left) / max) * 100)) : 100;
-    const full = left === 0;
-    const tag = full ? 'div' : 'a';
-    const href = full ? '' : ` href="mock.html?exam=${encodeURIComponent(e.id)}"`;
-    return `
-      <${tag} class="mock-card${full ? ' full' : ''}"${href}>
-        <div class="mock-date"><span class="mock-day">${p.d}</span><span class="mock-month">${escapeHtml(I18N.formatMonthShort(dt))}</span></div>
-        <div>
-          <div class="mock-name">${escapeHtml(e.title)}</div>
-          <div class="mock-meta">${escapeHtml(I18N.formatWeekday(dt))}, ${escapeHtml(I18N.formatTime(dt))} · ${escapeHtml(e.duration_minutes)} ${escapeHtml(t('mock-min'))}</div>
-          ${e.location ? `<div class="mock-meta">${escapeHtml(e.location)}</div>` : ''}
-        </div>
-        <div class="mock-foot">
-          <span class="mock-price">${escapeHtml(I18N.formatPrice(e.price_uzs))}</span>
-          <span class="mock-seats"><span class="bar" aria-hidden="true"><i style="width:${taken}%"></i></span>${escapeHtml(full ? t('mock-full') : t('mock-seats', { n: left, max }))}</span>
-          <span class="mock-go">${escapeHtml(full ? t('mock-full') : t('mock-book'))}</span>
-        </div>
-      </${tag}>`;
-  }).join('');
 }
 
 // ════════ Results marquee (hidden when there are none) ════════
@@ -367,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
   I18N.init();
   initHeader();
   initFaq();
-  initQuiz();
   initCourseModal();
   initApplyForm();
   initMarqueeTouch();
@@ -375,13 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Parts built in JS are redrawn in the new language
   I18N.onChange(() => {
-    renderMockExams();
     renderTeachers();
-    renderQuizResult();
     document.querySelectorAll('.faq-item.open .faq-answer').forEach(a => { a.style.maxHeight = a.scrollHeight + 'px'; });
   });
 
-  loadMockExams();
   loadResults();
   loadTeachers();
   loadGallery();

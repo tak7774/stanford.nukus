@@ -8,6 +8,8 @@
 <link rel="icon" type="image/png" href="favicon.png"/>
 <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
 <meta name="theme-color" content="#FFB703"/>
+<meta name="color-scheme" content="light"/>
+<script src="theme.js"></script>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Stanford Language Center"/>
 <meta property="og:title" content="Stanford Language Center — английский и IELTS в Нукусе"/>
@@ -21,7 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#141416; --ink-2:#26272C; --paper:#FFFFFF; --mist:#F4F5F6; --line:#E6E8EC; --muted:#777E90;
+    --ink:#141416; --ink-2:#26272C; --text:#141416; --paper:#FFFFFF; --mist:#F4F5F6; --line:#E6E8EC; --muted:#777E90; --nav-bg:rgba(255,255,255,.92);
     --yellow:#FFB703; --yellow-deep:#EBA600; --yellow-soft:#FFF4D6; --amber:#F29F05; --warn:#B54708;
     --grad:linear-gradient(140deg,#FFD866 0%,#FFB703 48%,#F59E0B 100%);
     --r-xl:28px; --r-lg:22px; --r-md:16px; --r-sm:12px; --pill:999px;
@@ -29,14 +31,19 @@
     --shadow:0 8px 28px rgba(20,20,22,.07);
     --ease:cubic-bezier(.2,.8,.2,1);
   }
+  /* Dark theme: the page goes dark, the yellow stays. --ink is the dark used for panels, so it stays a little lighter than the page. */
+  :root[data-theme="dark"]{
+    --ink:#26272C; --ink-2:#33343A; --text:#F2F2F3; --paper:#0E0E10; --mist:#17171A; --line:#2A2B30; --muted:#9AA0AE;
+    --yellow-soft:#3A2F10; --nav-bg:rgba(24,24,27,.9); --shadow:0 8px 28px rgba(0,0,0,.45);
+  }
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
   html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
-  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--ink); font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  body{ font-family:'Inter',system-ui,sans-serif; background:var(--paper); color:var(--text); font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   img{ display:block; max-width:100%; }
   a{ color:inherit; }
   button,input,select,textarea{ font:inherit; color:inherit; }
   button{ cursor:pointer; }
-  :focus-visible{ outline:2px solid var(--ink); outline-offset:3px; border-radius:6px; }
+  :focus-visible{ outline:2px solid var(--text); outline-offset:3px; border-radius:6px; }
   [hidden]{ display:none !important; }
   .icon{ width:18px; height:18px; flex-shrink:0; }
   .wrap{ max-width:calc(var(--max) + var(--gutter) * 2); margin:0 auto; padding:0 var(--gutter); }
@@ -57,33 +64,45 @@
   .btn-yellow:hover{ background:var(--yellow-deep); }
   .btn-ink{ background:var(--ink); color:#fff; }
   .btn-ink:hover{ background:var(--ink-2); }
-  .btn-white{ background:var(--paper); color:var(--ink); }
-  .btn-white:hover{ background:#E9EAED; }
   .btn-ghost-light{ border-color:rgba(255,255,255,.35); color:#fff; }
   .btn-ghost-light:hover{ border-color:#fff; }
   .btn-sm{ height:38px; padding:0 16px; font-size:13px; }
   .btn-block{ width:100%; }
   .link-under{ font-weight:700; font-size:14px; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:4px; text-decoration-color:var(--yellow); }
-  .link-under:hover{ text-decoration-color:var(--ink); }
+  .link-under:hover{ text-decoration-color:var(--text); }
+
+  .for-dark{ display:none; }
+  :root[data-theme="dark"] .for-light{ display:none; }
+  :root[data-theme="dark"] .for-dark{ display:block; }
+  :root[data-theme="dark"] .btn-ink{ background:#F2F2F3; color:#141416; }
+  :root[data-theme="dark"] .btn-ink:hover{ background:#fff; }
+  :root[data-theme="dark"] .lang-switch button:hover{ background:#26272C; }
+  :root[data-theme="dark"] .lang-switch button.active, :root[data-theme="dark"] .seg input:checked + span{ background:var(--yellow); color:#141416; }
+  :root[data-theme="dark"] .nav-links a:hover{ background:#26272C; }
+  :root[data-theme="dark"] .modal-close:hover, :root[data-theme="dark"] .footer-icon:hover{ color:#141416; }
+  :root[data-theme="dark"] select.input{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23F2F2F3' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  .theme-toggle{ width:36px; height:36px; border:none; border-radius:50%; background:var(--mist); display:flex; align-items:center; justify-content:center; transition:background-color .2s; }
+  .theme-toggle:hover{ background:var(--yellow); color:#141416; }
+  .theme-toggle .i-sun{ display:none; }
+  :root[data-theme="dark"] .theme-toggle .i-sun{ display:block; }
+  :root[data-theme="dark"] .theme-toggle .i-moon{ display:none; }
 
   /* ════════ HEADER: floating white pill ════════ */
   #navbar{ position:fixed; top:var(--nav-top); left:0; right:0; z-index:200; pointer-events:none; }
-  .nav-bar{ pointer-events:auto; height:var(--nav-h); display:flex; align-items:center; gap:16px; padding:0 8px 0 20px; background:rgba(255,255,255,.92); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-radius:var(--pill); box-shadow:0 1px 0 rgba(20,20,22,.04); transition:box-shadow .3s; }
+  .nav-bar{ pointer-events:auto; height:var(--nav-h); display:flex; align-items:center; gap:16px; padding:0 8px 0 20px; background:var(--nav-bg); backdrop-filter:saturate(1.4) blur(14px); -webkit-backdrop-filter:saturate(1.4) blur(14px); border-radius:var(--pill); box-shadow:0 1px 0 rgba(20,20,22,.04); transition:box-shadow .3s; }
   #navbar.scrolled .nav-bar, body.menu-open .nav-bar{ box-shadow:var(--shadow); }
   .logo{ display:block; flex-shrink:0; }
   .logo img{ height:28px; width:auto; }
   .nav-links{ display:flex; align-items:center; gap:2px; list-style:none; margin:0 auto; }
   .nav-links a{ display:block; padding:7px 11px; border-radius:var(--pill); text-decoration:none; font-weight:600; font-size:13.5px; transition:background-color .2s; }
   .nav-links a:hover{ background:var(--mist); }
-  .nav-links a.nav-mock{ background:var(--yellow); padding:7px 14px; }
-  .nav-links a.nav-mock:hover{ background:var(--yellow-deep); }
   .nav-actions{ display:flex; align-items:center; gap:8px; }
   .lang-switch{ display:inline-flex; padding:3px; gap:2px; border-radius:var(--pill); background:var(--mist); }
   .lang-switch button{ width:32px; height:28px; border:none; background:none; border-radius:var(--pill); font-weight:700; font-size:11px; transition:background-color .2s; }
   .lang-switch button:hover{ background:#E9EAED; }
   .lang-switch button.active{ background:var(--ink); color:#fff; }
   .hamburger{ display:none; width:40px; height:40px; border:none; background:var(--mist); border-radius:50%; position:relative; }
-  .hamburger span{ position:absolute; left:12px; right:12px; height:2px; background:var(--ink); border-radius:2px; transition:transform .3s var(--ease), opacity .2s; }
+  .hamburger span{ position:absolute; left:12px; right:12px; height:2px; background:var(--text); border-radius:2px; transition:transform .3s var(--ease), opacity .2s; }
   .hamburger span:nth-child(1){ top:14px; } .hamburger span:nth-child(2){ top:19px; } .hamburger span:nth-child(3){ top:24px; }
   body.menu-open .hamburger span:nth-child(1){ transform:translateY(5px) rotate(45deg); }
   body.menu-open .hamburger span:nth-child(2){ opacity:0; }
@@ -91,9 +110,9 @@
 
   /* ════════ HERO: dark rounded panel, yellow speech bubble from the logo ════════ */
   #hero{ padding-top:calc(var(--nav-top) + var(--nav-h) + 16px); }
-  .hero-card{ position:relative; overflow:hidden; isolation:isolate; background:var(--ink); color:#fff; border-radius:var(--r-xl); min-height:480px; padding:56px; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:32px; align-items:center; }
-  .hero-card::before{ content:''; position:absolute; z-index:-1; width:560px; height:560px; right:-140px; top:-160px; border-radius:50%; background:radial-gradient(circle at 35% 35%, rgba(255,183,3,.38), rgba(255,183,3,0) 62%); }
-  .hero-card::after{ content:''; position:absolute; z-index:-1; width:380px; height:380px; left:-160px; bottom:-220px; border-radius:50%; background:radial-gradient(circle, rgba(242,159,5,.22), rgba(242,159,5,0) 65%); }
+  .hero-card{ position:relative; overflow:hidden; isolation:isolate; background:#141416; color:#fff; border-radius:var(--r-xl); min-height:520px; padding:56px; display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:32px; align-items:center; }
+  .hero-photo{ position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; object-position:center 35%; }
+  .hero-card::before{ content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, rgba(14,14,16,.9) 0%, rgba(14,14,16,.72) 42%, rgba(14,14,16,.2) 100%); }
   .hero-title{ font-size:44px; line-height:1.06; text-transform:uppercase; letter-spacing:-0.01em; margin-bottom:16px; }
   .hero-title .brand{ display:block; color:var(--yellow); }
   .hero-sub{ font-size:16px; color:rgba(255,255,255,.72); max-width:30em; margin-bottom:26px; }
@@ -101,11 +120,11 @@
   .hero-meta{ display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; list-style:none; }
   .hero-meta li{ display:flex; align-items:center; gap:8px; padding:7px 14px; border-radius:var(--pill); background:rgba(255,255,255,.08); font-size:13px; color:rgba(255,255,255,.85); }
   .hero-meta b{ color:#fff; font-weight:700; }
-  .hero-art{ position:relative; display:flex; justify-content:center; padding-bottom:28px; }
-  .big-bubble{ position:relative; width:min(100%,330px); aspect-ratio:1.08; background:var(--grad); color:var(--ink); border-radius:46% / 50% 50% 46% 46%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; box-shadow:0 30px 60px rgba(242,159,5,.25); transform-origin:15% 100%; }
+  .hero-art{ position:relative; display:flex; justify-content:flex-end; align-self:end; padding-bottom:28px; }
+  .big-bubble{ position:relative; width:min(100%,220px); aspect-ratio:1.08; background:var(--grad); color:var(--ink); border-radius:46% / 50% 50% 46% 46%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; box-shadow:0 30px 60px rgba(242,159,5,.25); transform-origin:15% 100%; }
   .big-bubble::after{ content:''; position:absolute; left:16%; bottom:-26px; width:64px; height:46px; background:#FBAE0A; clip-path:polygon(30% 0,100% 0,0 100%); }
-  .big-bubble b{ font-size:92px; line-height:.9; font-weight:800; letter-spacing:-0.05em; font-variant-numeric:tabular-nums; }
-  .big-bubble span{ font-weight:700; font-size:15px; margin-top:8px; max-width:12em; }
+  .big-bubble b{ font-size:62px; line-height:.9; font-weight:800; letter-spacing:-0.05em; font-variant-numeric:tabular-nums; }
+  .big-bubble span{ font-weight:700; font-size:13px; margin-top:8px; max-width:12em; }
   .big-bubble small{ display:block; font-size:12px; font-weight:700; opacity:.7; margin-bottom:6px; }
   @media (prefers-reduced-motion:no-preference){
     .big-bubble{ animation:pop .7s var(--ease) .15s both; }
@@ -127,7 +146,7 @@
   .stat:nth-child(5)::after{ width:84px; height:84px; border-radius:22px; transform:rotate(45deg); }
 
   /* ════════ WHY: one dark feature card + four light ones ════════ */
-  .why-grid{ display:grid; grid-template-columns:minmax(0,1.15fr) repeat(2,minmax(0,1fr)); gap:14px; }
+  .why-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
   .feature{ grid-row:span 2; position:relative; overflow:hidden; isolation:isolate; background:var(--ink); color:#fff; border-radius:var(--r-lg); padding:28px; display:flex; flex-direction:column; justify-content:space-between; gap:24px; min-height:320px; text-decoration:none; }
   .feature::after{ content:''; position:absolute; z-index:-1; width:240px; height:240px; right:-80px; bottom:-100px; border-radius:50%; background:var(--grad); }
   .feature h3{ font-size:22px; margin-bottom:10px; }
@@ -143,7 +162,7 @@
   /* ════════ COURSES: price cards ════════ */
   .course-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; list-style:none; }
   .course{ display:flex; flex-direction:column; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; }
-  .course-top{ position:relative; overflow:hidden; isolation:isolate; background:var(--grad); padding:18px 18px 20px; }
+  .course-top{ position:relative; overflow:hidden; isolation:isolate; background:var(--grad); color:#141416; padding:18px 18px 20px; }
   .course-top::after{ content:''; position:absolute; z-index:-1; right:-24px; top:-30px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.22); }
   .course.dark .course-top{ background:var(--ink); color:#fff; }
   .course.dark .course-top::after{ background:var(--grad); opacity:.85; }
@@ -156,29 +175,7 @@
   .course-body{ padding:18px; display:flex; flex-direction:column; gap:16px; flex:1; }
   .course-feats{ list-style:none; display:grid; gap:8px; font-size:13.5px; flex:1; align-content:start; }
   .course-feats li{ display:flex; gap:8px; align-items:flex-start; }
-  .course-feats .icon{ width:16px; height:16px; margin-top:2px; color:var(--ink); background:var(--yellow-soft); border-radius:50%; padding:3px; }
-
-  /* ════════ MOCK ════════ */
-  .mock-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
-  .mock-card{ display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start; background:var(--paper); border-radius:var(--r-lg); padding:18px; text-decoration:none; transition:box-shadow .2s; }
-  a.mock-card:hover{ box-shadow:var(--shadow); }
-  .mock-date{ width:62px; border-radius:14px; background:var(--grad); text-align:center; padding:8px 0 9px; }
-  .mock-day{ display:block; font-size:24px; font-weight:800; letter-spacing:-0.03em; line-height:1.05; font-variant-numeric:tabular-nums; }
-  .mock-month{ display:block; font-size:11.5px; font-weight:700; text-transform:lowercase; }
-  .mock-name{ font-weight:800; font-size:15.5px; line-height:1.3; margin-bottom:4px; }
-  .mock-meta{ font-size:13px; color:var(--muted); line-height:1.45; }
-  .mock-foot{ grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line); }
-  .mock-price{ font-weight:800; font-size:15px; font-variant-numeric:tabular-nums; }
-  .mock-seats{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); }
-  .bar{ width:64px; height:5px; border-radius:var(--pill); background:#E3E5E9; overflow:hidden; }
-  .bar i{ display:block; height:100%; background:var(--yellow); }
-  .mock-go{ display:inline-flex; align-items:center; height:34px; padding:0 14px; border-radius:var(--pill); background:var(--ink); color:#fff; font-weight:700; font-size:12.5px; }
-  .mock-card.full{ opacity:.55; }
-  .mock-card.full .mock-date{ background:#E3E5E9; }
-  .mock-card.full .mock-go{ background:#D5D7DC; color:var(--ink); }
-  .mock-empty{ grid-column:1 / -1; text-align:center; color:var(--muted); background:var(--paper); border-radius:var(--r-lg); padding:28px; }
-  .mock-empty a{ color:var(--ink); font-weight:700; }
-  .mock-links{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:24px; }
+  .course-feats .icon{ width:16px; height:16px; margin-top:2px; color:var(--text); background:var(--yellow-soft); border-radius:50%; padding:3px; }
 
   /* ════════ RESULTS: certificate cards ════════ */
   #results{ overflow:hidden; }
@@ -218,31 +215,8 @@
   .chip{ font-size:11px; font-weight:600; padding:3px 8px; border-radius:var(--pill); background:var(--mist); }
   .chip.ink{ background:var(--ink); color:#fff; }
 
-  /* ════════ QUIZ: the only dark block ════════ */
-  .quiz-box{ position:relative; overflow:hidden; isolation:isolate; background:var(--ink); color:#fff; border-radius:var(--r-xl); padding:40px; }
-  .quiz-box::after{ content:''; position:absolute; z-index:-1; width:320px; height:320px; right:-110px; top:-130px; border-radius:50%; background:radial-gradient(circle, rgba(255,183,3,.35), rgba(255,183,3,0) 65%); }
-  .quiz-step, .quiz-result{ display:none; }
-  .quiz-step.active, .quiz-result.active{ display:block; animation:rise .35s var(--ease) both; }
-  .quiz-q{ font-size:22px; font-weight:800; letter-spacing:-0.02em; margin-bottom:18px; }
-  .quiz-options{ display:flex; flex-wrap:wrap; gap:10px; }
-  .quiz-opt{ min-height:44px; padding:10px 20px; border-radius:var(--pill); border:1.5px solid rgba(255,255,255,.28); background:none; color:#fff; font-weight:600; font-size:14px; text-align:left; transition:background-color .2s, color .2s, border-color .2s; }
-  .quiz-opt:hover{ background:var(--yellow); border-color:var(--yellow); color:var(--ink); }
-  .quiz-result-label{ font-weight:600; color:rgba(255,255,255,.6); font-size:14px; margin-bottom:4px; }
-  .quiz-result-name{ font-size:28px; font-weight:800; letter-spacing:-0.02em; color:var(--yellow); margin-bottom:8px; }
-  .quiz-result-desc{ color:rgba(255,255,255,.72); max-width:36em; margin-bottom:22px; font-size:14px; }
-  .quiz-actions{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
   .btn-text{ background:none; border:none; font-weight:700; font-size:14px; padding:10px 6px; text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:2px; color:inherit; opacity:.8; }
   .btn-text:hover{ opacity:1; }
-
-  /* ════════ SCHEDULE ════════ */
-  .table-card{ background:var(--paper); border-radius:var(--r-lg); padding:6px 24px; max-width:860px; margin:0 auto; }
-  .schedule-table{ width:100%; border-collapse:collapse; font-size:14px; }
-  .schedule-table th{ text-align:left; font-size:12.5px; font-weight:600; color:var(--muted); padding:14px 0 10px; border-bottom:1px solid var(--line); }
-  .schedule-table td{ padding:14px 0; border-bottom:1px solid var(--line); }
-  .schedule-table tr:last-child td{ border-bottom:none; }
-  .schedule-table td:first-child{ font-weight:700; }
-  .schedule-table td:last-child{ font-variant-numeric:tabular-nums; font-weight:600; }
-  .time-pill{ display:inline-block; padding:3px 10px; border-radius:var(--pill); background:var(--yellow-soft); }
 
   /* ════════ GALLERY ════════ */
   .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:180px; grid-auto-flow:dense; gap:12px; }
@@ -256,28 +230,28 @@
   .faq-item{ background:var(--paper); border-radius:var(--r-md); }
   .faq-question{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 20px; background:none; border:none; text-align:left; font-weight:600; font-size:14.5px; line-height:1.4; }
   .faq-icon{ flex-shrink:0; width:26px; height:26px; border-radius:50%; background:var(--mist); position:relative; transition:background-color .2s, transform .3s var(--ease); }
-  .faq-icon::before, .faq-icon::after{ content:''; position:absolute; left:50%; top:50%; width:10px; height:2px; background:var(--ink); border-radius:2px; transform:translate(-50%,-50%); }
+  .faq-icon::before, .faq-icon::after{ content:''; position:absolute; left:50%; top:50%; width:10px; height:2px; background:var(--text); border-radius:2px; transform:translate(-50%,-50%); }
   .faq-icon::after{ transform:translate(-50%,-50%) rotate(90deg); }
   .faq-item.open .faq-icon{ background:var(--yellow); transform:rotate(45deg); }
   .faq-answer{ overflow:hidden; max-height:0; transition:max-height .35s var(--ease); }
   .faq-answer-inner{ padding:0 20px 16px; color:var(--muted); font-size:14px; max-width:64ch; }
   .faq-more{ text-align:center; margin-top:20px; color:var(--muted); font-size:14px; }
-  .faq-more a{ color:var(--ink); }
+  .faq-more a{ color:var(--text); }
 
   /* ════════ APPLY: contained yellow block ════════ */
-  .apply-card{ position:relative; overflow:hidden; isolation:isolate; background:var(--grad); border-radius:var(--r-xl); padding:44px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; align-items:center; }
+  .apply-card{ position:relative; overflow:hidden; isolation:isolate; color:#141416; background:var(--grad); border-radius:var(--r-xl); padding:44px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; align-items:center; }
   .apply-card::before{ content:''; position:absolute; z-index:-1; width:300px; height:300px; left:-100px; bottom:-150px; border-radius:50%; background:rgba(255,255,255,.18); }
   .apply-title{ font-size:32px; text-transform:uppercase; letter-spacing:-0.01em; margin-bottom:12px; }
   .apply-sub{ font-size:15px; max-width:28em; margin-bottom:22px; color:#3A2E05; }
   .apply-points{ list-style:none; display:grid; gap:10px; }
   .apply-points li{ display:flex; gap:10px; align-items:center; font-weight:700; font-size:14px; }
   .apply-points .icon{ width:22px; height:22px; padding:5px; border-radius:50%; background:var(--ink); color:var(--yellow); }
-  .form-card{ background:var(--paper); border-radius:var(--r-lg); padding:26px; box-shadow:0 20px 40px rgba(120,70,0,.12); }
+  .form-card{ color:var(--text); background:var(--paper); border-radius:var(--r-lg); padding:26px; box-shadow:0 20px 40px rgba(120,70,0,.12); }
   .field{ margin-bottom:14px; border:none; }
   .field-label{ display:flex; justify-content:space-between; gap:8px; font-size:13px; font-weight:700; margin-bottom:6px; }
   .field-label small{ font-weight:500; color:var(--muted); font-size:12px; }
   .input{ width:100%; height:44px; padding:0 14px; border-radius:var(--r-sm); border:1.5px solid transparent; background:var(--mist); font-size:14.5px; outline:none; transition:border-color .2s, background-color .2s; }
-  .input:focus{ border-color:var(--ink); background:var(--paper); }
+  .input:focus{ border-color:var(--text); background:var(--paper); }
   select.input{ appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23141416' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:38px; cursor:pointer; }
   textarea.input{ height:auto; min-height:72px; padding:10px 14px; resize:vertical; line-height:1.5; }
   .field-error{ display:none; font-size:12px; color:var(--warn); margin-top:5px; font-weight:600; }
@@ -288,7 +262,7 @@
   .seg input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
   .seg span{ display:flex; align-items:center; justify-content:center; height:36px; border-radius:9px; font-weight:600; font-size:13.5px; transition:background-color .2s, color .2s; }
   .seg input:checked + span{ background:var(--ink); color:#fff; }
-  .seg input:focus-visible + span{ outline:2px solid var(--ink); outline-offset:2px; }
+  .seg input:focus-visible + span{ outline:2px solid var(--text); outline-offset:2px; }
   .field.invalid .seg{ box-shadow:inset 0 0 0 1.5px var(--warn); }
   .form-submit{ width:100%; height:48px; margin-top:4px; }
   .form-submit:disabled{ opacity:.6; cursor:progress; }
@@ -298,7 +272,7 @@
   .ok-mark .icon{ width:22px; height:22px; }
   .form-success h3{ font-size:20px; margin-bottom:6px; }
   .form-success p{ color:var(--muted); margin-bottom:14px; font-size:14px; }
-  .form-success .btn-text{ color:var(--ink); }
+  .form-success .btn-text{ color:var(--text); }
 
   /* ════════ CONTACT ════════ */
   .contact-layout{ display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:14px; }
@@ -320,7 +294,8 @@
   .footer-icons{ display:flex; gap:8px; }
   .footer-icon{ width:38px; height:38px; border-radius:50%; background:var(--mist); display:flex; align-items:center; justify-content:center; transition:background-color .2s; }
   .footer-icon:hover{ background:var(--yellow); }
-  .footer-copy{ margin-top:16px; font-size:12px; color:var(--muted); }
+  .footer-copy{ margin-top:12px; font-size:12px; color:var(--muted); }
+  .footer-copy a{ color:inherit; }
 
   .fb-call{ position:fixed; right:18px; bottom:18px; z-index:150; width:50px; height:50px; border-radius:50%; background:var(--yellow); color:var(--ink); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 26px rgba(20,20,22,.2); transition:transform .2s var(--ease); }
   .fb-call:hover{ transform:scale(1.06); }
@@ -354,20 +329,18 @@
     .nav-links{ position:fixed; top:calc(var(--nav-top) + var(--nav-h) + 8px); left:var(--gutter); right:var(--gutter); margin:0; background:var(--paper); border-radius:var(--r-lg); box-shadow:var(--shadow); flex-direction:column; align-items:stretch; gap:2px; padding:10px; opacity:0; visibility:hidden; transform:translateY(-6px); transition:opacity .2s, transform .25s var(--ease), visibility .2s; }
     body.menu-open .nav-links{ opacity:1; visibility:visible; transform:none; }
     .nav-links a{ font-size:15px; padding:11px 14px; border-radius:var(--r-sm); }
-    .nav-links a.nav-mock, .nav-links .nav-enroll-li a{ text-align:center; }
+    .nav-links .nav-enroll-li a{ text-align:center; }
     .hamburger{ display:block; }
     .nav-actions{ margin-left:auto; }
     .nav-actions .nav-enroll{ display:none; }
     .hero-card{ grid-template-columns:1fr; padding:40px; min-height:0; }
+    .hero-card::before{ background:linear-gradient(180deg, rgba(14,14,16,.78) 0%, rgba(14,14,16,.6) 100%); }
     .hero-art{ justify-content:flex-start; }
-    .big-bubble{ width:280px; }
-    .big-bubble b{ font-size:76px; }
     .about-grid{ grid-template-columns:repeat(2,1fr); grid-template-rows:none; }
     .about-main{ grid-row:auto; }
     .why-grid{ grid-template-columns:repeat(2,1fr); }
     .feature{ grid-column:1 / -1; grid-row:auto; min-height:0; }
     .team-grid{ --cols:3; }
-    .mock-grid{ grid-template-columns:1fr; }
     .apply-card{ grid-template-columns:1fr; padding:32px; }
     .contact-layout{ grid-template-columns:1fr; }
     .gallery-grid{ grid-template-columns:repeat(3,1fr); }
@@ -378,7 +351,9 @@
     body{ font-size:14.5px; }
     .nav-bar{ padding:0 6px 0 14px; gap:8px; }
     .logo img{ height:24px; }
-    .lang-switch button{ width:28px; height:26px; font-size:10.5px; }
+    .lang-switch button{ width:26px; height:26px; font-size:10.5px; }
+    .theme-toggle{ width:34px; height:34px; }
+    .nav-actions{ gap:6px; }
     .hamburger{ width:36px; height:36px; }
     .hamburger span{ left:10px; right:10px; }
     .hamburger span:nth-child(1){ top:12px; } .hamburger span:nth-child(2){ top:17px; } .hamburger span:nth-child(3){ top:22px; }
@@ -391,34 +366,23 @@
     .hero-btns .btn{ flex:1 1 100%; }
     .hero-meta{ margin-top:20px; }
     .hero-art{ justify-content:center; }
-    .big-bubble{ width:220px; }
-    .big-bubble b{ font-size:62px; }
-    .big-bubble span{ font-size:13px; }
+    .big-bubble{ width:180px; }
+    .big-bubble b{ font-size:50px; }
+    .big-bubble span{ font-size:12px; }
     .about-grid{ gap:10px; }
     .about-main{ padding:22px; grid-column:1 / -1; }
     .about-main img{ height:44px; }
     .about-main p{ font-size:17px; }
     .stat{ padding:16px; min-height:120px; }
     .stat b{ font-size:28px; }
-    .stat span{ font-size:12.5px; }
+    .stat span{ font-size:12.5px; max-width:9em; }
     .stat::after{ width:70px; height:70px; right:-22px; bottom:-22px; }
     .why-grid{ grid-template-columns:1fr; gap:10px; }
     .feature{ padding:22px; }
     .course-grid{ grid-template-columns:1fr; gap:10px; }
-    .mock-card{ padding:16px; gap:14px; }
     .r-card{ width:168px; }
     .r-overall{ font-size:38px; }
     .team-grid{ --cols:2; --gap:10px; }
-    .quiz-box{ padding:26px 20px; border-radius:var(--r-lg); }
-    .quiz-q{ font-size:18px; }
-    .quiz-opt{ width:100%; }
-    .table-card{ padding:4px 16px; }
-    .schedule-table thead{ display:none; }
-    .schedule-table, .schedule-table tbody, .schedule-table tr{ display:block; }
-    .schedule-table tr{ display:grid; grid-template-columns:1fr auto; gap:4px 10px; padding:12px 0; border-bottom:1px solid var(--line); }
-    .schedule-table tr:last-child{ border-bottom:none; }
-    .schedule-table td{ padding:0; border:none; }
-    .schedule-table td:nth-child(2){ grid-column:1 / -1; grid-row:2; color:var(--muted); font-size:13px; }
     .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:130px; gap:8px; }
     .faq-question{ padding:14px 16px; font-size:14px; }
     .faq-answer-inner{ padding:0 16px 14px; }
@@ -443,6 +407,8 @@
   <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g></symbol>
   <symbol id="i-trend" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></g></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></g></symbol>
 </svg>
 
@@ -450,11 +416,11 @@
 <header id="navbar">
   <div class="wrap">
     <div class="nav-bar">
-      <a href="#hero" class="logo" aria-label="Stanford language center"><img src="images/logo-row-black.png" alt="" width="130" height="28"/></a>
+      <a href="#hero" class="logo" aria-label="Stanford language center"><img class="for-light" src="images/logo-row-black.png" alt="" width="130" height="28"/><img class="for-dark" src="images/logo-row-white.png" alt="" width="130" height="28"/></a>
       <ul class="nav-links" id="navLinks">
         <li><a href="#about" data-i18n="about-title">О нас</a></li>
         <li><a href="#courses" data-i18n="nav-courses">Курсы</a></li>
-        <li><a href="mock.html" class="nav-mock" data-i18n="nav-mock">Mock Exam</a></li>
+        <li><a href="mock.html" data-i18n="nav-mock">Mock Exam</a></li>
         <li data-needs="results" hidden><a href="#results" data-i18n="nav-results">Результаты</a></li>
         <li data-needs="teachers" hidden><a href="#instructors" data-i18n="nav-teachers">Преподаватели</a></li>
         <li><a href="#faq" data-i18n="nav-faq">Вопросы</a></li>
@@ -462,6 +428,7 @@
         <li class="nav-enroll-li"><a href="#apply" class="btn btn-ink" data-i18n="nav-enroll">Записаться</a></li>
       </ul>
       <div class="nav-actions">
+        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false" data-i18n-aria="theme-toggle" aria-label="Тёмная тема"><svg class="icon i-moon"><use href="#i-moon"/></svg><svg class="icon i-sun"><use href="#i-sun"/></svg></button>
         <div class="lang-switch" role="group" data-i18n-aria="lang-label" aria-label="Язык сайта">
           <button type="button" data-lang="ru" lang="ru">RU</button>
           <button type="button" data-lang="kaa" lang="kaa" title="Qaraqalpaqsha">QQ</button>
@@ -479,15 +446,16 @@
 <section id="hero">
   <div class="wrap">
     <div class="hero-card">
+      <!-- TEMPORARY placeholder photo (Registan, Samarkand, CC BY-SA 2.0, credited in the footer). Replace with a photo of the centre. -->
+      <img class="hero-photo" src="images/hero-placeholder.jpg" srcset="images/hero-placeholder-sm.jpg 900w, images/hero-placeholder.jpg 1600w" sizes="(max-width:767px) 100vw, 1140px" alt="" width="1600" height="1200" fetchpriority="high"/>
       <div>
         <h1 class="hero-title"><span class="brand">Stanford</span><span data-i18n="hero-title">Английский и IELTS в Нукусе</span></h1>
         <p class="hero-sub" data-i18n="hero-sub">IELTS, General English и курсы для детей. Занятия ведёт преподаватель с баллом IELTS 9.0.</p>
         <div class="hero-btns">
           <a href="#apply" class="btn btn-yellow" data-i18n="hero-cta">Пробный урок бесплатно</a>
-          <a href="mock.html" class="btn btn-ghost-light" data-i18n="hero-mock">Записаться на Mock</a>
+          <a href="#courses" class="btn btn-ghost-light" data-i18n="nav-courses">Курсы</a>
         </div>
         <ul class="hero-meta">
-          <li><svg class="icon"><use href="#i-clock"/></svg><span><b>09:00–19:00</b> <span data-i18n="fact3">каждый день</span></span></li>
           <li><span><b>5</b> <span data-i18n="fact2">лет в Нукусе</span></span></li>
         </ul>
       </div>
@@ -504,14 +472,14 @@
     <div class="sec-head"><h2 class="sec-title" data-i18n="about-title">О нас</h2></div>
     <div class="about-grid">
       <div class="about-main">
-        <img src="images/logo-black.png" alt="Stanford language center" width="93" height="56" loading="lazy"/>
+        <img class="for-light" src="images/logo-black.png" alt="Stanford language center" width="93" height="56" loading="lazy"/><img class="for-dark" src="images/logo-white.png" alt="" width="93" height="56" loading="lazy"/>
         <p data-i18n="about-desc">Языковой центр в Нукусе: английский для детей и взрослых и подготовка к IELTS.</p>
         <a class="link-under" href="#apply" data-i18n="about-link">Записаться на пробный урок</a>
       </div>
       <div class="stat"><b>5</b><span data-i18n="fact2">лет в Нукусе</span></div>
       <div class="stat"><b>10–12</b><span data-i18n="fact4">человек в группе</span></div>
       <div class="stat"><b>4</b><span data-i18n="fact5">курса — от детей до IELTS</span></div>
-      <div class="stat"><b>09–19</b><span data-i18n="fact3">каждый день</span></div>
+      <div class="stat"><b>9.0</b><span data-i18n="fact1">балл IELTS нашего преподавателя</span></div>
     </div>
   </div>
 </section>
@@ -524,13 +492,6 @@
       <p class="sec-desc" data-i18n="why-desc">Учим так, чтобы вы заговорили и сдали экзамен — без лишней теории.</p>
     </div>
     <div class="why-grid">
-      <a class="feature" href="mock.html">
-        <div>
-          <h3 data-i18n="adv-mock-title">IELTS CD Mock на компьютере</h3>
-          <p data-i18n="adv-mock-text">Пробный экзамен в формате настоящего: все 4 части, результат по каждой и билет онлайн.</p>
-        </div>
-        <span class="btn btn-yellow" data-i18n="adv-mock-btn">Выбрать дату</span>
-      </a>
       <div class="why-card"><div class="why-mark"><span><svg class="icon"><use href="#i-award"/></svg></span></div><h3 data-i18n="why1-title">Преподаватель IELTS 9.0</h3><p data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</p></div>
       <div class="why-card"><div class="why-mark"><span><svg class="icon"><use href="#i-users"/></svg></span></div><h3 data-i18n="why2-title">Небольшие группы</h3><p data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</p></div>
       <div class="why-card"><div class="why-mark"><span><svg class="icon"><use href="#i-trend"/></svg></span></div><h3 data-i18n="why3-title">Понятный прогресс</h3><p data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</p></div>
@@ -595,25 +556,8 @@
   </div>
 </section>
 
-<!-- MOCK EXAMS -->
-<section id="mock-exams" class="section bg-mist">
-  <div class="wrap">
-    <div class="sec-head">
-      <h2 class="sec-title" data-i18n="mock-title">IELTS CD Mock Exam</h2>
-      <p class="sec-desc" data-i18n="mock-desc">Пробный IELTS на компьютере, как в настоящем тестовом центре. После экзамена — результат по каждой части.</p>
-    </div>
-    <div class="mock-grid" id="mockGrid" aria-live="polite">
-      <p class="mock-empty" data-i18n="mock-loading">Загружаем даты…</p>
-    </div>
-    <div class="mock-links">
-      <a class="btn btn-ink btn-sm" href="mock.html" data-i18n="mock-all">Все даты и запись</a>
-      <a class="btn btn-white btn-sm" href="mock.html#lookup" data-i18n="mock-lookup">Узнать результат Mock</a>
-    </div>
-  </div>
-</section>
-
 <!-- RESULTS (hidden until there is at least one published result) -->
-<section id="results" class="section" hidden>
+<section id="results" class="section bg-mist" hidden>
   <div class="wrap">
     <div class="sec-head">
       <h2 class="sec-title" data-i18n="results-title">Результаты</h2>
@@ -631,60 +575,6 @@
       <p class="sec-desc" data-i18n="team-desc">Те, кто ведёт занятия каждый день.</p>
     </div>
     <div class="team-grid" id="teamGrid"></div>
-  </div>
-</section>
-
-<!-- QUIZ -->
-<section id="quiz" class="section">
-  <div class="wrap">
-    <div class="sec-head">
-      <h2 class="sec-title" data-i18n="quiz-title">Подбор курса</h2>
-      <p class="sec-desc" data-i18n="quiz-desc">Два вопроса — и подскажем, какая программа подойдёт.</p>
-    </div>
-    <div class="quiz-box">
-      <div class="quiz-step active" id="quizStep1">
-        <p class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</p>
-        <div class="quiz-options">
-          <button type="button" class="quiz-opt" data-quiz="kids" data-i18n="quiz-q1-opt1">Ребёнку, 6–12 лет</button>
-          <button type="button" class="quiz-opt" data-quiz-next="quizStep2" data-i18n="quiz-q1-opt2">Взрослому или подростку</button>
-        </div>
-      </div>
-      <div class="quiz-step" id="quizStep2">
-        <p class="quiz-q" data-i18n="quiz-q2">Какая у вас цель?</p>
-        <div class="quiz-options">
-          <button type="button" class="quiz-opt" data-quiz="general" data-i18n="quiz-q2-opt1">Заговорить увереннее в жизни и на работе</button>
-          <button type="button" class="quiz-opt" data-quiz="ielts" data-i18n="quiz-q2-opt2">Сдать международный экзамен IELTS</button>
-          <button type="button" class="quiz-opt" data-quiz="advanced" data-i18n="quiz-q2-opt3">Уже говорю свободно, хочу углубить знания</button>
-        </div>
-      </div>
-      <div class="quiz-result" id="quizResult">
-        <p class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</p>
-        <p class="quiz-result-name" id="quizResultName"></p>
-        <p class="quiz-result-desc" id="quizResultDesc"></p>
-        <div class="quiz-actions">
-          <button type="button" class="btn btn-yellow" id="quizEnroll" data-i18n="quiz-cta">Записаться на этот курс</button>
-          <button type="button" class="btn-text" id="quizRestart" data-i18n="quiz-restart">Пройти заново</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SCHEDULE -->
-<section id="schedule" class="section bg-mist">
-  <div class="wrap">
-    <div class="sec-head"><h2 class="sec-title" data-i18n="schedule-title">Расписание</h2><p class="sec-desc" data-i18n="schedule-note">Время может меняться при наборе новой группы — уточняйте по телефону.</p></div>
-    <div class="table-card">
-      <table class="schedule-table">
-        <thead><tr><th data-i18n="schedule-th1">Курс</th><th data-i18n="schedule-th2">Дни</th><th data-i18n="schedule-th3">Время</th></tr></thead>
-        <tbody>
-          <tr><td data-i18n="course1-name">Kids English</td><td data-i18n="sched1-days">Пн, Чт</td><td><span class="time-pill">15:00–16:00</span></td></tr>
-          <tr><td data-i18n="course2-name">General English</td><td data-i18n="sched2-days">Пн, Ср, Пт</td><td><span class="time-pill">17:00–18:30</span></td></tr>
-          <tr><td data-i18n="course3-name">Advanced English</td><td data-i18n="sched3-days">Вт, Чт, Сб</td><td><span class="time-pill">18:00–19:30</span></td></tr>
-          <tr><td data-i18n="course4-name">IELTS Preparation</td><td data-i18n="sched4-days">Пн, Вт, Чт, Сб</td><td><span class="time-pill">19:00–20:30</span></td></tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </section>
 
@@ -749,15 +639,6 @@
             </select>
             <p class="field-error" data-i18n="f-course-error">Выберите курс</p>
           </div>
-          <fieldset class="field" data-field="time">
-            <legend class="field-label" data-i18n="f-time">Удобное время</legend>
-            <div class="seg">
-              <label><input type="radio" name="time" value="morning"/><span data-i18n="f-time-morning">Утро</span></label>
-              <label><input type="radio" name="time" value="day"/><span data-i18n="f-time-day">День</span></label>
-              <label><input type="radio" name="time" value="evening"/><span data-i18n="f-time-evening">Вечер</span></label>
-            </div>
-            <p class="field-error" data-i18n="f-time-error">Выберите время</p>
-          </fieldset>
           <div class="field">
             <label class="field-label" for="applyComment"><span data-i18n="f-comment">Комментарий</span><small data-i18n="f-optional">необязательно</small></label>
             <textarea class="input" id="applyComment" name="comment" maxlength="1000" rows="2" data-i18n-placeholder="f-comment-ph"></textarea>
@@ -813,7 +694,7 @@
   <div class="wrap">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="images/logo-row-black.png" alt="Stanford language center" width="130" height="28" loading="lazy"/>
+        <img class="for-light" src="images/logo-row-black.png" alt="Stanford language center" width="130" height="28" loading="lazy"/><img class="for-dark" src="images/logo-row-white.png" alt="" width="130" height="28" loading="lazy"/>
         <p class="footer-desc" data-i18n="footer-desc">Языковой центр в Нукусе: IELTS, General English и курсы для детей.</p>
       </div>
       <div class="footer-icons">
@@ -822,6 +703,7 @@
       </div>
     </div>
     <p class="footer-copy" data-i18n="footer-copy">© 2026 Stanford Language Center, Нукус</p>
+    <p class="footer-copy"><span data-i18n="footer-photo">Фото</span>: <a href="https://commons.wikimedia.org/wiki/File:Facade_of_Ulugbek_Medressa_-_The_Registan_-_Samarkand_-_Uzbekistan_(7488199976).jpg" target="_blank" rel="noopener">Adam Jones, CC BY-SA 2.0</a></p>
   </div>
 </footer>
 
