@@ -8,540 +8,521 @@
 <meta name="author" content="Stanford Educational Centre"/>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@300;400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+  /* ============ DESIGN SYSTEM ============ */
   :root{
-    --navy:#14213D;
-    --navy-soft:#223258;
-    --navy-dim: rgba(20,33,61,0.06);
-    --paper:#F6F4EE;
-    --paper-alt:#ECE8DD;
-    --card:#FFFFFF;
-    --red:#A8342A;
-    --red-soft:#F4E3E0;
-    --gold:#C9A227;
-    --gold-soft:#F7EDC9;
-    --line: rgba(20,33,61,0.10);
-    --text-soft: rgba(20,33,61,0.64);
-    --text-softer: rgba(20,33,61,0.44);
+    --bg:#FFFFFF;
+    --bg-2:#F4F5F6;
+    --dark:#141416;
+    --dark-2:#1F2025;
+    --text:#141416;
+    --text-2:#777E90;
+    --text-soft:var(--text-2);           /* used by inline styles in main.js */
+    --gold:#F5B800;
+    --gold-hover:#E0A800;
+    --gold-soft:#FFF3CC;
+    --red:#A8342A;                        /* only for "FORD" in the logo */
+    --error:#D33A3A;
+
+    --radius:24px;
+    --radius-sm:16px;
+    --pill:100px;
+    --btn-h:48px;
+    --shadow:0 8px 30px rgba(20,20,22,0.06);
+    --shadow-nav:0 10px 40px rgba(20,20,22,0.10);
+    --max:1200px;
+    --gutter:24px;
+    --section-y:96px;
+    --title-size:28px;
   }
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
+  @media (max-width:767px){
+    :root{ --gutter:16px; --section-y:64px; --title-size:22px; }
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
   @media (prefers-reduced-motion: reduce){
-    html{scroll-behavior:auto;}
-    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
   }
-  body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--navy);overflow-x:hidden;line-height:1.5;}
-  a{color:inherit;}
-  img{display:block;max-width:100%;}
-  .annotate{ font-family:'Caveat',cursive; color:var(--red); font-weight:700; }
+  body{ font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.55; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  a{ color:inherit; }
+  img{ display:block; max-width:100%; }
+  button,input,select{ font-family:inherit; }
+  .icon{ width:20px; height:20px; flex-shrink:0; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-  /* ---------- NAV ---------- */
+  /* ============ LAYOUT ============ */
+  section{ padding:var(--section-y) var(--gutter); scroll-margin-top:84px; }
+  .container{ max-width:var(--max); margin:0 auto; }
+  .bg-white{ background:var(--bg); }
+  .bg-grey{ background:var(--bg-2); }
+  .sec-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
+  .sec-title{ font-size:var(--title-size); font-weight:800; text-transform:uppercase; letter-spacing:0.02em; line-height:1.2; color:var(--text); }
+  .sec-desc{ color:var(--text-2); font-size:1rem; margin-top:12px; }
+  @media (max-width:767px){ .sec-head{ margin-bottom:32px; } }
+
+  /* ============ BUTTONS ============ */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    height:var(--btn-h); padding:0 28px; border-radius:var(--pill); border:none; cursor:pointer;
+    font-size:0.95rem; font-weight:600; text-decoration:none; white-space:nowrap;
+    transition:background .2s, color .2s, transform .2s;
+  }
+  .btn:hover{ transform:translateY(-1px); }
+  .btn-gold{ background:var(--gold); color:var(--text); }
+  .btn-gold:hover{ background:var(--gold-hover); }
+  .btn-dark{ background:var(--dark); color:#fff; }
+  .btn-dark:hover{ background:var(--gold); color:var(--text); }
+  .btn-ghost{ background:transparent; color:var(--text-2); }
+  .btn-ghost:hover{ color:var(--text); }
+
+  /* ============ HEADER ============ */
   nav{
-    position:fixed; top:0; left:0; width:100%; z-index:200;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:18px 56px;
-    background:rgba(246,244,238,0.75);
-    backdrop-filter: blur(12px);
-    border-bottom:1px solid transparent;
-    transition: background .35s, border-color .35s, padding .3s;
+    position:fixed; z-index:200; top:16px; left:50%; transform:translateX(-50%);
+    width:calc(100% - 32px); max-width:1280px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding:10px 10px 10px 28px; border-radius:var(--pill);
+    transition:top .3s;
   }
-  nav.scrolled{ background:rgba(246,244,238,0.94); border-bottom-color:var(--line); padding:12px 56px; }
-  .logo{ display:flex; align-items:baseline; gap:6px; text-decoration:none; }
-  .logo-mark{ font-family:'Fraunces',serif; font-weight:700; font-size:1.65rem; color:var(--navy); letter-spacing:0.01em; }
+  /* The bar's background lives on a pseudo-element so the blur cannot trap the fixed mobile drawer */
+  nav::before{
+    content:''; position:absolute; inset:0; z-index:-1; border-radius:inherit;
+    background:rgba(255,255,255,0); transition:background .3s, box-shadow .3s;
+  }
+  nav.scrolled{ top:10px; }
+  nav.scrolled::before{ background:rgba(255,255,255,0.88); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:var(--shadow-nav); }
+
+  .logo{ display:flex; flex-direction:column; text-decoration:none; line-height:1; color:#fff; transition:color .3s; }
+  nav.scrolled .logo{ color:var(--text); }
+  .logo-mark{ font-weight:800; font-size:1.45rem; letter-spacing:0.02em; }
   .logo-mark span{ color:var(--red); }
-  .logo-sub{ font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-softer); font-weight:600; }
+  .logo-sub{ font-size:0.6rem; letter-spacing:0.16em; text-transform:uppercase; font-weight:600; opacity:0.7; margin-top:4px; }
 
-  .nav-links{ display:flex; align-items:center; gap:34px; list-style:none; }
-  .nav-links a{ text-decoration:none; font-size:0.86rem; font-weight:500; color:var(--navy-soft); position:relative; padding-bottom:3px; }
-  .nav-links a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--red); transition:width .25s ease; }
-  .nav-links a:hover::after{ width:100%; }
-
-  /* Mock Exam: gold outlined pill with a pulsing dot */
+  .nav-links{ display:flex; align-items:center; gap:26px; list-style:none; }
+  .nav-links a{ text-decoration:none; font-size:0.9rem; font-weight:500; transition:color .2s; }
+  .nav-links a:not(.nav-mock):not(.btn):hover{ color:var(--gold); }
   .nav-links a.nav-mock{
-    display:inline-flex; align-items:center; gap:8px; white-space:nowrap;
-    padding:7px 16px; border:1.5px solid var(--gold); border-radius:100px;
-    color:var(--navy); font-weight:600;
-    transition: background .2s, color .2s, transform .2s;
+    display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 18px; border-radius:var(--pill);
+    background:var(--gold); color:var(--text); font-weight:700; white-space:nowrap;
   }
-  .nav-links a.nav-mock::after{ display:none; }
-  .nav-links a.nav-mock::before{
-    content:''; width:7px; height:7px; border-radius:50%; background:var(--gold); flex-shrink:0;
-    box-shadow:0 0 0 0 rgba(201,162,39,0.6); animation:mockPulse 1.8s ease-out infinite;
-  }
-  .nav-links a.nav-mock:hover{ background:var(--gold); color:var(--navy); transform:translateY(-1px); }
-  .nav-links a.nav-mock:hover::before{ background:var(--navy); }
-  @keyframes mockPulse{
-    0%{ box-shadow:0 0 0 0 rgba(201,162,39,0.6); }
-    70%{ box-shadow:0 0 0 7px rgba(201,162,39,0); }
-    100%{ box-shadow:0 0 0 0 rgba(201,162,39,0); }
-  }
+  .nav-links a.nav-mock::before{ content:''; width:7px; height:7px; border-radius:50%; background:var(--text); }
+  .nav-links a.nav-mock:hover{ background:var(--gold-hover); }
+  .nav-right{ display:flex; align-items:center; gap:10px; }
 
-  .nav-right{ display:flex; align-items:center; gap:16px; }
-  .lang-switch{ display:flex; align-items:center; gap:2px; background:var(--navy-dim); border:1px solid var(--line); border-radius:100px; padding:3px; }
-  .lang-btn{ border:none; background:transparent; font-family:'Inter',sans-serif; color:var(--text-soft); font-size:0.7rem; font-weight:700; letter-spacing:0.03em; padding:6px 12px; border-radius:100px; cursor:pointer; transition:background .2s, color .2s; }
-  .lang-btn.active{ background:var(--navy); color:#fff; }
-  .lang-btn:not(.active):hover{ color:var(--navy); }
-  .nav-cta{
-    background:var(--gold); color:var(--navy); font-weight:700; font-size:0.82rem;
-    padding:11px 22px; border-radius:3px; text-decoration:none; letter-spacing:0.02em;
-    transition: background .2s, transform .2s;
+  .lang-toggle{
+    width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
+    font-size:0.75rem; font-weight:700; letter-spacing:0.04em;
+    background:rgba(255,255,255,0.16); color:#fff; transition:background .2s, color .2s;
   }
-  .nav-cta:hover{ background:#B99420; transform:translateY(-2px); }
+  .lang-toggle:hover{ background:var(--gold); color:var(--text); }
+  nav.scrolled .lang-toggle{ background:var(--bg-2); color:var(--text); }
+  nav.scrolled .lang-toggle:hover{ background:var(--gold); }
 
-  .hamburger{ display:none; flex-direction:column; gap:5px; cursor:pointer; z-index:220; }
-  .hamburger span{ width:26px; height:2px; background:var(--navy); transition:all .3s; }
+  .hamburger{ display:none; width:44px; height:44px; border-radius:50%; border:none; background:transparent; cursor:pointer;
+    flex-direction:column; align-items:center; justify-content:center; gap:5px; z-index:220; position:relative; }
+  .hamburger span{ width:22px; height:2px; border-radius:2px; background:#fff; transition:transform .3s, opacity .3s, background .3s; }
+  nav.scrolled .hamburger span, .hamburger.open span{ background:var(--text); }
   .hamburger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
   .hamburger.open span:nth-child(2){ opacity:0; }
   .hamburger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
 
-  /* Medium screens: tighten the menu so everything fits on one line */
-  @media (min-width: 1025px) and (max-width: 1240px){
-    nav, nav.scrolled{ padding-left:28px; padding-right:28px; }
-    .nav-links{ gap:18px; }
-    .nav-right{ gap:10px; }
-    .nav-links a.nav-mock{ padding:6px 12px; }
-    .nav-cta{ padding:10px 16px; }
+  /* Desktop: white text while the bar floats over the hero */
+  @media (min-width:1025px){
+    nav:not(.scrolled) .nav-links a:not(.nav-mock):not(.btn){ color:#fff; }
   }
-  @media (min-width: 1025px) and (max-width: 1080px){
-    nav, nav.scrolled{ padding-left:18px; padding-right:18px; }
-    .nav-links{ gap:12px; }
-    .nav-links a{ font-size:0.8rem; }
-    .nav-links a.nav-mock{ padding:5px 10px; gap:6px; }
-    .lang-btn{ padding:5px 9px; }
-    .nav-cta{ padding:9px 12px; font-size:0.78rem; }
+  @media (min-width:1025px) and (max-width:1240px){
+    nav{ padding-left:20px; gap:12px; }
+    .nav-links{ gap:16px; }
+    .nav-links a{ font-size:0.84rem; }
+    .nav-links a.nav-mock{ padding:0 14px; }
+    .nav-right .btn{ padding:0 18px; }
+  }
+  /* Tablet + mobile: hamburger with a slide-in drawer */
+  @media (max-width:1024px){
+    nav{ padding:8px 8px 8px 20px; }
+    .hamburger{ display:flex; }
+    .nav-links{
+      position:fixed; top:0; right:0; height:100vh; height:100dvh; width:min(86vw,340px);
+      background:#fff; box-shadow:-20px 0 50px rgba(20,20,22,0.14);
+      flex-direction:column; align-items:flex-start; gap:6px; padding:96px 24px 32px;
+      transform:translateX(110%); transition:transform .35s ease; overflow-y:auto;
+    }
+    .nav-links.open{ transform:translateX(0); }
+    .nav-links li{ width:100%; }
+    .nav-links a:not(.nav-mock):not(.btn){ display:block; padding:12px 4px; font-size:1.05rem; font-weight:600; color:var(--text); }
+    .nav-links a.nav-mock{ margin:8px 0; height:var(--btn-h); padding:0 22px; }
+    .nav-right{ margin-top:auto; padding-top:24px; width:100%; }
+    .nav-right .btn{ flex:1; }
+    .nav-right .lang-toggle{ background:var(--bg-2); color:var(--text); }
   }
 
-  /* ---------- HERO ---------- */
+  /* ============ HERO ============ */
   #hero{
-    position:relative; min-height:100vh; display:flex; align-items:center;
-    padding:140px 56px 100px;
-    overflow:hidden;
+    position:relative; min-height:100vh; min-height:100svh; display:flex; align-items:flex-end;
+    padding:140px var(--gutter) 96px; overflow:hidden; color:#fff; background:var(--dark);
   }
-  #hero .hero-bg{
-    position:absolute; inset:0; z-index:0;
-    background-image: linear-gradient(115deg, rgba(20,33,61,0.94) 20%, rgba(20,33,61,0.72) 55%, rgba(20,33,61,0.42) 100%), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=80');
-    background-size:cover; background-position:center;
+  .hero-bg{ position:absolute; inset:0; z-index:0; }
+  .hero-bg img{ width:100%; height:100%; object-fit:cover; }
+  .hero-bg::after{
+    content:''; position:absolute; inset:0;
+    background:
+      linear-gradient(to top, rgba(20,20,22,0.92) 0%, rgba(20,20,22,0.35) 55%, rgba(20,20,22,0.25) 100%),
+      linear-gradient(to right, rgba(20,20,22,0.70) 0%, rgba(20,20,22,0) 70%);
   }
-  .hero-content{ position:relative; z-index:1; max-width:640px; }
-  .hero-eyebrow{
-    display:inline-flex; align-items:center; gap:10px;
-    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25);
-    color:#F6F4EE; font-size:0.75rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase;
-    padding:8px 18px; border-radius:100px; margin-bottom:30px;
-  }
-  .hero-eyebrow::before{ content:'🏛'; }
+  .hero-content{ position:relative; z-index:1; width:100%; max-width:var(--max); margin:0 auto; }
+  .hero-title{ font-size:clamp(2.5rem, 5vw, 3.5rem); font-weight:800; line-height:1.05; text-transform:uppercase; letter-spacing:0.01em; }
+  .hero-title .t1{ display:block; color:var(--gold); }
+  .hero-title .t2{ display:block; color:#fff; max-width:14ch; }
+  .hero-sub{ font-size:1.05rem; color:rgba(255,255,255,0.82); max-width:520px; margin:22px 0 32px; }
+  .hero-content .btn .icon{ width:18px; height:18px; }
 
-  .hero-title{
-    font-family:'Fraunces',serif; font-weight:600; color:#FBFAF7;
-    font-size:clamp(2.6rem, 5.6vw, 4.4rem); line-height:1.08; letter-spacing:-0.01em;
+  /* ============ ABOUT / STATS ============ */
+  .stats-grid{
+    display:grid; gap:16px;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-areas:"a a b c" "a a d e";
   }
-  .hero-title .swash{ position:relative; display:inline-block; }
-  .hero-title .swash svg{ position:absolute; left:0; bottom:-10px; width:100%; height:16px; }
+  .stat-card{
+    position:relative; overflow:hidden; background:var(--bg-2); border-radius:var(--radius);
+    padding:28px; min-height:180px; display:flex; flex-direction:column; justify-content:flex-end;
+  }
+  .stat-card:nth-child(1){ grid-area:a; min-height:376px; }
+  .stat-card:nth-child(2){ grid-area:b; }
+  .stat-card:nth-child(3){ grid-area:c; }
+  .stat-card:nth-child(4){ grid-area:d; }
+  .stat-card:nth-child(5){ grid-area:e; }
+  .stat-num{ position:relative; z-index:1; font-size:clamp(2.4rem, 4vw, 3.4rem); font-weight:800; line-height:1; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  .stat-card:nth-child(1) .stat-num{ font-size:clamp(4rem, 9vw, 7.5rem); }
+  .stat-label{ position:relative; z-index:1; color:var(--text-2); font-weight:500; margin-top:10px; font-size:0.95rem; }
+  /* Gold corner shapes */
+  .stat-card::after{ content:''; position:absolute; background:var(--gold); border-radius:50%; }
+  .stat-card:nth-child(1)::after{ width:260px; height:260px; top:-90px; right:-90px; }
+  .stat-card:nth-child(2)::after{ width:110px; height:110px; top:-55px; right:-55px; }
+  .stat-card:nth-child(3)::after{ width:56px; height:56px; top:24px; right:24px; }
+  .stat-card:nth-child(4)::after{ width:110px; height:110px; top:-55px; left:-55px; }
+  .stat-card:nth-child(5)::after{ width:90px; height:90px; top:20px; right:20px; background:transparent; border:14px solid var(--gold); }
 
-  .hero-sub{
-    color:rgba(255,255,255,0.78); font-size:1.06rem; font-weight:300; line-height:1.75;
-    max-width:520px; margin-top:26px;
-  }
+  /* ============ WHY ============ */
+  .why-grid{ display:grid; gap:16px; grid-template-columns:1.2fr 1fr 1fr; grid-template-areas:"a b b" "a c d"; }
+  .why-card{ border-radius:var(--radius); padding:32px; background:var(--bg); display:flex; flex-direction:column; gap:12px; }
+  .why-card:nth-child(1){ grid-area:a; background:var(--dark); color:#fff; min-height:340px; }
+  .why-card:nth-child(2){ grid-area:b; background:var(--gold); }
+  .why-card:nth-child(3){ grid-area:c; }
+  .why-card:nth-child(4){ grid-area:d; }
+  .why-icon{ width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--bg-2); color:var(--text); margin-bottom:auto; }
+  .why-card:nth-child(1) .why-icon{ background:var(--gold); }
+  .why-card:nth-child(2) .why-icon{ background:rgba(255,255,255,0.55); }
+  .why-title{ font-size:1.25rem; font-weight:700; margin-top:24px; }
+  .why-card:nth-child(1) .why-title{ font-size:1.6rem; }
+  .why-text{ font-size:0.95rem; color:var(--text-2); }
+  .why-card:nth-child(1) .why-text{ color:rgba(255,255,255,0.7); }
+  .why-card:nth-child(2) .why-text{ color:rgba(20,20,22,0.72); }
 
-  .hero-actions{ display:flex; gap:16px; margin-top:42px; flex-wrap:wrap; }
-  .btn-gold{
-    background:var(--gold); color:var(--navy); font-weight:700; font-size:0.88rem;
-    padding:16px 34px; border-radius:3px; text-decoration:none; border:none; cursor:pointer;
-    letter-spacing:0.02em; transition:background .2s, transform .2s; display:inline-block;
-  }
-  .btn-gold:hover{ background:#B99420; transform:translateY(-3px); }
-  .btn-outline-light{
-    border:1px solid rgba(255,255,255,0.5); color:#fff; font-weight:600; font-size:0.88rem;
-    padding:16px 30px; border-radius:3px; text-decoration:none; transition:background .2s, border-color .2s;
-  }
-  .btn-outline-light:hover{ background:rgba(255,255,255,0.1); border-color:#fff; }
+  /* ============ COURSES ============ */
+  .courses-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .course-card{ background:var(--bg-2); border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; }
+  .course-level{ align-self:flex-start; font-size:0.75rem; font-weight:600; background:#fff; padding:6px 12px; border-radius:var(--pill); margin-bottom:18px; }
+  .course-name{ font-size:1.35rem; font-weight:800; line-height:1.2; margin-bottom:18px; }
+  .course-list{ list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+  .course-list li{ display:flex; gap:10px; align-items:flex-start; font-size:0.92rem; }
+  .check{ width:22px; height:22px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .check svg{ width:13px; height:13px; }
+  .course-bottom{ margin-top:auto; }
+  .course-price{ font-size:1.9rem; font-weight:800; letter-spacing:-0.01em; margin-bottom:16px; line-height:1.1; }
+  .course-price sub{ font-size:0.8rem; font-weight:500; color:var(--text-2); vertical-align:baseline; margin-left:4px; }
+  .course-card .btn{ width:100%; }
 
-  .hero-info-bar{
-    position:relative; z-index:1; display:flex; gap:44px; margin-top:64px; flex-wrap:wrap;
-    padding-top:32px; border-top:1px solid rgba(255,255,255,0.18); max-width:640px;
-  }
-  .hero-info-item{ display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.85); font-size:0.85rem; font-weight:500; }
-  .hero-info-item b{ color:#fff; }
+  /* ============ MOCK EXAMS (cards built by main.js) ============ */
+  .mock-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .mock-card{ background:#fff; border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow); }
+  .mock-tag-bar{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .mock-badge{ display:inline-flex; align-items:center; padding:6px 12px; border-radius:var(--pill); font-size:0.75rem; font-weight:600; }
+  .mock-badge.badge-ielts{ background:var(--gold-soft); color:var(--text); }
+  .mock-badge.badge-general{ background:var(--bg-2); color:var(--text); }
+  .mock-title{ font-size:1.3rem; font-weight:800; line-height:1.25; margin-bottom:8px; }
+  .mock-desc{ font-size:0.9rem; color:var(--text-2); margin-bottom:20px; }
+  .mock-details{ display:flex; flex-direction:column; gap:10px; background:var(--bg-2); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
+  .mock-detail-item{ display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; }
+  .mock-detail-icon{ width:22px; text-align:center; }
+  .mock-seats-wrap{ margin-bottom:18px; }
+  .mock-seats-info{ display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600; color:var(--text-2); margin-bottom:8px; }
+  .mock-progress-bar{ height:8px; background:var(--bg-2); border-radius:var(--pill); overflow:hidden; }
+  .mock-progress-fill{ height:100%; background:var(--gold); border-radius:var(--pill); transition:width .4s ease; }
+  .mock-btn{ width:100%; height:var(--btn-h); border:none; border-radius:var(--pill); background:var(--dark); color:#fff; font-weight:600; font-size:0.95rem; cursor:pointer; transition:background .2s, color .2s; }
+  .mock-btn:hover:not(:disabled){ background:var(--gold); color:var(--text); }
+  .mock-empty{ background:#fff; border-radius:var(--radius); padding:32px 24px !important; }
+  .mock-empty a{ color:var(--text) !important; }
 
-  /* ---------- SECTION COMMON ---------- */
-  section{ padding:120px 56px; }
-  .eyebrow{
-    font-family:'Caveat',cursive; font-size:1.35rem; color:var(--red); font-weight:700; margin-bottom:8px; display:block;
-  }
-  .sec-title{
-    font-family:'Fraunces',serif; font-weight:600; font-size:clamp(2rem, 3.6vw, 3rem); color:var(--navy); line-height:1.12; letter-spacing:-0.01em;
-  }
-  .sec-head{ max-width:640px; margin-bottom:64px; }
-  .sec-desc{ color:var(--text-soft); font-size:0.98rem; font-weight:400; line-height:1.75; margin-top:18px; max-width:560px; }
-
-  /* ---------- WHY CHOOSE US ---------- */
-  #why{ background:var(--paper); }
-  .why-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--line); border:1px solid var(--line); }
-  .why-card{ background:var(--card); padding:40px 32px; }
-  .why-icon{ font-size:1.8rem; margin-bottom:22px; display:block; }
-  .why-title{ font-family:'Fraunces',serif; font-weight:600; font-size:1.2rem; color:var(--navy); margin-bottom:10px; }
-  .why-text{ font-size:0.86rem; color:var(--text-soft); line-height:1.65; }
-
-  /* ---------- COURSES ---------- */
-  #courses{ background:var(--paper-alt); }
-  .courses-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
-  .course-card{
-    background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden;
-    display:flex; flex-direction:column; transition:transform .25s, box-shadow .25s;
-  }
-  .course-card:hover{ transform:translateY(-6px); box-shadow:0 24px 50px rgba(20,33,61,0.12); }
-  .course-top{ padding:30px 26px 0; }
-  .course-level{
-    display:inline-block; font-size:0.66rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--navy); background:var(--gold-soft); border:1px solid rgba(201,162,39,0.4);
-    padding:4px 11px; border-radius:100px; margin-bottom:16px;
-  }
-  .course-name{ font-family:'Fraunces',serif; font-weight:600; font-size:1.35rem; color:var(--navy); margin-bottom:10px; line-height:1.15; }
-  .course-desc{ font-size:0.83rem; color:var(--text-soft); line-height:1.65; padding-bottom:22px; }
-  .course-bottom{ margin-top:auto; padding:20px 26px 28px; border-top:1px solid var(--line); }
-  .course-price{ font-family:'Fraunces',serif; font-size:1.5rem; font-weight:600; color:var(--red); }
-  .course-price sub{ font-family:'Inter',sans-serif; font-size:0.68rem; font-weight:500; color:var(--text-softer); vertical-align:middle; }
-  .course-duration{ font-size:0.76rem; color:var(--text-softer); margin-top:2px; margin-bottom:18px; }
-  .course-btn{
-    display:block; text-align:center; background:var(--navy); color:#fff; font-size:0.8rem; font-weight:700;
-    letter-spacing:0.04em; text-decoration:none; padding:12px; border-radius:3px; transition:background .2s;
-  }
-  .course-btn:hover{ background:var(--red); }
-
-  /* ---------- LEVEL QUIZ ---------- */
-  #quiz{ background:var(--navy); color:#fff; }
-  #quiz .eyebrow{ color:var(--gold); }
-  #quiz .sec-title{ color:#fff; }
-  #quiz .sec-desc{ color:rgba(255,255,255,0.65); }
-  .quiz-box{
-    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:8px;
-    padding:44px 40px; max-width:720px;
-  }
-  .quiz-step{ display:none; }
-  .quiz-step.active{ display:block; }
-  .quiz-q{ font-family:'Fraunces',serif; font-size:1.3rem; font-weight:600; margin-bottom:24px; }
-  .quiz-options{ display:flex; flex-direction:column; gap:12px; }
+  /* ============ QUIZ ============ */
+  .quiz-box{ max-width:720px; margin:0 auto; background:var(--bg-2); border-radius:var(--radius); padding:40px; }
+  .quiz-step, .quiz-result{ display:none; }
+  .quiz-step.active, .quiz-result.active{ display:block; }
+  .quiz-q{ font-size:1.25rem; font-weight:700; margin-bottom:20px; text-align:center; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; }
   .quiz-opt{
-    text-align:left; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16); color:#fff;
-    padding:16px 20px; border-radius:5px; font-family:'Inter',sans-serif; font-size:0.92rem; cursor:pointer;
-    transition:background .2s, border-color .2s;
+    min-height:var(--btn-h); padding:12px 24px; border:none; border-radius:var(--pill); background:#fff; color:var(--text);
+    font-size:0.95rem; font-weight:500; text-align:left; cursor:pointer; transition:background .2s;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
   }
-  .quiz-opt:hover{ background:rgba(201,162,39,0.16); border-color:var(--gold); }
-  .quiz-result{ display:none; }
-  .quiz-result.active{ display:block; }
-  .quiz-result-label{ font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-bottom:10px; }
-  .quiz-result-name{ font-family:'Fraunces',serif; font-size:1.8rem; font-weight:600; margin-bottom:14px; }
-  .quiz-result-desc{ color:rgba(255,255,255,0.7); font-size:0.92rem; line-height:1.7; margin-bottom:26px; max-width:520px; }
-  .quiz-restart{ background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; font-size:0.82rem; padding:11px 20px; border-radius:4px; cursor:pointer; margin-left:14px; transition:border-color .2s; }
-  .quiz-restart:hover{ border-color:var(--gold); }
+  .quiz-opt::after{ content:'→'; color:var(--text-2); }
+  .quiz-opt:hover{ background:var(--gold); }
+  .quiz-opt:hover::after{ color:var(--text); }
+  .quiz-result{ text-align:center; }
+  .quiz-result-label{ font-size:0.85rem; font-weight:600; color:var(--text-2); margin-bottom:8px; }
+  .quiz-result-name{ font-size:1.8rem; font-weight:800; margin-bottom:10px; }
+  .quiz-result-desc{ color:var(--text-2); max-width:480px; margin:0 auto 24px; }
+  .quiz-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
 
-  /* ---------- SCHEDULE ---------- */
-  #schedule{ background:var(--paper-alt); }
-  .schedule-table{ width:100%; border-collapse:collapse; max-width:900px; }
-  .schedule-table th{
-    text-align:left; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-softer);
-    padding:14px 18px; border-bottom:2px solid var(--navy);
-  }
-  .schedule-table td{ padding:20px 18px; border-bottom:1px solid var(--line); font-size:0.9rem; color:var(--navy); background:var(--card); }
-  .schedule-table tr td:first-child{ font-weight:600; font-family:'Fraunces',serif; font-size:1rem; }
-  .schedule-days{ color:var(--red); font-weight:600; }
-  .schedule-note{ font-size:0.82rem; color:var(--text-softer); margin-top:18px; }
+  /* ============ SCHEDULE ============ */
+  .schedule-wrap{ max-width:860px; margin:0 auto; overflow-x:auto; }
+  .schedule-table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
+  .schedule-table th{ text-align:left; font-size:0.78rem; font-weight:600; color:var(--text-2); padding:0 24px; }
+  .schedule-table td{ background:#fff; padding:20px 24px; font-size:0.95rem; }
+  .schedule-table td:first-child{ border-radius:var(--radius-sm) 0 0 var(--radius-sm); font-weight:700; }
+  .schedule-table td:last-child{ border-radius:0 var(--radius-sm) var(--radius-sm) 0; font-weight:600; white-space:nowrap; }
+  .schedule-days{ display:inline-block; background:var(--gold-soft); padding:5px 12px; border-radius:var(--pill); font-size:0.85rem; font-weight:600; white-space:nowrap; }
+  .schedule-note{ text-align:center; font-size:0.88rem; color:var(--text-2); margin-top:16px; }
 
-  /* ---------- RESULTS ---------- */
-  #results{ background:var(--navy); color:#fff; }
-  #results .eyebrow{ color:var(--gold); }
+  /* ============ RESULTS (the single dark section) ============ */
+  #results{ background:var(--dark); color:#fff; }
   #results .sec-title{ color:#fff; }
-  #results .sec-desc{ color:rgba(255,255,255,0.65); }
+  #results .sec-desc{ color:rgba(255,255,255,0.6); }
+  .results-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px; }
+  .result-card{ background:var(--dark-2); border-radius:var(--radius); padding:28px 24px; display:flex; flex-direction:column; align-items:flex-start; gap:4px; position:relative; }
+  .result-band{ font-size:3rem; font-weight:800; color:var(--gold); line-height:1; margin-bottom:20px; }
+  .result-card .avatar{ position:absolute; top:24px; right:24px; }
+  .result-name{ font-weight:700; }
+  .result-course{ font-size:0.85rem; color:rgba(255,255,255,0.55); }
 
-  .results-stats{ display:flex; gap:0; border:1px solid rgba(255,255,255,0.16); margin-bottom:56px; }
-  .rstat{ flex:1; padding:30px 24px; border-right:1px solid rgba(255,255,255,0.16); }
-  .rstat:last-child{ border-right:none; }
-  .rstat-num{ font-family:'Fraunces',serif; font-size:2.4rem; font-weight:600; color:var(--gold); }
-  .rstat-label{ font-size:0.76rem; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.08em; margin-top:6px; }
-
-  .results-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
-  .result-card{
-    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:6px;
-    padding:28px 24px; text-align:center; position:relative;
-  }
-  .band-stamp{
-    width:74px; height:74px; border-radius:50%; border:3px solid var(--red); background:rgba(168,52,42,0.08);
-    display:flex; align-items:center; justify-content:center; margin:0 auto 18px; position:relative;
-    transform:rotate(-6deg);
-  }
-  .band-stamp-num{ font-family:'Caveat',cursive; font-weight:700; font-size:1.7rem; color:var(--red); transform:rotate(6deg); }
-  .result-photo{
-    width:52px; height:52px; border-radius:50%; margin:0 auto 12px; object-fit:cover; border:2px solid rgba(255,255,255,0.2);
-  }
-  .result-name{ font-weight:600; font-size:0.92rem; color:#fff; }
-  .result-course{ font-size:0.74rem; color:rgba(255,255,255,0.55); margin-top:2px; }
-
-  /* ---------- STORY SPOTLIGHT ---------- */
-  #story{ background:var(--navy); color:#fff; }
-  .story-wrap{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:center; }
+  .story{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:40px; align-items:center; background:var(--dark-2); border-radius:var(--radius); padding:24px; }
   .story-photo-wrap{ position:relative; }
-  .story-photo{ width:100%; border-radius:8px; object-fit:cover; height:420px; }
-  .story-badge{
-    position:absolute; bottom:-18px; left:24px; background:var(--gold); color:var(--navy);
-    padding:14px 22px; border-radius:6px; display:flex; align-items:center; gap:14px; box-shadow:0 16px 32px rgba(0,0,0,0.25);
-  }
-  .story-badge-band{ font-family:'Fraunces',serif; font-size:1.6rem; font-weight:700; }
-  .story-badge-label{ font-size:0.66rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; }
-  .story-eyebrow{ color:var(--gold); }
-  .story-quote{ font-family:'Fraunces',serif; font-style:italic; font-size:1.3rem; line-height:1.55; color:#fff; margin:20px 0 28px; }
-  .story-name{ font-weight:700; margin-bottom:2px; }
-  .story-meta{ font-size:0.82rem; color:rgba(255,255,255,0.55); margin-bottom:32px; }
-  .story-timeline{ display:flex; flex-direction:column; gap:16px; }
-  .story-tl-item{ display:flex; gap:16px; align-items:baseline; }
-  .story-tl-month{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--gold); width:80px; flex-shrink:0; font-weight:700; }
-  .story-tl-text{ font-size:0.86rem; color:rgba(255,255,255,0.7); line-height:1.6; }
+  .story-photo{ width:100%; height:420px; object-fit:cover; border-radius:var(--radius-sm); }
+  .story-badge{ position:absolute; left:16px; bottom:16px; display:flex; align-items:center; gap:12px; background:var(--gold); color:var(--text); padding:10px 20px 10px 16px; border-radius:var(--pill); }
+  .story-badge-band{ font-size:1.6rem; font-weight:800; }
+  .story-badge-label{ font-size:0.7rem; font-weight:700; line-height:1.25; text-transform:uppercase; }
+  .story-body{ padding:16px 16px 16px 0; }
+  .story-title{ font-size:1.6rem; font-weight:800; line-height:1.2; }
+  .story-quote{ font-size:1.05rem; color:rgba(255,255,255,0.85); margin:18px 0 20px; }
+  .story-name{ font-weight:700; }
+  .story-meta{ font-size:0.85rem; color:rgba(255,255,255,0.55); margin-bottom:24px; }
+  .story-timeline{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .story-tl-item{ background:rgba(255,255,255,0.05); border-radius:var(--radius-sm); padding:14px 16px; }
+  .story-tl-month{ font-size:0.75rem; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+  .story-tl-text{ font-size:0.85rem; color:rgba(255,255,255,0.7); }
 
-  /* ---------- INSTRUCTORS ---------- */
-  #instructors{ background:var(--paper); }
-  .team-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; }
-  .team-card{ background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; transition:transform .25s, box-shadow .25s; }
-  .team-card:hover{ transform:translateY(-5px); box-shadow:0 22px 46px rgba(20,33,61,0.1); }
-  .team-photo{ width:100%; height:280px; object-fit:cover; }
-  .team-body{ padding:26px 26px 30px; }
-  .team-name{ font-family:'Fraunces',serif; font-weight:600; font-size:1.25rem; color:var(--navy); margin-bottom:4px; }
-  .team-role{ font-size:0.8rem; color:var(--red); font-weight:600; margin-bottom:14px; }
-  .team-tags{ display:flex; gap:8px; flex-wrap:wrap; }
-  .team-tag{ font-size:0.72rem; background:var(--paper-alt); color:var(--text-soft); padding:5px 11px; border-radius:100px; }
+  /* ============ AVATARS (initials) ============ */
+  .avatar{ width:44px; height:44px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; color:#fff; flex-shrink:0; }
+  .av-gold{ background:var(--gold); color:var(--text); }
+  .av-blue{ background:#3772FF; }
+  .av-green{ background:#2E9E5B; }
+  .av-pink{ background:#E4446C; }
+  .av-purple{ background:#8A55D1; }
 
-  /* ---------- GALLERY ---------- */
-  #gallery{ background:var(--paper); }
-  .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:180px; gap:14px; }
-  .gallery-item{ overflow:hidden; border-radius:6px; position:relative; }
+  /* ============ TEACHERS ============ */
+  .team-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .team-card{ background:var(--bg-2); border-radius:var(--radius); padding:12px; }
+  .team-photo{ width:100%; height:300px; object-fit:cover; border-radius:var(--radius-sm); }
+  .team-body{ padding:18px 12px 12px; }
+  .team-name{ font-size:1.15rem; font-weight:800; }
+  .team-role{ font-size:0.9rem; color:var(--text-2); font-weight:500; margin:4px 0 14px; }
+  .team-tags{ display:flex; gap:6px; flex-wrap:wrap; }
+  .team-tag{ font-size:0.75rem; font-weight:600; background:#fff; padding:6px 12px; border-radius:var(--pill); }
+
+  /* ============ GALLERY ============ */
+  .gallery-grid{ display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:200px; gap:16px; }
+  .gallery-item{ overflow:hidden; border-radius:var(--radius); background:#e6e7e9; }
   .gallery-item img{ width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
-  .gallery-item:hover img{ transform:scale(1.08); }
+  .gallery-item:hover img{ transform:scale(1.05); }
   .gallery-item.tall{ grid-row:span 2; }
   .gallery-item.wide{ grid-column:span 2; }
 
-  /* ---------- TESTIMONIALS ---------- */
-  #testimonials{ background:var(--paper-alt); }
-  .testi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
-  .testi-card{ background:var(--card); border-radius:6px; padding:34px 30px; border:1px solid var(--line); position:relative; }
-  .testi-mark{ font-family:'Fraunces',serif; font-size:2.6rem; color:var(--gold); line-height:1; margin-bottom:14px; }
-  .testi-text{ font-size:0.88rem; color:var(--text-soft); line-height:1.75; font-style:italic; margin-bottom:26px; }
+  /* ============ TESTIMONIALS ============ */
+  .testi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .testi-card{ background:var(--bg-2); border-radius:var(--radius); padding:32px 28px; display:flex; flex-direction:column; }
+  .testi-mark{ font-size:3rem; font-weight:800; color:var(--gold); line-height:0.8; height:28px; }
+  .testi-text{ font-size:0.95rem; margin:12px 0 24px; flex:1; }
   .testi-person{ display:flex; align-items:center; gap:12px; }
-  .testi-avatar{ width:40px; height:40px; border-radius:50%; object-fit:cover; }
-  .testi-name{ font-weight:600; font-size:0.87rem; color:var(--navy); }
-  .testi-role{ font-size:0.74rem; color:var(--text-softer); }
+  .testi-name{ font-weight:700; font-size:0.92rem; }
+  .testi-role{ font-size:0.8rem; color:var(--text-2); }
 
-  /* ---------- CONTACT ---------- */
-  #contact{ background:var(--navy); color:#fff; }
-  #contact .eyebrow{ color:var(--gold); }
-  #contact .sec-title{ color:#fff; }
-  .contact-wrap{ display:grid; grid-template-columns:1fr 1.1fr; gap:60px; align-items:start; }
-  .contact-list{ display:flex; flex-direction:column; gap:22px; margin-top:8px; }
-  .contact-item{ display:flex; gap:16px; align-items:flex-start; }
-  .contact-icon{
-    width:42px; height:42px; border-radius:50%; background:rgba(201,162,39,0.14); border:1px solid rgba(201,162,39,0.35);
-    display:flex; align-items:center; justify-content:center; font-size:1.05rem; flex-shrink:0;
-  }
-  .contact-label{ font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:rgba(255,255,255,0.5); margin-bottom:3px; }
-  .contact-value{ font-size:0.95rem; color:#fff; font-weight:500; text-decoration:none; line-height:1.5; }
-  .contact-value:hover{ color:var(--gold); }
-  .status-badge{
-    display:inline-flex; align-items:center; gap:8px; background:rgba(120,180,120,0.15); border:1px solid rgba(120,200,120,0.35);
-    color:#9FE0A0; font-size:0.78rem; font-weight:600; padding:6px 14px; border-radius:100px; margin-top:24px;
-  }
-  .status-dot{ width:7px; height:7px; border-radius:50%; background:#5FCB63; }
-
-  .map-wrap{ border-radius:6px; overflow:hidden; border:1px solid rgba(255,255,255,0.16); }
-  .map-wrap iframe{ width:100%; height:340px; border:none; display:block; filter: grayscale(0.15) contrast(1.05); }
-  .map-link{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    background:rgba(255,255,255,0.06); padding:16px 20px; font-size:0.85rem; text-decoration:none; color:#fff;
-  }
-  .map-link:hover{ background:rgba(255,255,255,0.1); }
-
-  /* ---------- FAQ ---------- */
-  #faq{ background:var(--paper); }
-  .faq-list{ max-width:780px; }
-  .faq-item{ border-bottom:1px solid var(--line); }
+  /* ============ FAQ ============ */
+  .faq-list{ max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+  .faq-item{ background:#fff; border-radius:var(--radius-sm); }
   .faq-question{
-    width:100%; text-align:left; background:none; border:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:space-between; gap:20px;
-    padding:26px 4px; font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; color:var(--navy);
+    width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:20px 20px 20px 24px; background:none; border:none; cursor:pointer; text-align:left;
+    font-size:1rem; font-weight:600; color:var(--text);
   }
-  .faq-question:hover{ color:var(--red); }
-  .faq-icon{ font-family:'Fraunces',serif; font-size:1.4rem; color:var(--red); flex-shrink:0; transition:transform .3s; font-weight:400; }
-  .faq-item.open .faq-icon{ transform:rotate(45deg); }
+  .faq-icon{ width:32px; height:32px; border-radius:50%; background:var(--bg-2); display:inline-flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:500; flex-shrink:0; transition:transform .3s, background .2s; }
+  .faq-item.open .faq-icon{ transform:rotate(45deg); background:var(--gold); }
   .faq-answer{ max-height:0; overflow:hidden; transition:max-height .35s ease; }
-  .faq-answer-inner{ padding:0 4px 26px; font-size:0.92rem; color:var(--text-soft); line-height:1.75; font-weight:400; max-width:660px; }
+  .faq-answer-inner{ padding:0 24px 22px; color:var(--text-2); font-size:0.95rem; }
 
-  /* ---------- TRIAL LESSON FORM ---------- */
-  #cta-banner{ background:var(--gold); padding:90px 56px; }
-  .trial-wrap{ max-width:920px; margin:0 auto; text-align:center; }
-  .cta-banner-title{ font-family:'Fraunces',serif; font-weight:600; font-size:clamp(1.8rem,3.4vw,2.6rem); color:var(--navy); margin-bottom:14px; }
-  .cta-banner-sub{ font-size:0.96rem; color:rgba(20,33,61,0.75); margin-bottom:40px; }
-  .trial-form{
-    display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:start;
-    background:rgba(255,255,255,0.35); border:1px solid rgba(20,33,61,0.15); border-radius:8px; padding:16px;
-  }
+  /* ============ QUESTIONS BOX (trial form) ============ */
+  .trial-wrap{ max-width:var(--max); margin:0 auto; background:var(--bg-2); border-radius:var(--radius); padding:40px; text-align:center; }
+  .cta-banner-title{ font-size:var(--title-size); font-weight:800; line-height:1.2; }
+  .cta-banner-sub{ color:var(--text-2); margin:10px auto 28px; max-width:560px; }
+  .trial-form{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:start; max-width:960px; margin:0 auto; }
   .trial-field{ display:flex; flex-direction:column; gap:6px; text-align:left; }
-  .trial-field label{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--navy); }
   .trial-field input, .trial-field select{
-    font-family:'Inter',sans-serif; font-size:0.92rem; padding:12px 14px; border:1px solid rgba(20,33,61,0.18);
-    border-radius:4px; background:#fff; color:var(--navy); outline:none;
+    height:var(--btn-h); padding:0 22px; border:1.5px solid transparent; border-radius:var(--pill);
+    background:#fff; color:var(--text); font-size:0.95rem; outline:none; width:100%; transition:border-color .2s;
   }
-  .trial-field input:focus, .trial-field select:focus{ border-color:var(--navy); }
-  .trial-error{ font-size:0.72rem; color:var(--red); display:none; }
-  .trial-field.invalid input, .trial-field.invalid select{ border-color:var(--red); }
+  .trial-field select{ appearance:none; -webkit-appearance:none; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777E90' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 20px center; padding-right:44px; }
+  .trial-field input:focus, .trial-field select:focus{ border-color:var(--gold); }
+  .trial-error{ display:none; font-size:0.78rem; color:var(--error); padding-left:22px; }
+  .trial-field.invalid input, .trial-field.invalid select{ border-color:var(--error); }
   .trial-field.invalid .trial-error{ display:block; }
-  .trial-submit{
-    background:var(--navy); color:#fff; font-weight:700; font-size:0.88rem; border:none; border-radius:4px;
-    padding:12px 26px; cursor:pointer; transition:background .2s, transform .2s; align-self:end; height:45px;
-  }
-  .trial-submit:hover{ background:var(--red); transform:translateY(-2px); }
-  .trial-privacy{ font-size:0.74rem; color:rgba(20,33,61,0.6); margin-top:16px; }
-  .trial-success{ display:none; background:rgba(255,255,255,0.5); border:1px solid rgba(20,33,61,0.15); border-radius:8px; padding:36px; }
+  .trial-submit{ height:var(--btn-h); padding:0 32px; border:none; border-radius:var(--pill); background:var(--gold); color:var(--text); font-weight:700; font-size:0.95rem; cursor:pointer; transition:background .2s; }
+  .trial-submit:hover{ background:var(--gold-hover); }
+  .trial-privacy{ font-size:0.8rem; color:var(--text-2); margin-top:16px; }
+  .trial-success{ display:none; background:#fff; border-radius:var(--radius-sm); padding:28px; max-width:560px; margin:0 auto; }
   .trial-success.active{ display:block; }
-  .trial-success .icon{ font-size:2.2rem; margin-bottom:12px; }
-  .trial-success h3{ font-family:'Fraunces',serif; font-size:1.5rem; color:var(--navy); margin-bottom:8px; }
-  .trial-success p{ font-size:0.9rem; color:rgba(20,33,61,0.7); }
+  .trial-success .icon-ok{ width:48px; height:48px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; }
+  .trial-success h3{ font-size:1.3rem; font-weight:800; margin-bottom:6px; }
+  .trial-success p{ color:var(--text-2); }
 
-  /* ---------- FOOTER ---------- */
-  footer{ background:#0F1830; color:rgba(255,255,255,0.7); padding:64px 56px 30px; }
-  .footer-top{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:50px; margin-bottom:50px; }
-  .footer-logo{ font-family:'Fraunces',serif; font-weight:700; font-size:1.6rem; color:#fff; margin-bottom:14px; }
-  .footer-logo span{ color:var(--gold); }
-  .footer-desc{ font-size:0.83rem; line-height:1.75; max-width:280px; }
-  .footer-col h4{ font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:18px; }
-  .footer-col ul{ list-style:none; display:flex; flex-direction:column; gap:10px; }
-  .footer-col a{ font-size:0.83rem; text-decoration:none; color:rgba(255,255,255,0.65); }
-  .footer-col a:hover{ color:var(--gold); }
-  .footer-bottom{ display:flex; justify-content:space-between; padding-top:26px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.76rem; flex-wrap:wrap; gap:10px; }
+  /* ============ CONTACT ============ */
+  .contact-wrap{ display:grid; grid-template-columns:1.1fr 1fr; gap:16px; align-items:stretch; }
+  .map-wrap{ border-radius:var(--radius); overflow:hidden; background:#e6e7e9; display:flex; flex-direction:column; min-height:420px; }
+  .map-wrap iframe{ width:100%; flex:1; min-height:340px; border:none; display:block; }
+  .map-link{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; background:#fff; padding:16px 22px; font-size:0.88rem; font-weight:600; text-decoration:none; }
+  .map-link:hover{ color:var(--gold-hover); }
+  .contact-cards{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .contact-card{ background:#fff; border-radius:var(--radius); padding:24px; display:flex; flex-direction:column; gap:6px; }
+  .contact-card.wide{ grid-column:span 2; }
+  .contact-icon{ width:44px; height:44px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+  .contact-label{ font-size:0.8rem; font-weight:600; color:var(--text-2); }
+  .contact-value{ font-weight:600; text-decoration:none; line-height:1.45; }
+  a.contact-value:hover{ color:var(--gold-hover); }
+  .status-badge{ display:inline-flex; align-items:center; gap:8px; align-self:flex-start; background:#E8F7EE; color:#1F7A45; font-size:0.8rem; font-weight:600; padding:6px 12px; border-radius:var(--pill); margin-top:6px; }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:#2E9E5B; }
 
-  /* ---------- FLOATING BUTTONS ---------- */
-  .floating-wrap{ position:fixed; bottom:26px; right:26px; display:flex; flex-direction:column; gap:12px; z-index:150; }
-  .floating-btn{
-    width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    text-decoration:none; font-size:1.3rem; box-shadow:0 12px 28px rgba(20,33,61,0.25); transition:transform .2s;
+  /* ============ FOOTER ============ */
+  footer{ padding:40px var(--gutter) 32px; background:var(--bg); }
+  .footer-inner{ max-width:var(--max); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; padding-bottom:24px; border-bottom:1px solid #E6E8EC; }
+  .footer-brand{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .footer-logo{ font-weight:800; font-size:1.3rem; }
+  .footer-logo span{ color:var(--red); }
+  .footer-desc{ color:var(--text-2); font-size:0.9rem; max-width:420px; }
+  .footer-icons{ display:flex; gap:10px; }
+  .footer-icon{ width:44px; height:44px; border-radius:50%; background:var(--bg-2); display:flex; align-items:center; justify-content:center; text-decoration:none; transition:background .2s; }
+  .footer-icon:hover{ background:var(--gold); }
+  .footer-copy{ max-width:var(--max); margin:20px auto 0; font-size:0.8rem; color:var(--text-2); }
+
+  /* ============ FLOATING CALL BUTTON ============ */
+  .fb-call{
+    position:fixed; right:20px; bottom:20px; z-index:150; width:56px; height:56px; border-radius:50%;
+    background:var(--gold); color:var(--text); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 12px 30px rgba(20,20,22,0.22); transition:transform .2s, background .2s;
   }
-  .floating-btn:hover{ transform:scale(1.08); }
-  .fb-call{ background:var(--navy); color:#fff; }
-  .fb-insta{ background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
+  .fb-call:hover{ transform:scale(1.06); background:var(--gold-hover); }
+  .fb-call .icon{ width:24px; height:24px; }
 
+  /* ============ MOCK REGISTRATION MODAL ============ */
+  .public-modal-overlay{ position:fixed; inset:0; background:rgba(20,20,22,0.6); backdrop-filter:blur(4px); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px; opacity:0; pointer-events:none; transition:opacity .25s ease; }
+  .public-modal-overlay.active{ opacity:1; pointer-events:auto; }
+  .public-modal-card{ background:#fff; width:100%; max-width:460px; border-radius:var(--radius); padding:36px 28px 28px; position:relative; transform:translateY(16px); transition:transform .25s ease; }
+  .public-modal-overlay.active .public-modal-card{ transform:translateY(0); }
+  .public-modal-close{ position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:50%; border:none; background:var(--bg-2); font-size:1rem; cursor:pointer; }
+  .public-modal-close:hover{ background:var(--gold); }
+  .public-modal-title{ font-size:1.4rem; font-weight:800; margin-bottom:6px; padding-right:40px; }
+  .public-modal-sub{ font-size:0.9rem; color:var(--text-2); margin-bottom:22px; }
+  .pm-group{ margin-bottom:14px; }
+  .pm-label{ display:block; font-size:0.8rem; font-weight:600; color:var(--text-2); margin-bottom:6px; padding-left:4px; }
+  .pm-input{ width:100%; height:var(--btn-h); padding:0 20px; border:1.5px solid transparent; border-radius:var(--pill); background:var(--bg-2); font-size:0.95rem; outline:none; transition:border-color .2s; }
+  .pm-input:focus{ border-color:var(--gold); background:#fff; }
+  .pm-submit{ width:100%; height:var(--btn-h); border:none; border-radius:var(--pill); background:var(--gold); color:var(--text); font-weight:700; font-size:0.95rem; cursor:pointer; margin-top:8px; transition:background .2s; }
+  .pm-submit:hover{ background:var(--gold-hover); }
+  .pm-success{ display:none; text-align:center; padding:12px 0; }
+  .pm-success.active{ display:block; }
+  .pm-success .public-modal-title{ padding-right:0; }
+  .pm-success-icon{ width:56px; height:56px; border-radius:50%; background:var(--gold); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; }
 
-  /* ---------- MOBILE ---------- */
-  @media (max-width: 980px){
-    .why-grid{ grid-template-columns:repeat(2,1fr); }
+  /* ============ RESPONSIVE ============ */
+  @media (max-width:1024px){
     .courses-grid{ grid-template-columns:repeat(2,1fr); }
+    .mock-grid{ grid-template-columns:repeat(2,1fr); }
     .results-grid{ grid-template-columns:repeat(2,1fr); }
-    .team-grid{ grid-template-columns:repeat(2,1fr); }
+    .story{ grid-template-columns:1fr; gap:8px; }
+    .story-body{ padding:16px 8px 8px; }
+    .contact-wrap{ grid-template-columns:1fr; }
+    .trial-form{ grid-template-columns:1fr 1fr; }
+    .trial-submit{ grid-column:span 2; }
+  }
+  @media (max-width:900px){
+    .stats-grid{ grid-template-columns:1fr 1fr; grid-template-areas:"a a" "b c" "d e"; }
+    .stat-card:nth-child(1){ min-height:240px; }
+    .why-grid{ grid-template-columns:1fr 1fr; grid-template-areas:"a a" "b b" "c d"; }
+    .why-card:nth-child(1){ min-height:260px; }
+    .team-grid{ grid-template-columns:1fr 1fr; }
     .testi-grid{ grid-template-columns:1fr; }
-    .contact-wrap{ grid-template-columns:1fr; gap:40px; }
-    .footer-top{ grid-template-columns:1fr 1fr; }
+    .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:160px; }
   }
-  /* Navbar switches to the hamburger menu at tablet width */
-  @media (max-width: 1024px){
-    nav{ padding:16px 22px; }
-    nav.scrolled{ padding:12px 22px; }
-    .nav-links{
-      position:fixed; top:0; right:0; height:100vh; width:78%; max-width:320px; background:var(--paper);
-      flex-direction:column; align-items:flex-start; gap:24px; padding:110px 30px 40px;
-      transform:translateX(100%); transition:transform .35s ease; box-shadow:-14px 0 40px rgba(20,33,61,0.15);
-    }
-    .nav-links.open{ transform:translateX(0); }
-    .nav-right{ flex-direction:column; align-items:flex-start; gap:16px; margin-top:auto; }
-    .hamburger{ display:flex; }
-  }
-  @media (max-width: 900px){
-    #hero{ padding:120px 24px 70px; }
-    .hero-info-bar{ gap:24px; }
-    section{ padding:76px 24px; }
-    .why-grid{ grid-template-columns:1fr; }
-    .courses-grid{ grid-template-columns:1fr; }
-    .results-stats{ flex-wrap:wrap; }
-    .rstat{ flex:1 1 50%; border-bottom:1px solid rgba(255,255,255,0.16); }
-    .results-grid{ grid-template-columns:1fr 1fr; }
-    .team-grid{ grid-template-columns:1fr; }
-    .quiz-box{ padding:30px 24px; }
-    .schedule-table th, .schedule-table td{ padding:12px 10px; font-size:0.82rem; }
-    .story-wrap{ grid-template-columns:1fr; gap:36px; }
-    .story-photo{ height:280px; }
-    .gallery-grid{ grid-template-columns:repeat(2,1fr); grid-auto-rows:140px; }
-    .gallery-item.wide{ grid-column:span 2; }
+  @media (max-width:767px){
+    #hero{ padding:120px var(--gutter) 56px; min-height:640px; }
+    .hero-sub{ font-size:1rem; }
+    .stat-card{ padding:20px; min-height:150px; }
+    .stat-num{ font-size:2.2rem; }
+    .stat-label{ font-size:0.85rem; }
+    .why-grid{ grid-template-columns:1fr; grid-template-areas:"a" "b" "c" "d"; }
+    .why-card{ padding:24px; }
+    .courses-grid, .mock-grid, .team-grid{ grid-template-columns:1fr; }
+    .course-card, .mock-card{ padding:24px; }
+    .quiz-box{ padding:24px 16px; }
+    .quiz-opt{ border-radius:var(--radius-sm); }
+    .schedule-table th{ padding:0 12px; }
+    .schedule-table td{ padding:14px 12px; font-size:0.85rem; }
+    .results-grid{ gap:10px; }
+    .result-card{ padding:20px 16px; }
+    .result-band{ font-size:2.3rem; margin-bottom:16px; }
+    .result-card .avatar{ top:16px; right:16px; width:36px; height:36px; font-size:0.75rem; }
+    .story{ padding:12px; }
+    .story-photo{ height:260px; }
+    .story-title{ font-size:1.3rem; }
+    .story-timeline{ grid-template-columns:1fr; }
+    .gallery-grid{ grid-auto-rows:130px; gap:10px; }
+    .gallery-item{ border-radius:var(--radius-sm); }
+    .faq-question{ padding:16px 16px 16px 20px; font-size:0.95rem; }
+    .faq-answer-inner{ padding:0 20px 18px; }
+    .trial-wrap{ padding:32px 16px; }
     .trial-form{ grid-template-columns:1fr; }
-    .trial-submit{ height:auto; padding:14px; }
-    .footer-top{ grid-template-columns:1fr; gap:34px; }
-    .floating-wrap{ bottom:18px; right:18px; }
-    .floating-btn{ width:48px; height:48px; font-size:1.1rem; }
-  }
-  @media (max-width: 600px){
-    .why-grid, .courses-grid{ grid-template-columns:1fr; }
-    .results-grid{ grid-template-columns:1fr; }
-    .gallery-grid{ grid-template-columns:1fr; grid-auto-rows:200px; }
-    .gallery-item.tall, .gallery-item.wide{ grid-column:span 1; grid-row:span 1; }
-  }
-
-  /* ---------- MOCK EXAMS SECTION ---------- */
-  #mock-exams { background: var(--paper-soft); position: relative; }
-  .mock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 48px; }
-  .mock-card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-    padding: 30px; display: flex; flex-direction: column; justify-content: space-between;
-    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; position: relative; overflow: hidden;
-  }
-  .mock-card::before {
-    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, var(--gold), var(--navy));
-  }
-  .mock-card:hover {
-    transform: translateY(-6px); box-shadow: 0 16px 36px rgba(12,22,44,0.08); border-color: var(--gold);
-  }
-  .mock-tag-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .mock-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .mock-badge.badge-ielts { background: rgba(184,51,42,0.1); color: var(--red); border: 1px solid rgba(184,51,42,0.25); }
-  .mock-badge.badge-general { background: rgba(201,162,39,0.12); color: #B38600; border: 1px solid rgba(201,162,39,0.3); }
-  .mock-title { font-family: 'Fraunces', serif; font-size: 1.35rem; color: var(--navy); margin-bottom: 10px; font-weight: 600; line-height: 1.3; }
-  .mock-desc { font-size: 0.88rem; color: var(--text-soft); line-height: 1.6; margin-bottom: 20px; }
-  .mock-details { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-top: 1px dashed var(--line); border-bottom: 1px dashed var(--line); margin-bottom: 20px; }
-  .mock-detail-item { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; color: var(--text); font-weight: 500; }
-  .mock-detail-icon { font-size: 1rem; width: 22px; text-align: center; color: var(--gold); }
-  .mock-seats-wrap { margin-bottom: 20px; }
-  .mock-seats-info { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600; color: var(--text-soft); margin-bottom: 6px; }
-  .mock-progress-bar { width: 100%; height: 6px; background: rgba(12,22,44,0.08); border-radius: 100px; overflow: hidden; }
-  .mock-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #28a745); border-radius: 100px; transition: width .4s ease; }
-  .mock-btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 13px; background: var(--navy); color: #fff; border-radius: 6px; font-weight: 600; font-size: 0.9rem; border: none; cursor: pointer; transition: background .25s ease, transform .2s ease; text-decoration: none; }
-  .mock-btn:hover { background: var(--gold); color: var(--navy); }
-
-  /* MOCK REGISTRATION MODAL */
-  .public-modal-overlay { position: fixed; inset: 0; background: rgba(12,22,44,0.65); backdrop-filter: blur(5px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .3s ease; padding: 20px; }
-  .public-modal-overlay.active { opacity: 1; pointer-events: auto; }
-  .public-modal-card { background: #fff; width: 100%; max-width: 480px; border-radius: 12px; padding: 36px 30px; box-shadow: 0 24px 48px rgba(0,0,0,0.25); position: relative; transform: translateY(20px); transition: transform .3s ease; }
-  .public-modal-overlay.active .public-modal-card { transform: translateY(0); }
-  .public-modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.4rem; color: var(--text-softer); cursor: pointer; padding: 6px; line-height: 1; }
-  .public-modal-close:hover { color: var(--navy); }
-  .public-modal-title { font-family: 'Fraunces', serif; font-size: 1.5rem; color: var(--navy); margin-bottom: 6px; font-weight: 700; }
-  .public-modal-sub { font-size: 0.86rem; color: var(--text-soft); margin-bottom: 24px; }
-  .pm-group { margin-bottom: 18px; }
-  .pm-label { display: block; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy); margin-bottom: 6px; }
-  .pm-input { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 6px; font-size: 0.92rem; outline: none; transition: border-color .2s; }
-  .pm-input:focus { border-color: var(--gold); }
-  .pm-submit { width: 100%; padding: 14px; background: var(--gold); color: var(--navy); font-weight: 700; border: none; border-radius: 6px; font-size: 0.95rem; cursor: pointer; transition: background .2s; margin-top: 8px; }
-  .pm-submit:hover { background: #b8921e; }
-  .pm-success { text-align: center; padding: 20px 10px; display: none; }
-  .pm-success.active { display: block; }
-  .pm-success-icon { font-size: 3rem; margin-bottom: 12px; }
-
-  @media (max-width: 900px) {
-    .mock-grid { grid-template-columns: 1fr; }
+    .trial-submit{ grid-column:auto; }
+    .contact-cards{ grid-template-columns:1fr; }
+    .contact-card.wide{ grid-column:auto; }
+    .map-wrap{ min-height:0; }
+    .map-wrap iframe{ min-height:280px; }
+    .footer-inner{ flex-direction:column; align-items:flex-start; }
+    .fb-call{ right:16px; bottom:16px; width:52px; height:52px; }
   }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- Icon sprite (reused via <use>) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></g></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></g></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></g></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></g></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></g></symbol>
+</svg>
+
+<!-- HEADER -->
 <nav id="navbar">
   <a href="#" class="logo">
-    <div>
-      <div class="logo-mark">STAN<span>FORD</span></div>
-      <div class="logo-sub">Языковой центр · Нукус</div>
-    </div>
+    <span class="logo-mark">STAN<span>FORD</span></span>
+    <span class="logo-sub">Языковой центр · Нукус</span>
   </a>
   <ul class="nav-links" id="navLinks">
     <li><a href="#courses" data-i18n="nav-courses">Курсы</a></li>
@@ -552,496 +533,433 @@
     <li><a href="#faq" data-i18n="nav-faq">Вопросы</a></li>
     <li><a href="#contact" data-i18n="nav-contact">Контакты</a></li>
     <li class="nav-right">
-      <div class="lang-switch">
-        <button class="lang-btn active" data-lang="ru" onclick="setLanguage('ru')">RU</button>
-        <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
-      </div>
-      <a href="#contact" class="nav-cta" data-i18n="nav-enroll">Записаться</a>
+      <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language / Сменить язык"
+        onclick="setLanguage(document.documentElement.lang === 'en' ? 'ru' : 'en')">RU</button>
+      <a href="#cta-banner" class="btn btn-gold" data-i18n="nav-enroll">Записаться</a>
     </li>
   </ul>
-  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+  <button type="button" class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 
 <!-- HERO -->
 <section id="hero">
-  <div class="hero-bg"></div>
+  <div class="hero-bg">
+    <!-- REPLACE with a real photo of Stanford center -->
+    <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1920&q=80" alt="" fetchpriority="high"/>
+  </div>
   <div class="hero-content">
-    <div class="hero-eyebrow" data-i18n="hero-eyebrow">Центр английского языка в г. Нукус</div>
     <h1 class="hero-title">
-      <span data-i18n="hero-title-1">Говорите по‑английски</span>
-      <span class="swash"><span data-i18n="hero-title-2">уверенно</span>
-        <svg viewBox="0 0 200 16" preserveAspectRatio="none"><path d="M2 10 C 50 2, 150 2, 198 9" stroke="#A8342A" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
-      </span>
+      <span class="t1">Stanford</span>
+      <span class="t2" data-i18n="hero-title-2">Английский язык и IELTS</span>
     </h1>
-    <p class="hero-sub" data-i18n="hero-sub">IELTS, General English и курсы для детей — с преподавателем, который сам сдал IELTS на 9.0. Небольшие группы, разговорная практика и понятный путь к результату.</p>
-    <div class="hero-actions">
-      <a href="#contact" class="btn-gold" data-i18n="hero-btn1">Записаться сейчас</a>
-      <a href="#courses" class="btn-outline-light" data-i18n="hero-btn2">Смотреть курсы</a>
-    </div>
-    <div class="hero-info-bar">
-      <div class="hero-info-item">🕘 <b>09:00–19:00</b> <span data-i18n="hero-daily">ежедневно</span></div>
-      <div class="hero-info-item">👨‍🏫 <span data-i18n="hero-instructor">Инструктор</span> <b>IELTS 9.0</b></div>
-      <div class="hero-info-item">📍 <span data-i18n="hero-address-short">ул. Н. Сараева 34,</span> <b>Нукус</b></div>
-      <div class="hero-info-item">⭐ <b>4.9</b> <span data-i18n="hero-rating">· Google отзывы</span></div>
+    <p class="hero-sub" data-i18n="hero-sub">IELTS, General English и курсы для детей — с преподавателем IELTS 9.0 в Нукусе.</p>
+    <a href="#cta-banner" class="btn btn-gold">
+      <span data-i18n="hero-btn1">Первый бесплатный урок</span>
+      <svg class="icon"><use href="#i-arrow"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ABOUT / STATS -->
+<section id="about" class="bg-white">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="about-title">О нас</h2></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" data-count="7.2" data-decimals="1">7.2</div><div class="stat-label" data-i18n="rstat1-label">Средний балл IELTS</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="200" data-suffix="+">200+</div><div class="stat-label" data-i18n="rstat2-label">Студентов подготовлено к экзамену</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="94" data-suffix="%">94%</div><div class="stat-label" data-i18n="rstat3-label">Достигли цели</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="5">5</div><div class="stat-label" data-i18n="rstat4-label">Лет в Нукусе</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="9.0" data-decimals="1">9.0</div><div class="stat-label" data-i18n="rstat5-label">Балл IELTS нашего преподавателя</div></div>
     </div>
   </div>
 </section>
 
-<!-- WHY CHOOSE US -->
-<section id="why">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="why-eyebrow">Почему мы</span>
-    <h2 class="sec-title" data-i18n="why-title">Что отличает Stanford</h2>
-  </div>
-  <div class="why-grid">
-    <div class="why-card">
-      <span class="why-icon">🎯</span>
-      <div class="why-title" data-i18n="why1-title">Преподаватель IELTS 9.0</div>
-      <div class="why-text" data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</div>
-    </div>
-    <div class="why-card">
-      <span class="why-icon">👥</span>
-      <div class="why-title" data-i18n="why2-title">Небольшие группы</div>
-      <div class="why-text" data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</div>
-    </div>
-    <div class="why-card">
-      <span class="why-icon">📈</span>
-      <div class="why-title" data-i18n="why3-title">Понятный прогресс</div>
-      <div class="why-text" data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</div>
-    </div>
-    <div class="why-card">
-      <span class="why-icon">🕘</span>
-      <div class="why-title" data-i18n="why4-title">Гибкое расписание</div>
-      <div class="why-text" data-i18n="why4-text">Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.</div>
+<!-- WHY STANFORD -->
+<section id="why" class="bg-grey">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="why-title">Почему Stanford</h2></div>
+    <div class="why-grid">
+      <div class="why-card">
+        <span class="why-icon"><svg class="icon"><use href="#i-award"/></svg></span>
+        <div class="why-title" data-i18n="why1-title">Преподаватель IELTS 9.0</div>
+        <div class="why-text" data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon"><svg class="icon"><use href="#i-users"/></svg></span>
+        <div class="why-title" data-i18n="why2-title">Небольшие группы</div>
+        <div class="why-text" data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon"><svg class="icon"><use href="#i-trend"/></svg></span>
+        <div class="why-title" data-i18n="why3-title">Понятный прогресс</div>
+        <div class="why-text" data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</div>
+      </div>
+      <div class="why-card">
+        <span class="why-icon"><svg class="icon"><use href="#i-clock"/></svg></span>
+        <div class="why-title" data-i18n="why4-title">Гибкое расписание</div>
+        <div class="why-text" data-i18n="why4-text">Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.</div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- COURSES -->
-<section id="courses">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="courses-eyebrow">Что мы преподаём</span>
-    <h2 class="sec-title" data-i18n="courses-title">Курсы для любого уровня</h2>
-    <p class="sec-desc" data-i18n="courses-desc">От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.</p>
-  </div>
-
-  <div class="courses-grid">
-    <div class="course-card">
-      <div class="course-top">
+<section id="courses" class="bg-white">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="courses-title">Курсы</h2>
+      <p class="sec-desc" data-i18n="courses-desc">От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.</p>
+    </div>
+    <div class="courses-grid">
+      <div class="course-card">
         <span class="course-level" data-i18n="course1-level">Kids · 6–12 лет</span>
         <div class="course-name" data-i18n="course1-name">Kids English</div>
-        <p class="course-desc" data-i18n="course1-desc">Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.</p>
+        <ul class="course-list">
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-f1">Игры, песни и картинки</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-f2">Первые слова и фразы</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course1-duration">2 занятия в неделю</span></li>
+        </ul>
+        <div class="course-bottom">
+          <div class="course-price" data-i18n="course1-price">250 000 <sub>сум/мес</sub></div>
+          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
+        </div>
       </div>
-      <div class="course-bottom">
-        <div class="course-price" data-i18n="course1-price">250 000 <sub>сум/мес</sub></div>
-        <div class="course-duration" data-i18n="course1-duration">2 занятия в неделю</div>
-        <a href="#contact" class="course-btn" data-i18n="course-btn">Записаться</a>
-      </div>
-    </div>
-
-    <div class="course-card">
-      <div class="course-top">
+      <div class="course-card">
         <span class="course-level" data-i18n="course2-level">General · Intermediate</span>
         <div class="course-name" data-i18n="course2-name">General English</div>
-        <p class="course-desc" data-i18n="course2-desc">Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.</p>
+        <ul class="course-list">
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-f1">Грамматика и лексика</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-f2">Разговорная практика</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course2-duration">3 занятия в неделю</span></li>
+        </ul>
+        <div class="course-bottom">
+          <div class="course-price" data-i18n="course2-price">280 000 <sub>сум/мес</sub></div>
+          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
+        </div>
       </div>
-      <div class="course-bottom">
-        <div class="course-price" data-i18n="course2-price">280 000 <sub>сум/мес</sub></div>
-        <div class="course-duration" data-i18n="course2-duration">3 занятия в неделю</div>
-        <a href="#contact" class="course-btn" data-i18n="course-btn">Записаться</a>
-      </div>
-    </div>
-
-    <div class="course-card">
-      <div class="course-top">
+      <div class="course-card">
         <span class="course-level" data-i18n="course3-level">Upper‑Intermediate</span>
         <div class="course-name" data-i18n="course3-name">Advanced English</div>
-        <p class="course-desc" data-i18n="course3-desc">Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.</p>
+        <ul class="course-list">
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-f1">Свободная речь</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-f2">Академическая лексика</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course3-duration">3 занятия в неделю</span></li>
+        </ul>
+        <div class="course-bottom">
+          <div class="course-price" data-i18n="course3-price">320 000 <sub>сум/мес</sub></div>
+          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
+        </div>
       </div>
-      <div class="course-bottom">
-        <div class="course-price" data-i18n="course3-price">320 000 <sub>сум/мес</sub></div>
-        <div class="course-duration" data-i18n="course3-duration">3 занятия в неделю</div>
-        <a href="#contact" class="course-btn" data-i18n="course-btn">Записаться</a>
-      </div>
-    </div>
-
-    <div class="course-card">
-      <div class="course-top">
+      <div class="course-card">
         <span class="course-level" data-i18n="course4-level">Exam Prep</span>
         <div class="course-name" data-i18n="course4-name">IELTS Preparation</div>
-        <p class="course-desc" data-i18n="course4-desc">Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.</p>
-      </div>
-      <div class="course-bottom">
-        <div class="course-price" data-i18n="course4-price">380 000 <sub>сум/мес</sub></div>
-        <div class="course-duration" data-i18n="course4-duration">4 занятия в неделю</div>
-        <a href="#contact" class="course-btn" data-i18n="course-btn">Записаться</a>
+        <ul class="course-list">
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-f1">Все 4 модуля экзамена</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-f2">Пробные тесты и стратегии</span></li>
+          <li><span class="check"><svg><use href="#i-check"/></svg></span><span data-i18n="course4-duration">4 занятия в неделю</span></li>
+        </ul>
+        <div class="course-bottom">
+          <div class="course-price" data-i18n="course4-price">380 000 <sub>сум/мес</sub></div>
+          <a href="#cta-banner" class="btn btn-dark" data-i18n="course-btn">Записаться</a>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- MOCK EXAMS SECTION -->
-<section id="mock-exams">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="mock-eyebrow">IELTS Mock Testing</span>
-    <h2 class="sec-title" data-i18n="mock-title">Ближайшие сессии Mock Exam</h2>
-    <p class="sec-desc" data-i18n="mock-desc">Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.</p>
-  </div>
-
-  <div class="mock-grid" id="publicMockExamsGrid">
-    <!-- Filled by main.js with real sessions from the database -->
-    <div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Загрузка сессий...</div>
+<!-- MOCK EXAMS -->
+<section id="mock-exams" class="bg-grey">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="mock-title">Mock Exam</h2>
+      <p class="sec-desc" data-i18n="mock-desc">Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.</p>
+    </div>
+    <div class="mock-grid" id="publicMockExamsGrid">
+      <!-- Filled by main.js with real sessions from the database -->
+      <div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Загрузка сессий...</div>
+    </div>
   </div>
 </section>
 
 <!-- LEVEL QUIZ -->
-<section id="quiz">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="quiz-eyebrow">Не знаете, с чего начать?</span>
-    <h2 class="sec-title" data-i18n="quiz-title">Подберите свой курс за 20 секунд</h2>
-    <p class="sec-desc" data-i18n="quiz-desc">Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.</p>
-  </div>
-
-  <div class="quiz-box">
-    <div class="quiz-step active" id="quizStep1">
-      <div class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</div>
-      <div class="quiz-options">
-        <button class="quiz-opt" onclick="quizAnswer('kids')" data-i18n="quiz-q1-opt1">Ребёнку, 6–12 лет</button>
-        <button class="quiz-opt" onclick="quizGoto('quizStep2')" data-i18n="quiz-q1-opt2">Взрослому или подростку</button>
+<section id="quiz" class="bg-white">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="quiz-title">Подбор курса</h2>
+      <p class="sec-desc" data-i18n="quiz-desc">Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.</p>
+    </div>
+    <div class="quiz-box">
+      <div class="quiz-step active" id="quizStep1">
+        <div class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="quizAnswer('kids')" data-i18n="quiz-q1-opt1">Ребёнку, 6–12 лет</button>
+          <button class="quiz-opt" onclick="quizGoto('quizStep2')" data-i18n="quiz-q1-opt2">Взрослому или подростку</button>
+        </div>
       </div>
-    </div>
-
-    <div class="quiz-step" id="quizStep2">
-      <div class="quiz-q" data-i18n="quiz-q2">Какая у вас цель?</div>
-      <div class="quiz-options">
-        <button class="quiz-opt" onclick="quizAnswer('general')" data-i18n="quiz-q2-opt1">Заговорить увереннее в жизни и на работе</button>
-        <button class="quiz-opt" onclick="quizAnswer('ielts')" data-i18n="quiz-q2-opt2">Сдать международный экзамен IELTS</button>
-        <button class="quiz-opt" onclick="quizAnswer('advanced')" data-i18n="quiz-q2-opt3">Уже говорю свободно, хочу углубить знания</button>
+      <div class="quiz-step" id="quizStep2">
+        <div class="quiz-q" data-i18n="quiz-q2">Какая у вас цель?</div>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="quizAnswer('general')" data-i18n="quiz-q2-opt1">Заговорить увереннее в жизни и на работе</button>
+          <button class="quiz-opt" onclick="quizAnswer('ielts')" data-i18n="quiz-q2-opt2">Сдать международный экзамен IELTS</button>
+          <button class="quiz-opt" onclick="quizAnswer('advanced')" data-i18n="quiz-q2-opt3">Уже говорю свободно, хочу углубить знания</button>
+        </div>
       </div>
-    </div>
-
-    <div class="quiz-result" id="quizResultKids">
-      <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-      <div class="quiz-result-name" data-i18n="course1-name">Kids English</div>
-      <p class="quiz-result-desc" data-i18n="course1-desc">Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.</p>
-      <a href="#courses" class="btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-      <button class="quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-    </div>
-    <div class="quiz-result" id="quizResultGeneral">
-      <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-      <div class="quiz-result-name" data-i18n="course2-name">General English</div>
-      <p class="quiz-result-desc" data-i18n="course2-desc">Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.</p>
-      <a href="#courses" class="btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-      <button class="quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-    </div>
-    <div class="quiz-result" id="quizResultIelts">
-      <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-      <div class="quiz-result-name" data-i18n="course4-name">IELTS Preparation</div>
-      <p class="quiz-result-desc" data-i18n="course4-desc">Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.</p>
-      <a href="#courses" class="btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-      <button class="quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
-    </div>
-    <div class="quiz-result" id="quizResultAdvanced">
-      <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
-      <div class="quiz-result-name" data-i18n="course3-name">Advanced English</div>
-      <p class="quiz-result-desc" data-i18n="course3-desc">Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.</p>
-      <a href="#courses" class="btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
-      <button class="quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+      <div class="quiz-result" id="quizResultKids">
+        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
+        <div class="quiz-result-name" data-i18n="course1-name">Kids English</div>
+        <p class="quiz-result-desc" data-i18n="course1-desc">Английский через игру, песни и картинки. Первые слова, фразы и уверенность в общении.</p>
+        <div class="quiz-actions">
+          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
+          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+        </div>
+      </div>
+      <div class="quiz-result" id="quizResultGeneral">
+        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
+        <div class="quiz-result-name" data-i18n="course2-name">General English</div>
+        <p class="quiz-result-desc" data-i18n="course2-desc">Грамматика, лексика и разговорная практика для уверенного общения в жизни и на работе.</p>
+        <div class="quiz-actions">
+          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
+          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+        </div>
+      </div>
+      <div class="quiz-result" id="quizResultIelts">
+        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
+        <div class="quiz-result-name" data-i18n="course4-name">IELTS Preparation</div>
+        <p class="quiz-result-desc" data-i18n="course4-desc">Все 4 модуля экзамена, пробные тесты и стратегии высокого балла с инструктором IELTS 9.0.</p>
+        <div class="quiz-actions">
+          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
+          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+        </div>
+      </div>
+      <div class="quiz-result" id="quizResultAdvanced">
+        <div class="quiz-result-label" data-i18n="quiz-result-label">Вам подходит</div>
+        <div class="quiz-result-name" data-i18n="course3-name">Advanced English</div>
+        <p class="quiz-result-desc" data-i18n="course3-desc">Свободная речь, сложная грамматика и академическая лексика для продвинутых студентов.</p>
+        <div class="quiz-actions">
+          <a href="#courses" class="btn btn-gold" data-i18n="quiz-cta">Смотреть курс →</a>
+          <button class="btn btn-ghost quiz-restart" onclick="quizReset()" data-i18n="quiz-restart">Пройти заново</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- SCHEDULE -->
-<section id="schedule">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="schedule-eyebrow">Расписание</span>
-    <h2 class="sec-title" data-i18n="schedule-title">Когда проходят занятия</h2>
+<section id="schedule" class="bg-grey">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="schedule-title">Расписание</h2></div>
+    <div class="schedule-wrap">
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th data-i18n="schedule-th1">Курс</th>
+            <th data-i18n="schedule-th2">Дни</th>
+            <th data-i18n="schedule-th3">Время</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td data-i18n="course1-name">Kids English</td><td><span class="schedule-days" data-i18n="sched1-days">Пн, Чт</span></td><td>15:00 – 16:00</td></tr>
+          <tr><td data-i18n="course2-name">General English</td><td><span class="schedule-days" data-i18n="sched2-days">Пн, Ср, Пт</span></td><td>17:00 – 18:30</td></tr>
+          <tr><td data-i18n="course3-name">Advanced English</td><td><span class="schedule-days" data-i18n="sched3-days">Вт, Чт, Сб</span></td><td>18:00 – 19:30</td></tr>
+          <tr><td data-i18n="course4-name">IELTS Preparation</td><td><span class="schedule-days" data-i18n="sched4-days">Пн, Вт, Чт, Сб</span></td><td>19:00 – 20:30</td></tr>
+        </tbody>
+      </table>
+      <p class="schedule-note" data-i18n="schedule-note">Расписание может отличаться в зависимости от набора группы — уточняйте актуальное время по телефону.</p>
+    </div>
   </div>
-  <div style="overflow-x:auto;">
-    <table class="schedule-table">
-      <thead>
-        <tr>
-          <th data-i18n="schedule-th1">Курс</th>
-          <th data-i18n="schedule-th2">Дни</th>
-          <th data-i18n="schedule-th3">Время</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td data-i18n="course1-name">Kids English</td>
-          <td class="schedule-days" data-i18n="sched1-days">Пн, Чт</td>
-          <td>15:00 – 16:00</td>
-        </tr>
-        <tr>
-          <td data-i18n="course2-name">General English</td>
-          <td class="schedule-days" data-i18n="sched2-days">Пн, Ср, Пт</td>
-          <td>17:00 – 18:30</td>
-        </tr>
-        <tr>
-          <td data-i18n="course3-name">Advanced English</td>
-          <td class="schedule-days" data-i18n="sched3-days">Вт, Чт, Сб</td>
-          <td>18:00 – 19:30</td>
-        </tr>
-        <tr>
-          <td data-i18n="course4-name">IELTS Preparation</td>
-          <td class="schedule-days" data-i18n="sched4-days">Пн, Вт, Чт, Сб</td>
-          <td>19:00 – 20:30</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="schedule-note" data-i18n="schedule-note">Расписание может отличаться в зависимости от набора группы — уточняйте актуальное время по телефону.</p>
 </section>
 
-<!-- RESULTS -->
+<!-- RESULTS (the single dark section) -->
 <section id="results">
-  <div class="sec-head">
-    <span class="eyebrow" style="color:var(--gold)" data-i18n="results-eyebrow">Наши результаты</span>
-    <h2 class="sec-title" data-i18n="results-title">Баллы, которыми мы гордимся</h2>
-    <p class="sec-desc" data-i18n="results-desc">Реальные результаты студентов Stanford на международном экзамене IELTS.</p>
-  </div>
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="results-title">Результаты</h2>
+      <p class="sec-desc" data-i18n="results-desc">Реальные результаты студентов Stanford на международном экзамене IELTS.</p>
+    </div>
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-band">7.5</div>
+        <span class="avatar av-gold">АЖ</span>
+        <div class="result-name">Азиз Жураев</div>
+        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
+      </div>
+      <div class="result-card">
+        <div class="result-band">8.0</div>
+        <span class="avatar av-pink">МК</span>
+        <div class="result-name">Малика Каримова</div>
+        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
+      </div>
+      <div class="result-card">
+        <div class="result-band">7.0</div>
+        <span class="avatar av-blue">СР</span>
+        <div class="result-name">Сабохат Ражабова</div>
+        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
+      </div>
+      <div class="result-card">
+        <div class="result-band">6.5</div>
+        <span class="avatar av-green">ТЮ</span>
+        <div class="result-name">Тимур Юсупов</div>
+        <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
+      </div>
+    </div>
 
-  <div class="results-stats">
-    <div class="rstat"><div class="rstat-num">7.2</div><div class="rstat-label" data-i18n="rstat1-label">Средний балл IELTS</div></div>
-    <div class="rstat"><div class="rstat-num">200+</div><div class="rstat-label" data-i18n="rstat2-label">Подготовлено к экзамену</div></div>
-    <div class="rstat"><div class="rstat-num">94%</div><div class="rstat-label" data-i18n="rstat3-label">Достигли цели</div></div>
-    <div class="rstat"><div class="rstat-num">5</div><div class="rstat-label" data-i18n="rstat4-label">Лет в Нукусе</div></div>
-  </div>
-
-  <div class="results-grid">
-    <div class="result-card">
-      <div class="band-stamp"><span class="band-stamp-num">7.5</span></div>
-      <img class="result-photo" src="https://i.pravatar.cc/150?img=32" alt=""/>
-      <div class="result-name">Азиз Жураев</div>
-      <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-    </div>
-    <div class="result-card">
-      <div class="band-stamp"><span class="band-stamp-num">8.0</span></div>
-      <img class="result-photo" src="https://i.pravatar.cc/150?img=47" alt=""/>
-      <div class="result-name">Малика Каримова</div>
-      <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-    </div>
-    <div class="result-card">
-      <div class="band-stamp"><span class="band-stamp-num">7.0</span></div>
-      <img class="result-photo" src="https://i.pravatar.cc/150?img=51" alt=""/>
-      <div class="result-name">Сабохат Ражабова</div>
-      <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-    </div>
-    <div class="result-card">
-      <div class="band-stamp"><span class="band-stamp-num">6.5</span></div>
-      <img class="result-photo" src="https://i.pravatar.cc/150?img=13" alt=""/>
-      <div class="result-name">Тимур Юсупов</div>
-      <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
-    </div>
-  </div>
-</section>
-
-<!-- STORY SPOTLIGHT -->
-<section id="story">
-  <div class="story-wrap">
-    <div class="story-photo-wrap">
-      <img class="story-photo" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=700&q=80" alt="Студентка Stanford"/>
-      <div class="story-badge">
-        <div>
+    <!-- Success story -->
+    <div class="story">
+      <div class="story-photo-wrap">
+        <!-- REPLACE with real photo (the student from this success story) -->
+        <img class="story-photo" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80" alt="Студентка Stanford" loading="lazy"/>
+        <div class="story-badge">
           <div class="story-badge-band">7.5</div>
+          <div class="story-badge-label" data-i18n="story-badge-label">Итоговый<br>балл IELTS</div>
         </div>
-        <div class="story-badge-label" data-i18n="story-badge-label">Итоговый<br>балл IELTS</div>
       </div>
-    </div>
-    <div >
-      <span class="eyebrow story-eyebrow" data-i18n="story-eyebrow">История успеха</span>
-      <h2 class="sec-title" data-i18n="story-title">От 5.5 до 7.5 за 4 месяца</h2>
-      <p class="story-quote" data-i18n="story-quote">«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».</p>
-      <div class="story-name">Дилноза Эшмуратова</div>
-      <div class="story-meta" data-i18n="story-meta">Курс IELTS Preparation · поступила в университет по гранту</div>
-      <div class="story-timeline">
-        <div class="story-tl-item">
-          <div class="story-tl-month" data-i18n="story-m1">Месяц 1</div>
-          <div class="story-tl-text" data-i18n="story-m1-text">Диагностика — пробный тест показал балл 5.5, определили слабые модули.</div>
-        </div>
-        <div class="story-tl-item">
-          <div class="story-tl-month" data-i18n="story-m2">Месяц 2</div>
-          <div class="story-tl-text" data-i18n="story-m2-text">Плотная работа над Listening и Reading, расширение академической лексики.</div>
-        </div>
-        <div class="story-tl-item">
-          <div class="story-tl-month" data-i18n="story-m3">Месяц 3</div>
-          <div class="story-tl-text" data-i18n="story-m3-text">Стратегии Writing Task 2 и разбор структуры эссе на реальных темах.</div>
-        </div>
-        <div class="story-tl-item">
-          <div class="story-tl-month" data-i18n="story-m4">Месяц 4</div>
-          <div class="story-tl-text" data-i18n="story-m4-text">Финальные пробные тесты и день экзамена — результат 7.5.</div>
+      <div class="story-body">
+        <h3 class="story-title" data-i18n="story-title">От 5.5 до 7.5 за 4 месяца</h3>
+        <p class="story-quote" data-i18n="story-quote">«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».</p>
+        <div class="story-name">Дилноза Эшмуратова</div>
+        <div class="story-meta" data-i18n="story-meta">Курс IELTS Preparation · поступила в университет по гранту</div>
+        <div class="story-timeline">
+          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m1">Месяц 1</div><div class="story-tl-text" data-i18n="story-m1-text">Диагностика — пробный тест показал балл 5.5, определили слабые модули.</div></div>
+          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m2">Месяц 2</div><div class="story-tl-text" data-i18n="story-m2-text">Плотная работа над Listening и Reading, расширение академической лексики.</div></div>
+          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m3">Месяц 3</div><div class="story-tl-text" data-i18n="story-m3-text">Стратегии Writing Task 2 и разбор структуры эссе на реальных темах.</div></div>
+          <div class="story-tl-item"><div class="story-tl-month" data-i18n="story-m4">Месяц 4</div><div class="story-tl-text" data-i18n="story-m4-text">Финальные пробные тесты и день экзамена — результат 7.5.</div></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- INSTRUCTORS -->
-<section id="instructors">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="team-eyebrow">Наша команда</span>
-    <h2 class="sec-title" data-i18n="team-title">Преподаватели, которым доверяют</h2>
-    <p class="sec-desc" data-i18n="team-desc">Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.</p>
-  </div>
-  <div class="team-grid">
-    <div class="team-card">
-      <img class="team-photo" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
-      <div class="team-body">
-        <div class="team-name">Улугбек Матниязов</div>
-        <div class="team-role" data-i18n="team1-role">IELTS 9.0 · 7 лет опыта</div>
-        <div class="team-tags">
-          <span class="team-tag">IELTS</span>
-          <span class="team-tag">Advanced</span>
-          <span class="team-tag">Speaking</span>
+<!-- TEACHERS -->
+<section id="instructors" class="bg-white">
+  <div class="container">
+    <div class="sec-head">
+      <h2 class="sec-title" data-i18n="team-title">Преподаватели</h2>
+      <p class="sec-desc" data-i18n="team-desc">Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <!-- REPLACE with real photo of Улугбек Матниязов -->
+        <img class="team-photo" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80" alt="Улугбек Матниязов" loading="lazy"/>
+        <div class="team-body">
+          <div class="team-name">Улугбек Матниязов</div>
+          <div class="team-role" data-i18n="team1-role">IELTS 9.0 · 7 лет опыта</div>
+          <div class="team-tags"><span class="team-tag">IELTS</span><span class="team-tag">Advanced</span><span class="team-tag">Speaking</span></div>
         </div>
       </div>
-    </div>
-    <div class="team-card">
-      <img class="team-photo" src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
-      <div class="team-body">
-        <div class="team-name">Нилюфар Абдуллаева</div>
-        <div class="team-role" data-i18n="team2-role">General English · 5 лет опыта</div>
-        <div class="team-tags">
-          <span class="team-tag">General English</span>
-          <span class="team-tag">Grammar</span>
+      <div class="team-card">
+        <!-- REPLACE with real photo of Нилюфар Абдуллаева -->
+        <img class="team-photo" src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80" alt="Нилюфар Абдуллаева" loading="lazy"/>
+        <div class="team-body">
+          <div class="team-name">Нилюфар Абдуллаева</div>
+          <div class="team-role" data-i18n="team2-role">General English · 5 лет опыта</div>
+          <div class="team-tags"><span class="team-tag">General English</span><span class="team-tag">Grammar</span></div>
         </div>
       </div>
-    </div>
-    <div class="team-card">
-      <img class="team-photo" src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
-      <div class="team-body">
-        <div class="team-name">Дилноза Рахимова</div>
-        <div class="team-role" data-i18n="team3-role">Kids English · 4 года опыта</div>
-        <div class="team-tags">
-          <span class="team-tag">Kids</span>
-          <span class="team-tag">Phonics</span>
+      <div class="team-card">
+        <!-- REPLACE with real photo of Дилноза Рахимова -->
+        <img class="team-photo" src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&fit=crop&w=600&q=80" alt="Дилноза Рахимова" loading="lazy"/>
+        <div class="team-body">
+          <div class="team-name">Дилноза Рахимова</div>
+          <div class="team-role" data-i18n="team3-role">Kids English · 4 года опыта</div>
+          <div class="team-tags"><span class="team-tag">Kids</span><span class="team-tag">Phonics</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- GALLERY -->
-<section id="gallery">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="gallery-eyebrow">Загляните к нам</span>
-    <h2 class="sec-title" data-i18n="gallery-title">Жизнь центра изнутри</h2>
-  </div>
-  <div class="gallery-grid">
-    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80" alt="Занятие в классе"/></div>
-    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" alt="Урок для детей"/></div>
-    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&q=80" alt="Студенты за учёбой"/></div>
-    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" alt="Групповое занятие"/></div>
-    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80" alt="Аудитория центра"/></div>
-    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80" alt="Преподаватель со студентами"/></div>
+<!-- GALLERY (main.js swaps in admin-uploaded photos when there are any) -->
+<section id="gallery" class="bg-grey">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="gallery-title">Галерея</h2></div>
+    <!-- REPLACE with real photo: all 6 pictures below are stock placeholders; upload real ones in the admin panel -->
+    <div class="gallery-grid">
+      <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80" alt="Занятие в классе" loading="lazy"/></div>
+      <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" alt="Урок для детей" loading="lazy"/></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&q=80" alt="Студенты за учёбой" loading="lazy"/></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" alt="Групповое занятие" loading="lazy"/></div>
+      <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80" alt="Аудитория центра" loading="lazy"/></div>
+      <div class="gallery-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80" alt="Преподаватель со студентами" loading="lazy"/></div>
+    </div>
   </div>
 </section>
 
 <!-- TESTIMONIALS -->
-<section id="testimonials">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="testi-eyebrow">Отзывы</span>
-    <h2 class="sec-title" data-i18n="testi-title">Что говорят наши студенты</h2>
-  </div>
-  <div class="testi-grid">
-    <div class="testi-card">
-      <div class="testi-mark">"</div>
-      <p class="testi-text" data-i18n="testi1-text">Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.</p>
-      <div class="testi-person">
-        <img class="testi-avatar" src="https://i.pravatar.cc/100?img=25" alt=""/>
-        <div><div class="testi-name">Гулнора Т.</div><div class="testi-role" data-i18n="testi1-role">General English</div></div>
+<section id="testimonials" class="bg-white">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="testi-title">Отзывы</h2></div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-mark">“</div>
+        <p class="testi-text" data-i18n="testi1-text">Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.</p>
+        <div class="testi-person"><span class="avatar av-purple">ГТ</span><div><div class="testi-name">Гулнора Т.</div><div class="testi-role" data-i18n="testi1-role">General English</div></div></div>
       </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-mark">"</div>
-      <p class="testi-text" data-i18n="testi2-text">Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.</p>
-      <div class="testi-person">
-        <img class="testi-avatar" src="https://i.pravatar.cc/100?img=14" alt=""/>
-        <div><div class="testi-name">Жасур К.</div><div class="testi-role" data-i18n="testi2-role">IELTS Preparation</div></div>
+      <div class="testi-card">
+        <div class="testi-mark">“</div>
+        <p class="testi-text" data-i18n="testi2-text">Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.</p>
+        <div class="testi-person"><span class="avatar av-gold">ЖК</span><div><div class="testi-name">Жасур К.</div><div class="testi-role" data-i18n="testi2-role">IELTS Preparation</div></div></div>
       </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-mark">"</div>
-      <p class="testi-text" data-i18n="testi3-text">Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.</p>
-      <div class="testi-person">
-        <img class="testi-avatar" src="https://i.pravatar.cc/100?img=48" alt=""/>
-        <div><div class="testi-name">Феруза А.</div><div class="testi-role" data-i18n="testi3-role">Родитель, Kids English</div></div>
+      <div class="testi-card">
+        <div class="testi-mark">“</div>
+        <p class="testi-text" data-i18n="testi3-text">Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.</p>
+        <div class="testi-person"><span class="avatar av-green">ФА</span><div><div class="testi-name">Феруза А.</div><div class="testi-role" data-i18n="testi3-role">Родитель, Kids English</div></div></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FAQ -->
-<section id="faq">
-  <div class="sec-head">
-    <span class="eyebrow" data-i18n="faq-eyebrow">Вопросы и ответы</span>
-    <h2 class="sec-title" data-i18n="faq-title">Частые вопросы</h2>
-  </div>
-  <div class="faq-list">
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq1-q">Как понять, на какой уровень записаться?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq1-a">Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.</div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq2-q">Сколько длится подготовка к IELTS?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq2-a">В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.</div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq3-q">Можно ли перейти в другую группу, если не подошло время?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq3-a">Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.</div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq4-q">С какого возраста можно записать ребёнка?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq4-a">Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.</div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq5-q">Что если я пропущу занятие?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq5-a">Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.</div></div>
-    </div>
-    <div class="faq-item">
-      <button class="faq-question" onclick="toggleFaq(this)">
-        <span data-i18n="faq6-q">Как оплачивать занятия?</span>
-        <span class="faq-icon">+</span>
-      </button>
-      <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq6-a">Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.</div></div>
+<section id="faq" class="bg-grey">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="faq-title">FAQ</h2></div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq1-q">Как понять, на какой уровень записаться?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq1-a">Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq2-q">Сколько длится подготовка к IELTS?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq2-a">В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq3-q">Можно ли перейти в другую группу, если не подошло время?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq3-a">Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq4-q">С какого возраста можно записать ребёнка?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq4-a">Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq5-q">Что если я пропущу занятие?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq5-a">Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)"><span data-i18n="faq6-q">Как оплачивать занятия?</span><span class="faq-icon">+</span></button>
+        <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq6-a">Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте.</div></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- TRIAL LESSON FORM -->
-<section id="cta-banner">
+<!-- QUESTIONS BOX (trial lesson form) -->
+<section id="cta-banner" class="bg-white">
   <div class="trial-wrap">
-    <h2 class="cta-banner-title" data-i18n="ctabanner-title">Готовы начать говорить по‑английски?</h2>
-    <p class="cta-banner-sub" data-i18n="ctabanner-sub">Запишитесь на бесплатное вступительное занятие — определим ваш уровень и подберём группу.</p>
+    <h2 class="cta-banner-title" data-i18n="ctabanner-title">Остались вопросы? Свяжитесь с нами!</h2>
+    <p class="cta-banner-sub" data-i18n="ctabanner-sub">Оставьте имя и телефон — запишем на бесплатный пробный урок и ответим на все вопросы.</p>
 
     <form class="trial-form" id="trialForm" novalidate>
       <div class="trial-field" id="trialFieldName">
-        <label data-i18n="trial-name-label">Имя</label>
-        <input type="text" id="trialName" data-i18n-placeholder="trial-name-ph" placeholder="Ваше имя"/>
+        <label for="trialName" class="sr-only" data-i18n="trial-name-label">Имя</label>
+        <input type="text" id="trialName" autocomplete="name" data-i18n-placeholder="trial-name-ph" placeholder="Ваше имя"/>
         <span class="trial-error" data-i18n="trial-name-error">Укажите имя</span>
       </div>
       <div class="trial-field" id="trialFieldPhone">
-        <label data-i18n="trial-phone-label">Телефон</label>
-        <input type="tel" id="trialPhone" placeholder="+998 __ ___-__-__"/>
+        <label for="trialPhone" class="sr-only" data-i18n="trial-phone-label">Телефон</label>
+        <input type="tel" id="trialPhone" autocomplete="tel" inputmode="tel" placeholder="+998 __ ___-__-__"/>
         <span class="trial-error" data-i18n="trial-phone-error">Введите номер телефона</span>
       </div>
       <div class="trial-field" id="trialFieldCourse">
-        <label data-i18n="trial-course-label">Курс</label>
+        <label for="trialCourse" class="sr-only" data-i18n="trial-course-label">Курс</label>
         <select id="trialCourse">
           <option value="" data-i18n="trial-course-opt0">Выберите курс</option>
           <option value="kids" data-i18n="course1-name">Kids English</option>
@@ -1051,11 +969,11 @@
         </select>
         <span class="trial-error" data-i18n="trial-course-error">Выберите курс</span>
       </div>
-      <button type="submit" class="trial-submit" data-i18n="trial-submit">Записаться</button>
+      <button type="submit" class="trial-submit" data-i18n="trial-submit">Отправить</button>
     </form>
 
     <div class="trial-success" id="trialSuccess">
-      <div class="icon">✅</div>
+      <div class="icon-ok"><svg class="icon"><use href="#i-check"/></svg></div>
       <h3 data-i18n="trial-success-title">Заявка отправлена!</h3>
       <p data-i18n="trial-success-text">Мы свяжемся с вами в ближайшее время, чтобы подтвердить бесплатное пробное занятие.</p>
     </div>
@@ -1064,58 +982,41 @@
   </div>
 </section>
 
-<!-- CONTACT -->
-<section id="contact">
-  <div class="sec-head">
-    <span class="eyebrow" style="color:var(--gold)" data-i18n="contact-eyebrow">Контакты</span>
-    <h2 class="sec-title" data-i18n="contact-title">Приходите к нам в гости</h2>
-  </div>
-
-  <div class="contact-wrap">
-    <div >
-      <div class="contact-list">
-        <div class="contact-item">
-          <div class="contact-icon">📍</div>
-          <div>
-            <div class="contact-label" data-i18n="contact-address-label">Адрес</div>
-            <a class="contact-value" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener" data-i18n="contact-address-value">ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан</a>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">📞</div>
-          <div>
-            <div class="contact-label" data-i18n="contact-phones-label">Телефоны</div>
-            <a class="contact-value" href="tel:+998994576001">+998 99 457‑60‑01</a><br/>
-            <a class="contact-value" href="tel:+998913036001">+998 91 303‑60‑01</a>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">🕘</div>
-          <div>
-            <div class="contact-label" data-i18n="contact-hours-label">Часы работы</div>
-            <div class="contact-value" data-i18n="contact-hours-value">Ежедневно, 09:00–19:00</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.256 1.216.6 1.77 1.153a4.902 4.902 0 0 1 1.153 1.771c.247.637.415 1.363.465 2.428.05 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.902 4.902 0 0 1-1.153 1.77 4.902 4.902 0 0 1-1.77 1.153c-.638.247-1.363.415-2.428.465-1.066.05-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.902 4.902 0 0 1-1.771-1.153 4.902 4.902 0 0 1-1.153-1.77c-.247-.638-.415-1.363-.465-2.428C2.01 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.065.218-1.79.465-2.428a4.902 4.902 0 0 1 1.153-1.771A4.902 4.902 0 0 1 5.45 2.525c.637-.247 1.363-.415 2.428-.465C8.944 2.01 9.283 2 12 2Zm0 1.802c-2.67 0-2.987.01-4.04.059-.976.045-1.505.207-1.858.344-.467.181-.8.398-1.15.748-.35.35-.567.683-.748 1.15-.137.353-.3.882-.344 1.857-.05 1.054-.059 1.37-.059 4.04 0 2.67.01 2.987.059 4.04.045.976.207 1.505.344 1.858.181.466.399.8.748 1.15.35.35.684.566 1.15.748.353.137.882.3 1.858.344 1.053.048 1.37.058 4.04.058 2.67 0 2.987-.01 4.04-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.399 1.15-.748.35-.35.566-.684.748-1.15.137-.353.3-.882.344-1.858.048-1.053.058-1.37.058-4.04 0-2.67-.01-2.987-.058-4.04-.045-.976-.207-1.504-.344-1.857a3.1 3.1 0 0 0-.748-1.15 3.1 3.1 0 0 0-1.15-.748c-.353-.137-.882-.3-1.858-.344-1.053-.05-1.37-.059-4.04-.059Zm0 3.063a5.135 5.135 0 1 1 0 10.27 5.135 5.135 0 0 1 0-10.27Zm0 1.802a3.333 3.333 0 1 0 0 6.666 3.333 3.333 0 0 0 0-6.666Zm5.338-1.978a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0Z" fill="var(--gold)"/></svg>
-          </div>
-          <div>
-            <div class="contact-label">Instagram</div>
-            <a class="contact-value" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener">@stanford_nukus</a>
-          </div>
-        </div>
-      </div>
-      <div class="status-badge"><span class="status-dot"></span> <span data-i18n="contact-status">Открыто · Закроется в 19:00</span></div>
-    </div>
-
-    <div >
+<!-- CONTACTS -->
+<section id="contact" class="bg-grey">
+  <div class="container">
+    <div class="sec-head"><h2 class="sec-title" data-i18n="contact-title">Контакты</h2></div>
+    <div class="contact-wrap">
       <div class="map-wrap">
-        <iframe src="https://www.google.com/maps?q=%D1%83%D0%BB.%20%D0%9D.%20%D0%A1%D0%B0%D1%80%D0%B0%D0%B5%D0%B2%D0%B0%2034%2C%20%D0%9D%D1%83%D0%BA%D1%83%D1%81%2C%20%D0%A3%D0%B7%D0%B1%D0%B5%D0%BA%D0%B8%D1%81%D1%82%D0%B0%D0%BD&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <iframe title="Google Maps" src="https://www.google.com/maps?q=%D1%83%D0%BB.%20%D0%9D.%20%D0%A1%D0%B0%D1%80%D0%B0%D0%B5%D0%B2%D0%B0%2034%2C%20%D0%9D%D1%83%D0%BA%D1%83%D1%81%2C%20%D0%A3%D0%B7%D0%B1%D0%B5%D0%BA%D0%B8%D1%81%D1%82%D0%B0%D0%BD&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         <a class="map-link" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener">
-          <span>FJ85+V6 Нукус, Узбекистан</span>
+          <span>FJ85+V6 Нукус</span>
           <span data-i18n="contact-map-btn">Открыть в Google Maps →</span>
         </a>
+      </div>
+      <div class="contact-cards">
+        <div class="contact-card wide">
+          <span class="contact-icon"><svg class="icon"><use href="#i-pin"/></svg></span>
+          <div class="contact-label" data-i18n="contact-address-label">Адрес</div>
+          <a class="contact-value" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener" data-i18n="contact-address-value">ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан</a>
+        </div>
+        <div class="contact-card">
+          <span class="contact-icon"><svg class="icon"><use href="#i-phone"/></svg></span>
+          <div class="contact-label" data-i18n="contact-phones-label">Телефоны</div>
+          <a class="contact-value" href="tel:+998994576001">+998 99 457‑60‑01</a>
+          <a class="contact-value" href="tel:+998913036001">+998 91 303‑60‑01</a>
+        </div>
+        <div class="contact-card">
+          <span class="contact-icon"><svg class="icon"><use href="#i-clock"/></svg></span>
+          <div class="contact-label" data-i18n="contact-hours-label">Часы работы</div>
+          <div class="contact-value" data-i18n="contact-hours-value">Ежедневно, 09:00–19:00</div>
+          <div class="status-badge"><span class="status-dot"></span><span data-i18n="contact-status">Открыто · Закроется в 19:00</span></div>
+        </div>
+        <div class="contact-card wide">
+          <span class="contact-icon"><svg class="icon"><use href="#i-insta"/></svg></span>
+          <div class="contact-label">Instagram</div>
+          <a class="contact-value" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener">@stanford_nukus</a>
+        </div>
       </div>
     </div>
   </div>
@@ -1123,48 +1024,26 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-top">
-    <div>
+  <div class="footer-inner">
+    <div class="footer-brand">
       <div class="footer-logo">STAN<span>FORD</span></div>
-      <p class="footer-desc" data-i18n="footer-desc">Языковой центр в Нукусе: IELTS Preparation, General English и курсы для детей. Учим говорить по‑английски уверенно.</p>
+      <p class="footer-desc" data-i18n="footer-desc">Языковой центр в Нукусе: IELTS, General English и курсы для детей.</p>
     </div>
-    <div class="footer-col">
-      <h4 data-i18n="footer-courses-h4">Курсы</h4>
-      <ul>
-        <li><a href="#courses">Kids English</a></li>
-        <li><a href="#courses">General English</a></li>
-        <li><a href="#courses">Advanced English</a></li>
-        <li><a href="#courses">IELTS Preparation</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4 data-i18n="footer-contact-h4">Контакты</h4>
-      <ul>
-        <li><a href="tel:+998994576001">+998 99 457‑60‑01</a></li>
-        <li><a href="tel:+998913036001">+998 91 303‑60‑01</a></li>
-        <li><a href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener">Instagram</a></li>
-        <li><a href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener">ул. Н. Сараева 34, Нукус</a></li>
-      </ul>
+    <div class="footer-icons">
+      <a class="footer-icon" href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="icon"><use href="#i-insta"/></svg></a>
+      <a class="footer-icon" href="tel:+998913036001" aria-label="Позвонить / Call"><svg class="icon"><use href="#i-phone"/></svg></a>
     </div>
   </div>
-  <div class="footer-bottom">
-    <span data-i18n="footer-copy">© 2026 Stanford Educational Centre · Нукус, Каракалпакстан</span>
-    <span data-i18n="footer-hours">09:00–19:00 · Ежедневно</span>
-  </div>
+  <div class="footer-copy" data-i18n="footer-copy">© 2026 Stanford Educational Centre · Нукус, Каракалпакстан</div>
 </footer>
 
-<!-- FLOATING BUTTONS -->
-<div class="floating-wrap">
-  <a href="https://www.instagram.com/stanford_nukus/" target="_blank" rel="noopener" class="floating-btn fb-insta" title="Instagram" aria-label="Instagram">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.256 1.216.6 1.77 1.153a4.902 4.902 0 0 1 1.153 1.771c.247.637.415 1.363.465 2.428.05 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.902 4.902 0 0 1-1.153 1.77 4.902 4.902 0 0 1-1.77 1.153c-.638.247-1.363.415-2.428.465-1.066.05-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.902 4.902 0 0 1-1.771-1.153 4.902 4.902 0 0 1-1.153-1.77c-.247-.638-.415-1.363-.465-2.428C2.01 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.065.218-1.79.465-2.428a4.902 4.902 0 0 1 1.153-1.771A4.902 4.902 0 0 1 5.45 2.525c.637-.247 1.363-.415 2.428-.465C8.944 2.01 9.283 2 12 2Zm0 1.802c-2.67 0-2.987.01-4.04.059-.976.045-1.505.207-1.858.344-.467.181-.8.398-1.15.748-.35.35-.567.683-.748 1.15-.137.353-.3.882-.344 1.857-.05 1.054-.059 1.37-.059 4.04 0 2.67.01 2.987.059 4.04.045.976.207 1.505.344 1.858.181.466.399.8.748 1.15.35.35.684.566 1.15.748.353.137.882.3 1.858.344 1.053.048 1.37.058 4.04.058 2.67 0 2.987-.01 4.04-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.399 1.15-.748.35-.35.566-.684.748-1.15.137-.353.3-.882.344-1.858.048-1.053.058-1.37.058-4.04 0-2.67-.01-2.987-.058-4.04-.045-.976-.207-1.504-.344-1.857a3.1 3.1 0 0 0-.748-1.15 3.1 3.1 0 0 0-1.15-.748c-.353-.137-.882-.3-1.858-.344-1.053-.05-1.37-.059-4.04-.059Zm0 3.063a5.135 5.135 0 1 1 0 10.27 5.135 5.135 0 0 1 0-10.27Zm0 1.802a3.333 3.333 0 1 0 0 6.666 3.333 3.333 0 0 0 0-6.666Zm5.338-1.978a1.2 1.2 0 1 1-2.4 0 1.2 1.2 0 0 1 2.4 0Z" fill="currentColor"/></svg>
-  </a>
-  <a href="tel:+998913036001" class="floating-btn fb-call" title="Позвонить" aria-label="Позвонить">📞</a>
-</div>
+<!-- FLOATING CALL BUTTON -->
+<a href="tel:+998913036001" class="fb-call" title="Позвонить" aria-label="Позвонить / Call"><svg class="icon"><use href="#i-phone"/></svg></a>
 
 <!-- MOCK EXAM PUBLIC REGISTRATION MODAL -->
 <div class="public-modal-overlay" id="publicMockModal">
   <div class="public-modal-card">
-    <button class="public-modal-close" onclick="closePublicMockModal()">✕</button>
+    <button class="public-modal-close" onclick="closePublicMockModal()" aria-label="Close">✕</button>
     <div id="pmFormBody">
       <div class="public-modal-title" data-i18n="pm-modal-title">Запись на Mock Exam</div>
       <div class="public-modal-sub" id="pmSelectedExamName">Заполните форму для бронирования места</div>
@@ -1172,18 +1051,18 @@
         <input type="hidden" id="pmExamIdVal" value="">
         <input type="hidden" id="pmExamTitleVal" value="IELTS Mock Exam">
         <div class="pm-group">
-          <label class="pm-label" data-i18n="pm-name-label">Ваше Имя и Фамилия</label>
+          <label class="pm-label" for="pmStudentName" data-i18n="pm-name-label">Ваше Имя и Фамилия</label>
           <input type="text" class="pm-input" id="pmStudentName" placeholder="Асилбек Джумабаев" required>
         </div>
         <div class="pm-group">
-          <label class="pm-label" data-i18n="pm-phone-label">Номер телефона</label>
-          <input type="tel" class="pm-input" id="pmStudentPhone" placeholder="+998 90 123 45 67" required>
+          <label class="pm-label" for="pmStudentPhone" data-i18n="pm-phone-label">Номер телефона</label>
+          <input type="tel" class="pm-input" id="pmStudentPhone" inputmode="tel" placeholder="+998 __ ___-__-__" required>
         </div>
         <button type="submit" class="pm-submit" data-i18n="pm-submit-btn">Подтвердить запись</button>
       </form>
     </div>
     <div class="pm-success" id="pmSuccessMsg">
-      <div class="pm-success-icon">🎉</div>
+      <div class="pm-success-icon"><svg class="icon"><use href="#i-check"/></svg></div>
       <div class="public-modal-title" data-i18n="pm-success-head">Заявка принята!</div>
       <p class="public-modal-sub" data-i18n="pm-success-sub">Вы успешно зарегистрировались на Mock Exam. Наш администратор свяжется с вами по указанному номеру для подтверждения места.</p>
     </div>
