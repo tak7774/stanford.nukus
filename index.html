@@ -426,10 +426,6 @@
   .fb-call{ background:var(--navy); color:#fff; }
   .fb-insta{ background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color:#fff; }
 
-  /* ---------- REVEAL ---------- */
-  .reveal{ opacity:0; transform:translateY(32px); transition:opacity .7s ease, transform .7s ease; }
-  .reveal.visible{ opacity:1; transform:translateY(0); }
-  .rd1{ transition-delay:.1s; } .rd2{ transition-delay:.2s; } .rd3{ transition-delay:.3s; }
 
   /* ---------- MOBILE ---------- */
   @media (max-width: 980px){
@@ -593,27 +589,27 @@
 
 <!-- WHY CHOOSE US -->
 <section id="why">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="why-eyebrow">Почему мы</span>
     <h2 class="sec-title" data-i18n="why-title">Что отличает Stanford</h2>
   </div>
   <div class="why-grid">
-    <div class="why-card reveal">
+    <div class="why-card">
       <span class="why-icon">🎯</span>
       <div class="why-title" data-i18n="why1-title">Преподаватель IELTS 9.0</div>
       <div class="why-text" data-i18n="why1-text">Занятия ведёт инструктор с максимальным баллом IELTS — знает экзамен изнутри.</div>
     </div>
-    <div class="why-card reveal rd1">
+    <div class="why-card">
       <span class="why-icon">👥</span>
       <div class="why-title" data-i18n="why2-title">Небольшие группы</div>
       <div class="why-text" data-i18n="why2-text">До 10–12 человек в группе — каждому достаётся время на разговорную практику.</div>
     </div>
-    <div class="why-card reveal rd2">
+    <div class="why-card">
       <span class="why-icon">📈</span>
       <div class="why-title" data-i18n="why3-title">Понятный прогресс</div>
       <div class="why-text" data-i18n="why3-text">Регулярные пробные тесты показывают реальный уровень и что подтянуть.</div>
     </div>
-    <div class="why-card reveal rd3">
+    <div class="why-card">
       <span class="why-icon">🕘</span>
       <div class="why-title" data-i18n="why4-title">Гибкое расписание</div>
       <div class="why-text" data-i18n="why4-text">Центр открыт с 09:00 до 19:00 — подберём удобное время для учёбы и работы.</div>
@@ -623,14 +619,14 @@
 
 <!-- COURSES -->
 <section id="courses">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="courses-eyebrow">Что мы преподаём</span>
     <h2 class="sec-title" data-i18n="courses-title">Курсы для любого уровня</h2>
     <p class="sec-desc" data-i18n="courses-desc">От первых слов до штурма IELTS — выберите направление, которое отвечает вашей цели.</p>
   </div>
 
   <div class="courses-grid">
-    <div class="course-card reveal">
+    <div class="course-card">
       <div class="course-top">
         <span class="course-level" data-i18n="course1-level">Kids · 6–12 лет</span>
         <div class="course-name" data-i18n="course1-name">Kids English</div>
@@ -643,7 +639,7 @@
       </div>
     </div>
 
-    <div class="course-card reveal rd1">
+    <div class="course-card">
       <div class="course-top">
         <span class="course-level" data-i18n="course2-level">General · Intermediate</span>
         <div class="course-name" data-i18n="course2-name">General English</div>
@@ -656,7 +652,7 @@
       </div>
     </div>
 
-    <div class="course-card reveal rd2">
+    <div class="course-card">
       <div class="course-top">
         <span class="course-level" data-i18n="course3-level">Upper‑Intermediate</span>
         <div class="course-name" data-i18n="course3-name">Advanced English</div>
@@ -669,7 +665,7 @@
       </div>
     </div>
 
-    <div class="course-card reveal rd3">
+    <div class="course-card">
       <div class="course-top">
         <span class="course-level" data-i18n="course4-level">Exam Prep</span>
         <div class="course-name" data-i18n="course4-name">IELTS Preparation</div>
@@ -686,13 +682,13 @@
 
 <!-- MOCK EXAMS SECTION -->
 <section id="mock-exams">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="mock-eyebrow">IELTS Mock Testing</span>
     <h2 class="sec-title" data-i18n="mock-title">Ближайшие сессии Mock Exam</h2>
     <p class="sec-desc" data-i18n="mock-desc">Испытайте себя в условиях настоящего экзамена IELTS с квалифицированной проверкой всех частей.</p>
   </div>
 
-  <div class="mock-grid reveal" id="publicMockExamsGrid">
+  <div class="mock-grid" id="publicMockExamsGrid">
     <!-- Filled by main.js with real sessions from the database -->
     <div class="mock-empty" style="grid-column: 1 / -1; text-align: center; color: var(--text-soft); padding: 24px 0;">Загрузка сессий...</div>
   </div>
@@ -700,13 +696,13 @@
 
 <!-- LEVEL QUIZ -->
 <section id="quiz">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="quiz-eyebrow">Не знаете, с чего начать?</span>
     <h2 class="sec-title" data-i18n="quiz-title">Подберите свой курс за 20 секунд</h2>
     <p class="sec-desc" data-i18n="quiz-desc">Ответьте на пару вопросов — подскажем, какая программа подойдёт лучше всего.</p>
   </div>
 
-  <div class="quiz-box reveal">
+  <div class="quiz-box">
     <div class="quiz-step active" id="quizStep1">
       <div class="quiz-q" data-i18n="quiz-q1">Кому нужен курс?</div>
       <div class="quiz-options">
@@ -757,11 +753,11 @@
 
 <!-- SCHEDULE -->
 <section id="schedule">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="schedule-eyebrow">Расписание</span>
     <h2 class="sec-title" data-i18n="schedule-title">Когда проходят занятия</h2>
   </div>
-  <div class="reveal" style="overflow-x:auto;">
+  <div style="overflow-x:auto;">
     <table class="schedule-table">
       <thead>
         <tr>
@@ -799,13 +795,13 @@
 
 <!-- RESULTS -->
 <section id="results">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" style="color:var(--gold)" data-i18n="results-eyebrow">Наши результаты</span>
     <h2 class="sec-title" data-i18n="results-title">Баллы, которыми мы гордимся</h2>
     <p class="sec-desc" data-i18n="results-desc">Реальные результаты студентов Stanford на международном экзамене IELTS.</p>
   </div>
 
-  <div class="results-stats reveal">
+  <div class="results-stats">
     <div class="rstat"><div class="rstat-num">7.2</div><div class="rstat-label" data-i18n="rstat1-label">Средний балл IELTS</div></div>
     <div class="rstat"><div class="rstat-num">200+</div><div class="rstat-label" data-i18n="rstat2-label">Подготовлено к экзамену</div></div>
     <div class="rstat"><div class="rstat-num">94%</div><div class="rstat-label" data-i18n="rstat3-label">Достигли цели</div></div>
@@ -813,25 +809,25 @@
   </div>
 
   <div class="results-grid">
-    <div class="result-card reveal">
+    <div class="result-card">
       <div class="band-stamp"><span class="band-stamp-num">7.5</span></div>
       <img class="result-photo" src="https://i.pravatar.cc/150?img=32" alt=""/>
       <div class="result-name">Азиз Жураев</div>
       <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
     </div>
-    <div class="result-card reveal rd1">
+    <div class="result-card">
       <div class="band-stamp"><span class="band-stamp-num">8.0</span></div>
       <img class="result-photo" src="https://i.pravatar.cc/150?img=47" alt=""/>
       <div class="result-name">Малика Каримова</div>
       <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
     </div>
-    <div class="result-card reveal rd2">
+    <div class="result-card">
       <div class="band-stamp"><span class="band-stamp-num">7.0</span></div>
       <img class="result-photo" src="https://i.pravatar.cc/150?img=51" alt=""/>
       <div class="result-name">Сабохат Ражабова</div>
       <div class="result-course" data-i18n="result-course">Курс IELTS Preparation</div>
     </div>
-    <div class="result-card reveal rd3">
+    <div class="result-card">
       <div class="band-stamp"><span class="band-stamp-num">6.5</span></div>
       <img class="result-photo" src="https://i.pravatar.cc/150?img=13" alt=""/>
       <div class="result-name">Тимур Юсупов</div>
@@ -843,7 +839,7 @@
 <!-- STORY SPOTLIGHT -->
 <section id="story">
   <div class="story-wrap">
-    <div class="story-photo-wrap reveal">
+    <div class="story-photo-wrap">
       <img class="story-photo" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=700&q=80" alt="Студентка Stanford"/>
       <div class="story-badge">
         <div>
@@ -852,7 +848,7 @@
         <div class="story-badge-label" data-i18n="story-badge-label">Итоговый<br>балл IELTS</div>
       </div>
     </div>
-    <div class="reveal rd1">
+    <div >
       <span class="eyebrow story-eyebrow" data-i18n="story-eyebrow">История успеха</span>
       <h2 class="sec-title" data-i18n="story-title">От 5.5 до 7.5 за 4 месяца</h2>
       <p class="story-quote" data-i18n="story-quote">«Я думала, что 6.0 — это потолок. Но когда разобрали мои ошибки в Writing по пунктам, всё встало на свои места».</p>
@@ -882,13 +878,13 @@
 
 <!-- INSTRUCTORS -->
 <section id="instructors">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="team-eyebrow">Наша команда</span>
     <h2 class="sec-title" data-i18n="team-title">Преподаватели, которым доверяют</h2>
     <p class="sec-desc" data-i18n="team-desc">Опытные инструкторы, которые не просто знают английский, а умеют довести до результата.</p>
   </div>
   <div class="team-grid">
-    <div class="team-card reveal">
+    <div class="team-card">
       <img class="team-photo" src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
       <div class="team-body">
         <div class="team-name">Улугбек Матниязов</div>
@@ -900,7 +896,7 @@
         </div>
       </div>
     </div>
-    <div class="team-card reveal rd1">
+    <div class="team-card">
       <img class="team-photo" src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
       <div class="team-body">
         <div class="team-name">Нилюфар Абдуллаева</div>
@@ -911,7 +907,7 @@
         </div>
       </div>
     </div>
-    <div class="team-card reveal rd2">
+    <div class="team-card">
       <img class="team-photo" src="https://images.unsplash.com/photo-1544717297-fa95b6ee9643?auto=format&fit=crop&w=600&q=80" alt="Преподаватель"/>
       <div class="team-body">
         <div class="team-name">Дилноза Рахимова</div>
@@ -927,28 +923,28 @@
 
 <!-- GALLERY -->
 <section id="gallery">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="gallery-eyebrow">Загляните к нам</span>
     <h2 class="sec-title" data-i18n="gallery-title">Жизнь центра изнутри</h2>
   </div>
   <div class="gallery-grid">
-    <div class="gallery-item tall reveal"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80" alt="Занятие в классе"/></div>
-    <div class="gallery-item wide reveal rd1"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" alt="Урок для детей"/></div>
-    <div class="gallery-item reveal rd2"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&q=80" alt="Студенты за учёбой"/></div>
-    <div class="gallery-item reveal rd3"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" alt="Групповое занятие"/></div>
-    <div class="gallery-item wide reveal"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80" alt="Аудитория центра"/></div>
-    <div class="gallery-item reveal rd1"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80" alt="Преподаватель со студентами"/></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=500&q=80" alt="Занятие в классе"/></div>
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80" alt="Урок для детей"/></div>
+    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=400&q=80" alt="Студенты за учёбой"/></div>
+    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=400&q=80" alt="Групповое занятие"/></div>
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80" alt="Аудитория центра"/></div>
+    <div class="gallery-item"><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=400&q=80" alt="Преподаватель со студентами"/></div>
   </div>
 </section>
 
 <!-- TESTIMONIALS -->
 <section id="testimonials">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="testi-eyebrow">Отзывы</span>
     <h2 class="sec-title" data-i18n="testi-title">Что говорят наши студенты</h2>
   </div>
   <div class="testi-grid">
-    <div class="testi-card reveal">
+    <div class="testi-card">
       <div class="testi-mark">"</div>
       <p class="testi-text" data-i18n="testi1-text">Пришла с нуля, а через полгода уже спокойно говорю на бытовые темы. Атмосфера на занятиях лёгкая, не боишься ошибаться.</p>
       <div class="testi-person">
@@ -956,7 +952,7 @@
         <div><div class="testi-name">Гулнора Т.</div><div class="testi-role" data-i18n="testi1-role">General English</div></div>
       </div>
     </div>
-    <div class="testi-card reveal rd1">
+    <div class="testi-card">
       <div class="testi-mark">"</div>
       <p class="testi-text" data-i18n="testi2-text">Готовился к IELTS два месяца — разобрали все слабые места и дали чёткую стратегию по Writing. Балл вырос с 5.5 до 7.0.</p>
       <div class="testi-person">
@@ -964,7 +960,7 @@
         <div><div class="testi-name">Жасур К.</div><div class="testi-role" data-i18n="testi2-role">IELTS Preparation</div></div>
       </div>
     </div>
-    <div class="testi-card reveal rd2">
+    <div class="testi-card">
       <div class="testi-mark">"</div>
       <p class="testi-text" data-i18n="testi3-text">Сын ходит на Kids English уже год — ждёт занятия с нетерпением. Учителя находят подход даже к самым стеснительным детям.</p>
       <div class="testi-person">
@@ -977,47 +973,47 @@
 
 <!-- FAQ -->
 <section id="faq">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" data-i18n="faq-eyebrow">Вопросы и ответы</span>
     <h2 class="sec-title" data-i18n="faq-title">Частые вопросы</h2>
   </div>
   <div class="faq-list">
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq1-q">Как понять, на какой уровень записаться?</span>
         <span class="faq-icon">+</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq1-a">Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS.</div></div>
     </div>
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq2-q">Сколько длится подготовка к IELTS?</span>
         <span class="faq-icon">+</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq2-a">В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас.</div></div>
     </div>
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq3-q">Можно ли перейти в другую группу, если не подошло время?</span>
         <span class="faq-icon">+</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq3-a">Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий.</div></div>
     </div>
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq4-q">С какого возраста можно записать ребёнка?</span>
         <span class="faq-icon">+</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq4-a">Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными.</div></div>
     </div>
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq5-q">Что если я пропущу занятие?</span>
         <span class="faq-icon">+</span>
       </button>
       <div class="faq-answer"><div class="faq-answer-inner" data-i18n="faq5-a">Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию.</div></div>
     </div>
-    <div class="faq-item reveal">
+    <div class="faq-item">
       <button class="faq-question" onclick="toggleFaq(this)">
         <span data-i18n="faq6-q">Как оплачивать занятия?</span>
         <span class="faq-icon">+</span>
@@ -1029,7 +1025,7 @@
 
 <!-- TRIAL LESSON FORM -->
 <section id="cta-banner">
-  <div class="trial-wrap reveal">
+  <div class="trial-wrap">
     <h2 class="cta-banner-title" data-i18n="ctabanner-title">Готовы начать говорить по‑английски?</h2>
     <p class="cta-banner-sub" data-i18n="ctabanner-sub">Запишитесь на бесплатное вступительное занятие — определим ваш уровень и подберём группу.</p>
 
@@ -1070,13 +1066,13 @@
 
 <!-- CONTACT -->
 <section id="contact">
-  <div class="sec-head reveal">
+  <div class="sec-head">
     <span class="eyebrow" style="color:var(--gold)" data-i18n="contact-eyebrow">Контакты</span>
     <h2 class="sec-title" data-i18n="contact-title">Приходите к нам в гости</h2>
   </div>
 
   <div class="contact-wrap">
-    <div class="reveal">
+    <div >
       <div class="contact-list">
         <div class="contact-item">
           <div class="contact-icon">📍</div>
@@ -1113,7 +1109,7 @@
       <div class="status-badge"><span class="status-dot"></span> <span data-i18n="contact-status">Открыто · Закроется в 19:00</span></div>
     </div>
 
-    <div class="reveal rd1">
+    <div >
       <div class="map-wrap">
         <iframe src="https://www.google.com/maps?q=%D1%83%D0%BB.%20%D0%9D.%20%D0%A1%D0%B0%D1%80%D0%B0%D0%B5%D0%B2%D0%B0%2034%2C%20%D0%9D%D1%83%D0%BA%D1%83%D1%81%2C%20%D0%A3%D0%B7%D0%B1%D0%B5%D0%BA%D0%B8%D1%81%D1%82%D0%B0%D0%BD&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         <a class="map-link" href="https://maps.app.goo.gl/aaRaDvimcsXnZs9Y9" target="_blank" rel="noopener">
