@@ -28,7 +28,7 @@ async function api(method, path, body) {
     }
     return { data };
   } catch (e) {
-    return { error: { message: 'Network error — check your connection.' } };
+    return { error: { message: 'Нет связи с сервером — проверьте интернет.' } };
   }
 }
 
@@ -83,10 +83,10 @@ async function doLogin() {
   const errEl = $('loginError');
   errEl.style.display = 'none';
 
-  if (!email || !pw) { errEl.textContent = 'Enter email and password'; errEl.style.display = 'block'; return; }
+  if (!email || !pw) { errEl.textContent = 'Введите email и пароль'; errEl.style.display = 'block'; return; }
 
   const { data, error } = await api('POST', 'auth/login/', { email, password: pw });
-  if (error) { errEl.textContent = error.detail || 'Login failed'; errEl.style.display = 'block'; return; }
+  if (error) { errEl.textContent = error.detail || 'Не удалось войти'; errEl.style.display = 'block'; return; }
 
   session = { email: data.email, role: data.role };
   $('loginPassword').value = '';
@@ -104,7 +104,7 @@ function showApp() {
   loginWrap.style.display = 'none';
   appLayout.style.display = 'flex';
   $('userEmail').textContent = session.email;
-  $('userRole').textContent = session.role;
+  $('userRole').textContent = roleLabels[session.role] || session.role;
   $('userAvatar').textContent = session.email.charAt(0).toUpperCase();
   navigate('dashboard');
 }
@@ -151,11 +151,11 @@ function fmtDateTime(d) { if (!d) return '—'; const dt = new Date(d); return d
 function fmtRelative(d) {
   const diff = Date.now() - new Date(d).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return mins + 'm ago';
+  if (mins < 1) return 'только что';
+  if (mins < 60) return mins + ' мин назад';
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + 'h ago';
-  return Math.floor(hrs / 24) + 'd ago';
+  if (hrs < 24) return hrs + ' ч назад';
+  return Math.floor(hrs / 24) + ' дн назад';
 }
 
 const courseLabels = { ielts: 'IELTS Preparation', general: 'General English', advanced: 'Advanced English', kids: 'Kids English', unsure: 'Не знает — помочь выбрать' };
@@ -173,16 +173,18 @@ function ieltsOverall(bands) {
   return (Math.floor(avg * 2 + 0.5) / 2).toFixed(1);
 }
 function bandText(v) { return (v === null || v === undefined || v === '') ? '—' : Number(v).toFixed(1); }
+const roleLabels = { owner: 'Владелец', staff: 'Сотрудник' };
+const examStatusLabels = { upcoming: 'Предстоит', in_progress: 'Идёт', completed: 'Завершён', cancelled: 'Отменён' };
 const statusBadge = { new: 'badge-gold', contacted: 'badge-blue', enrolled: 'badge-green', declined: 'badge-gray', upcoming: 'badge-blue', in_progress: 'badge-gold', completed: 'badge-green', cancelled: 'badge-gray' };
 
 // ════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════
 async function renderDashboard() {
-  mainContent.innerHTML = '<div class="page-header"><h1>Dashboard</h1><p>Overview of your centre</p></div><div class="stats-grid" id="dashStats">Loading...</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px" id="dashCards"></div>';
+  mainContent.innerHTML = '<div class="page-header"><h1>Обзор</h1><p>Главное о работе центра</p></div><div class="stats-grid" id="dashStats">Загрузка…</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px" id="dashCards"></div>';
 
   const { data: d, error } = await api('GET', 'admin/dashboard/');
-  if (error) { $('dashStats').textContent = error.detail || 'Could not load dashboard'; return; }
+  if (error) { $('dashStats').textContent = error.detail || 'Не удалось загрузить обзор'; return; }
 
   const studentsData = d.recent_students;
   const examRegsData = d.recent_exam_registrations;
@@ -190,28 +192,28 @@ async function renderDashboard() {
   const newStudents = d.new_students;
 
   $('dashStats').innerHTML = `
-    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${esc(d.total_exams)}</div><div class="stat-label">Total Mock Exams</div></div>
-    <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-num">${esc(upcomingExams)}</div><div class="stat-label">Upcoming Exams</div></div>
-    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${esc(d.total_students)}</div><div class="stat-label">Trial Registrations</div></div>
-    <div class="stat-card"><div class="stat-icon purple">🆕</div><div class="stat-num">${esc(newStudents)}</div><div class="stat-label">New (uncontacted)</div></div>
+    <div class="stat-card"><div class="stat-icon gold">📝</div><div class="stat-num">${esc(d.total_exams)}</div><div class="stat-label">Всего Mock-экзаменов</div></div>
+    <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-num">${esc(upcomingExams)}</div><div class="stat-label">Предстоящие экзамены</div></div>
+    <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-num">${esc(d.total_students)}</div><div class="stat-label">Заявки с сайта</div></div>
+    <div class="stat-card"><div class="stat-icon purple">🆕</div><div class="stat-num">${esc(newStudents)}</div><div class="stat-label">Новые (не звонили)</div></div>
   `;
 
   // Recent activity
   const recentStudents = studentsData.slice(0, 5).map(s => `
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--green)"></div>
-      <div><div class="activity-text"><strong>${esc(s.full_name)}</strong> registered for ${esc(courseLabels[s.course] || s.course)}</div><div class="activity-time">${fmtRelative(s.created_at)}</div></div>
+      <div><div class="activity-text"><strong>${esc(s.full_name)}</strong> — ${s.course === 'unsure' ? 'просит помочь выбрать курс' : 'заявка на ' + esc(courseLabels[s.course] || s.course)}</div><div class="activity-time">${fmtRelative(s.created_at)}</div></div>
     </div>`).join('');
 
   const recentExamRegs = examRegsData.slice(0, 5).map(r => `
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--blue)"></div>
-      <div><div class="activity-text"><strong>${esc(r.full_name)}</strong> signed up for mock exam</div><div class="activity-time">${fmtRelative(r.registered_at)}</div></div>
+      <div><div class="activity-text"><strong>${esc(r.full_name)}</strong> записался на Mock-экзамен</div><div class="activity-time">${fmtRelative(r.registered_at)}</div></div>
     </div>`).join('');
 
   $('dashCards').innerHTML = `
-    <div class="card"><div class="card-title">Recent Trial Registrations</div>${recentStudents || '<div class="empty-state"><p>No registrations yet</p></div>'}</div>
-    <div class="card"><div class="card-title">Recent Exam Signups</div>${recentExamRegs || '<div class="empty-state"><p>No exam signups yet</p></div>'}</div>
+    <div class="card"><div class="card-title">Последние заявки</div>${recentStudents || '<div class="empty-state"><p>Заявок пока нет</p></div>'}</div>
+    <div class="card"><div class="card-title">Последние записи на Mock</div>${recentExamRegs || '<div class="empty-state"><p>Записей на Mock пока нет</p></div>'}</div>
   `;
 }
 
@@ -224,7 +226,7 @@ function esc(str) {
 // MOCK EXAMS
 // ════════════════════════════════════════════
 async function renderExams() {
-  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Mock Exams</h1><p>Create and manage mock exams for students</p></div><button class="btn btn-primary" id="addExamBtn">+ New Exam</button></div><div class="filter-bar"><select id="examFilter"><option value="">All statuses</option><option value="upcoming">Upcoming</option><option value="in_progress">In Progress</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div><div id="examsList">Loading...</div>';
+  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Mock-экзамены</h1><p>Создание экзаменов и записи студентов</p></div><button class="btn btn-primary" id="addExamBtn">+ Новый экзамен</button></div><div class="filter-bar"><select id="examFilter"><option value="">Все статусы</option><option value="upcoming">Предстоит</option><option value="in_progress">Идёт</option><option value="completed">Завершён</option><option value="cancelled">Отменён</option></select></div><div id="examsList">Загрузка…</div>';
 
   $('addExamBtn').addEventListener('click', () => openExamModal());
   $('examFilter').addEventListener('change', () => loadExamsList());
@@ -235,11 +237,11 @@ async function loadExamsList() {
   const filterEl = $('examFilter');
   const filter = filterEl ? filterEl.value : '';
   const { data, error } = await api('GET', 'admin/exams/' + (filter ? '?status=' + encodeURIComponent(filter) : ''));
-  if (error) { $('examsList').textContent = error.detail || 'Could not load exams'; return; }
+  if (error) { $('examsList').textContent = error.detail || 'Не удалось загрузить экзамены'; return; }
   const exams = data || [];
 
   if (!exams.length) {
-    $('examsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📝</div><h3>No mock exams yet</h3><p>Create your first mock exam to get started</p></div></div>';
+    $('examsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📝</div><h3>Экзаменов пока нет</h3><p>Создайте первый Mock-экзамен — он появится на сайте</p></div></div>';
     return;
   }
 
@@ -247,24 +249,24 @@ async function loadExamsList() {
   const counts = {};
   exams.forEach(e => { counts[e.id] = e.registered; });
 
-  $('examsList').innerHTML = '<div class="card"><table><thead><tr><th>Exam</th><th>Course</th><th>Date</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+  $('examsList').innerHTML = '<div class="card"><table><thead><tr><th>Экзамен</th><th>Курс</th><th>Дата</th><th>Места</th><th>Статус</th><th>Действия</th></tr></thead><tbody>' +
     exams.map(e => `<tr>
       <td><strong style="color:var(--text)">${esc(e.title)}</strong>${e.description ? '<br><span style="font-size:.78rem;color:var(--text3)">' + esc(e.description.substring(0, 60)) + '</span>' : ''}</td>
       <td><span class="badge ${courseBadge[e.course_type] || 'badge-gray'}">${esc(courseLabels[e.course_type] || e.course_type)}</span></td>
-      <td>${fmtDateTime(e.exam_date)}<br><span style="font-size:.75rem;color:var(--text3)">${esc(e.duration_minutes)} min</span></td>
+      <td>${fmtDateTime(e.exam_date)}<br><span style="font-size:.75rem;color:var(--text3)">${esc(e.duration_minutes)} мин</span></td>
       <td>${esc(counts[e.id] || 0)} / ${esc(e.max_seats)}</td>
-      <td><span class="badge ${statusBadge[e.status] || 'badge-gray'}">${esc(e.status)}</span></td>
-      <td><button class="btn btn-sm btn-secondary" onclick="viewExamRegs(${e.id})">👥 Regs</button> <button class="btn btn-sm btn-secondary" onclick="openExamModal(${e.id})">✏️</button>${session.role === 'owner' ? ` <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">🗑</button>` : ''}</td>
+      <td><span class="badge ${statusBadge[e.status] || 'badge-gray'}">${esc(examStatusLabels[e.status] || e.status)}</span></td>
+      <td><button class="btn btn-sm btn-secondary" onclick="viewExamRegs(${e.id})">👥 Записи</button> <button class="btn btn-sm btn-secondary" onclick="openExamModal(${e.id})">✏️</button>${session.role === 'owner' ? ` <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">🗑</button>` : ''}</td>
     </tr>`).join('') + '</tbody></table></div>';
 }
 
 function openExamModal(editId) {
   const isEdit = typeof editId === 'number';
-  const title = isEdit ? 'Edit Mock Exam' : 'New Mock Exam';
+  const title = isEdit ? 'Изменить экзамен' : 'Новый экзамен';
 
   openModal(`
     <div class="modal-title">${title}<button class="modal-close" onclick="closeModal()">✕</button></div>
-    <div id="examFormBody">Loading...</div>
+    <div id="examFormBody">Загрузка…</div>
   `);
 
   if (isEdit) {
@@ -285,25 +287,25 @@ function openExamModal(editId) {
 
 function fillExamForm(title, desc, course, date, time, dur, seats, status, editId, price, location) {
   $('examFormBody').innerHTML = `
-    <div class="form-group"><label>Title</label><input class="form-control" id="exTitle" value="${esc(title)}" placeholder="e.g. IELTS Mock Test #5"/></div>
-    <div class="form-group"><label>Description</label><textarea class="form-control" id="exDesc" placeholder="Optional details...">${esc(desc)}</textarea></div>
+    <div class="form-group"><label>Название</label><input class="form-control" id="exTitle" value="${esc(title)}" placeholder="например: IELTS CD Mock №5"/></div>
+    <div class="form-group"><label>Описание</label><textarea class="form-control" id="exDesc" placeholder="Необязательно">${esc(desc)}</textarea></div>
     <div class="form-row">
-      <div class="form-group"><label>Course Type</label><select class="form-control" id="exCourse"><option value="ielts" ${course==='ielts'?'selected':''}>IELTS Preparation</option><option value="general" ${course==='general'?'selected':''}>General English</option><option value="advanced" ${course==='advanced'?'selected':''}>Advanced English</option><option value="kids" ${course==='kids'?'selected':''}>Kids English</option></select></div>
-      <div class="form-group"><label>Status</label><select class="form-control" id="exStatus"><option value="upcoming" ${status==='upcoming'?'selected':''}>Upcoming</option><option value="in_progress" ${status==='in_progress'?'selected':''}>In Progress</option><option value="completed" ${status==='completed'?'selected':''}>Completed</option><option value="cancelled" ${status==='cancelled'?'selected':''}>Cancelled</option></select></div>
+      <div class="form-group"><label>Курс</label><select class="form-control" id="exCourse"><option value="ielts" ${course==='ielts'?'selected':''}>IELTS Preparation</option><option value="general" ${course==='general'?'selected':''}>General English</option><option value="advanced" ${course==='advanced'?'selected':''}>Advanced English</option><option value="kids" ${course==='kids'?'selected':''}>Kids English</option></select></div>
+      <div class="form-group"><label>Статус</label><select class="form-control" id="exStatus"><option value="upcoming" ${status==='upcoming'?'selected':''}>Предстоит</option><option value="in_progress" ${status==='in_progress'?'selected':''}>Идёт</option><option value="completed" ${status==='completed'?'selected':''}>Завершён</option><option value="cancelled" ${status==='cancelled'?'selected':''}>Отменён</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Date</label><input class="form-control" id="exDate" type="date" value="${esc(date)}"/></div>
-      <div class="form-group"><label>Time</label><input class="form-control" id="exTime" type="time" value="${esc(time)}"/></div>
+      <div class="form-group"><label>Дата</label><input class="form-control" id="exDate" type="date" value="${esc(date)}"/></div>
+      <div class="form-group"><label>Время (Ташкент)</label><input class="form-control" id="exTime" type="time" value="${esc(time)}"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Duration (minutes)</label><input class="form-control" id="exDur" type="number" value="${esc(dur)}"/></div>
-      <div class="form-group"><label>Max Seats</label><input class="form-control" id="exSeats" type="number" value="${esc(seats)}"/></div>
+      <div class="form-group"><label>Длительность (минуты)</label><input class="form-control" id="exDur" type="number" value="${esc(dur)}"/></div>
+      <div class="form-group"><label>Всего мест</label><input class="form-control" id="exSeats" type="number" value="${esc(seats)}"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Price (UZS)</label><input class="form-control" id="exPrice" type="number" min="0" step="1000" value="${esc(price ?? '')}" placeholder="e.g. 150000"/></div>
-      <div class="form-group"><label>Location</label><input class="form-control" id="exLocation" value="${esc(location || '')}" placeholder="e.g. Stanford Main Center, Nukus"/></div>
+      <div class="form-group"><label>Цена (сум)</label><input class="form-control" id="exPrice" type="number" min="0" step="1000" value="${esc(price ?? '')}" placeholder="например: 150000"/></div>
+      <div class="form-group"><label>Место</label><input class="form-control" id="exLocation" value="${esc(location || '')}" placeholder="например: Stanford Main Center, Nukus"/></div>
     </div>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveExamBtn">${editId ? 'Save Changes' : 'Create Exam'}</button></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" id="saveExamBtn">${editId ? 'Сохранить' : 'Создать экзамен'}</button></div>
   `;
   $('saveExamBtn').addEventListener('click', () => saveExam(editId));
 }
@@ -321,9 +323,9 @@ async function saveExam(editId) {
   const price = parseInt(priceText, 10);
   const location = $('exLocation').value.trim();
 
-  if (!title || !date || !time) { alert('Title, date, and time are required'); return; }
-  if (priceText === '' || isNaN(price) || price < 0) { alert('Price (UZS) is required and cannot be negative'); return; }
-  if (!location) { alert('Location is required'); return; }
+  if (!title || !date || !time) { alert('Укажите название, дату и время'); return; }
+  if (priceText === '' || isNaN(price) || price < 0) { alert('Укажите цену в сумах (не меньше 0)'); return; }
+  if (!location) { alert('Укажите место проведения'); return; }
 
   const examDate = new Date(date + 'T' + time).toISOString();
   const row = { title, description: desc || null, course_type: course, exam_date: examDate, duration_minutes: dur, max_seats: seats, status, price_uzs: price, location };
@@ -332,16 +334,16 @@ async function saveExam(editId) {
     ? await api('PATCH', 'admin/exams/' + editId + '/', row)
     : await api('POST', 'admin/exams/', row);
   if (error) { showApiError(error); return; }
-  toast(editId ? 'Exam updated' : 'Exam created');
+  toast(editId ? 'Экзамен сохранён' : 'Экзамен создан');
   closeModal();
   renderExams();
 }
 
 async function deleteExam(id) {
-  if (!confirm('Delete this exam and all its registrations?')) return;
+  if (!confirm('Удалить этот экзамен и все записи на него?')) return;
   const { error } = await api('DELETE', 'admin/exams/' + id + '/');
   if (error) { showApiError(error); return; }
-  toast('Exam deleted');
+  toast('Экзамен удалён');
   renderExams();
 }
 
@@ -356,7 +358,7 @@ async function viewExamRegs(examId) {
   const scoreInput = (r, band) => `<input class="score-input" inputmode="decimal" data-reg="${r.id}" data-band="${band}" value="${r[band] === null || r[band] === undefined ? '' : Number(r[band]).toFixed(1)}" placeholder="—" aria-label="${band}"/>`;
 
   openModal(`
-    <div class="modal-title">${esc(exam?.title || 'Exam')} — записи (${regsList.length})<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
+    <div class="modal-title">${esc(exam?.title || 'Экзамен')} — записи (${regsList.length})<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
     ${regsList.length ? `<p class="hint" style="margin:-8px 0 16px">Баллы L / R / W / S: от 0 до 9 с шагом 0.5. Overall считается автоматически. Студент увидит результат на сайте по номеру билета и телефону.</p>
     <div class="table-wrap"><table><thead><tr><th>Билет</th><th>Кандидат</th><th>Телефон</th><th>Пол</th><th>Оплата</th><th>Был?</th><th>L</th><th>R</th><th>W</th><th>S</th><th>Overall</th><th></th></tr></thead><tbody>` +
       regsList.map(r => `
@@ -386,7 +388,7 @@ async function viewExamRegs(examId) {
           <td><span class="overall-pill" data-overall="${r.id}">${bandText(r.overall)}</span></td>
           <td><button class="btn btn-sm btn-dark" onclick="saveRegScores(${r.id}, ${examId})">Сохранить</button></td>
         </tr>`).join('') +
-      '</tbody></table></div>' : '<div class="empty-state"><div class="icon">👥</div><h3>Записей пока нет</h3><p>Студенты записываются на сайте, на странице mock.html</p></div>'}
+      '</tbody></table></div>' : '<div class="empty-state"><div class="icon">👥</div><h3>Записей пока нет</h3><p>Студенты записываются на сайте, на странице «IELTS CD Mock Exam»</p></div>'}
   `, true);
 
   // Live Overall preview while typing the four bands
@@ -430,10 +432,10 @@ async function renderStudents() {
   mainContent.innerHTML = `
     <div class="page-header"><h1>Заявки</h1><p>Заявки с сайта: кнопка «Записаться» на карточке курса и форма «Оставить заявку». Заметка видна только сотрудникам.</p></div>
     <div class="filter-bar">
-      <select id="studFilter"><option value="">All statuses</option><option value="new">🆕 New</option><option value="contacted">📞 Contacted</option><option value="enrolled">✅ Enrolled</option><option value="declined">❌ Declined</option></select>
-      <select id="studCourseFilter"><option value="">All courses</option><option value="ielts">IELTS</option><option value="general">General</option><option value="advanced">Advanced</option><option value="kids">Kids</option><option value="unsure">Не знает</option></select>
+      <select id="studFilter"><option value="">Все статусы</option><option value="new">🆕 Новая</option><option value="contacted">📞 Связались</option><option value="enrolled">✅ Записан</option><option value="declined">❌ Отказ</option></select>
+      <select id="studCourseFilter"><option value="">Все курсы</option><option value="ielts">IELTS Preparation</option><option value="general">General English</option><option value="advanced">Advanced English</option><option value="kids">Kids English</option><option value="unsure">Не знает</option></select>
     </div>
-    <div id="studentsList">Loading...</div>
+    <div id="studentsList">Загрузка…</div>
   `;
   $('studFilter').addEventListener('change', loadStudents);
   $('studCourseFilter').addEventListener('change', loadStudents);
@@ -447,11 +449,11 @@ async function loadStudents() {
   if (sf) params.set('status', sf);
   if (cf) params.set('course', cf);
   const { data, error } = await api('GET', 'admin/students/?' + params.toString());
-  if (error) { $('studentsList').textContent = error.detail || 'Could not load students'; return; }
+  if (error) { $('studentsList').textContent = error.detail || 'Не удалось загрузить заявки'; return; }
   const students = data || [];
 
   if (!students.length) {
-    $('studentsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">👥</div><h3>No registrations found</h3><p>Registrations from the public site will appear here</p></div></div>';
+    $('studentsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">👥</div><h3>Заявок не найдено</h3><p>Здесь появляются заявки с сайта</p></div></div>';
     return;
   }
 
@@ -499,18 +501,18 @@ async function updateStudentStatus(id, status) {
 // NEWS
 // ════════════════════════════════════════════
 async function renderNews() {
-  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>News</h1><p>Manage news posts for the centre</p></div><button class="btn btn-primary" id="addNewsBtn">+ New Post</button></div><div id="newsList">Loading...</div>';
+  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Новости</h1><p>Новости центра</p></div><button class="btn btn-primary" id="addNewsBtn">+ Новая новость</button></div><div id="newsList">Загрузка…</div>';
   $('addNewsBtn').addEventListener('click', () => openNewsModal());
   await loadNews();
 }
 
 async function loadNews() {
   const { data, error } = await api('GET', 'admin/news/');
-  if (error) { $('newsList').textContent = error.detail || 'Could not load news'; return; }
+  if (error) { $('newsList').textContent = error.detail || 'Не удалось загрузить новости'; return; }
   const news = data || [];
 
   if (!news.length) {
-    $('newsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📰</div><h3>No news posts</h3><p>Publish your first news post</p></div></div>';
+    $('newsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📰</div><h3>Новостей пока нет</h3><p>Опубликуйте первую новость</p></div></div>';
     return;
   }
 
@@ -519,8 +521,8 @@ async function loadNews() {
       <div class="card-title"><span>${esc(n.title)}</span><span style="font-size:.75rem;color:var(--text3);font-family:Inter,sans-serif;font-weight:400">${fmtDate(n.created_at)}</span></div>
       <p style="font-size:.88rem;color:var(--text2);line-height:1.65;margin-bottom:16px">${esc(n.body || '')}</p>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-sm btn-secondary" onclick="openNewsModal(${n.id})">✏️ Edit</button>
-        ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deleteNews(${n.id})">🗑 Delete</button>` : ''}
+        <button class="btn btn-sm btn-secondary" onclick="openNewsModal(${n.id})">✏️ Изменить</button>
+        ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deleteNews(${n.id})">🗑 Удалить</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -528,7 +530,7 @@ async function loadNews() {
 
 function openNewsModal(editId) {
   const isEdit = typeof editId === 'number';
-  openModal(`<div class="modal-title">${isEdit ? 'Edit Post' : 'New Post'}<button class="modal-close" onclick="closeModal()">✕</button></div><div id="newsFormBody">Loading...</div>`);
+  openModal(`<div class="modal-title">${isEdit ? 'Изменить новость' : 'Новая новость'}<button class="modal-close" onclick="closeModal()">✕</button></div><div id="newsFormBody">Загрузка…</div>`);
 
   if (isEdit) {
     api('GET', 'admin/news/' + editId + '/').then(({ data: n, error }) => {
@@ -542,9 +544,9 @@ function openNewsModal(editId) {
 
 function fillNewsForm(title, body, editId) {
   $('newsFormBody').innerHTML = `
-    <div class="form-group"><label>Title</label><input class="form-control" id="newsTitle" value="${esc(title)}" placeholder="e.g. Autumn IELTS intake open"/></div>
-    <div class="form-group"><label>Body</label><textarea class="form-control" id="newsBody" rows="4" placeholder="Post details...">${esc(body)}</textarea></div>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="saveNewsBtn">${editId ? 'Save Changes' : 'Publish'}</button></div>
+    <div class="form-group"><label>Заголовок</label><input class="form-control" id="newsTitle" value="${esc(title)}" placeholder="например: Открыт набор в группу IELTS"/></div>
+    <div class="form-group"><label>Текст</label><textarea class="form-control" id="newsBody" rows="4" placeholder="Текст новости">${esc(body)}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" id="saveNewsBtn">${editId ? 'Сохранить' : 'Опубликовать'}</button></div>
   `;
   $('saveNewsBtn').addEventListener('click', () => saveNews(editId));
 }
@@ -552,22 +554,22 @@ function fillNewsForm(title, body, editId) {
 async function saveNews(editId) {
   const title = $('newsTitle').value.trim();
   const body = $('newsBody').value.trim();
-  if (!title) { alert('Title is required'); return; }
+  if (!title) { alert('Укажите заголовок'); return; }
 
   const { error } = editId
     ? await api('PATCH', 'admin/news/' + editId + '/', { title, body })
     : await api('POST', 'admin/news/', { title, body });
   if (error) { showApiError(error); return; }
-  toast(editId ? 'Post updated' : 'Post published');
+  toast(editId ? 'Новость сохранена' : 'Новость опубликована');
   closeModal();
   renderNews();
 }
 
 async function deleteNews(id) {
-  if (!confirm('Delete this news post?')) return;
+  if (!confirm('Удалить эту новость?')) return;
   const { error } = await api('DELETE', 'admin/news/' + id + '/');
   if (error) { showApiError(error); return; }
-  toast('Post deleted');
+  toast('Новость удалена');
   renderNews();
 }
 
@@ -588,7 +590,7 @@ async function apiUpload(method, path, formData) {
     const data = await res.json().catch(() => ({}));
     return res.ok ? { data } : { error: { status: res.status, ...data } };
   } catch (e) {
-    return { error: { detail: 'Network error — check your connection.' } };
+    return { error: { detail: 'Нет связи с сервером — проверьте интернет.' } };
   }
 }
 
@@ -625,7 +627,7 @@ async function renderGallery() {
       </div>
       <div id="uploadStatus" style="font-size:.84rem;color:var(--text2)"></div>
     </div>
-    <div id="galleryList">Loading...</div>
+    <div id="galleryList">Загрузка…</div>
   `;
 
   const zone = $('uploadZone');
@@ -661,7 +663,7 @@ async function uploadPhotos(fileList) {
 
 async function loadGallery() {
   const { data, error } = await api('GET', 'admin/gallery/');
-  if (error) { $('galleryList').textContent = error.detail || 'Could not load photos'; return; }
+  if (error) { $('galleryList').textContent = error.detail || 'Не удалось загрузить фото'; return; }
   galleryPhotos = data || [];
 
   if (!galleryPhotos.length) {

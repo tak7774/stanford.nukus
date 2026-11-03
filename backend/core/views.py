@@ -119,12 +119,12 @@ class PublicExamRegistrationCreate(PublicView, APIView):
             )
             if not exam.is_open_for_registration():
                 return Response(
-                    {"code": "EXAM_CLOSED", "detail": "Registration for this exam is closed."},
+                    {"code": "EXAM_CLOSED", "detail": "Запись на этот экзамен закрыта."},
                     status=status.HTTP_409_CONFLICT,
                 )
             if exam.registrations.count() >= exam.max_seats:
                 return Response(
-                    {"code": "EXAM_FULL", "detail": "All seats for this exam are taken."},
+                    {"code": "EXAM_FULL", "detail": "Все места на этот экзамен заняты."},
                     status=status.HTTP_409_CONFLICT,
                 )
             # Payment is never trusted from the browser: an admin verifies it in admin.html.
@@ -320,7 +320,7 @@ class ReorderView(APIView):
     def post(self, request):
         ids = request.data.get("ids")
         if not isinstance(ids, list) or not all(isinstance(i, int) for i in ids):
-            return Response({"detail": "ids must be a list of ids"}, status=400)
+            return Response({"detail": "ids должен быть списком id"}, status=400)
         with transaction.atomic():
             for position, pk in enumerate(ids):
                 self.model.objects.filter(pk=pk).update(position=position)
@@ -374,17 +374,17 @@ class LoginView(APIView):
         email = str(request.data.get("email", "")).strip()
         password = str(request.data.get("password", ""))
         if not email or not password:
-            return Response({"detail": "Enter email and password"}, status=400)
+            return Response({"detail": "Введите email и пароль"}, status=400)
 
         User = get_user_model()
         account = User.objects.filter(email__iexact=email).first()
         username = account.get_username() if account else email
         user = authenticate(request, username=username, password=password)
         if user is None:
-            return Response({"detail": "Invalid email or password"}, status=400)
+            return Response({"detail": "Неверный email или пароль"}, status=400)
         if get_role(user) is None:
             return Response(
-                {"detail": "You are not listed in staff_roles. Ask the owner to add you."},
+                {"detail": "Вас нет в списке сотрудников (staff_roles). Попросите владельца добавить вас."},
                 status=403,
             )
         login(request, user)
