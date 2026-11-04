@@ -17,6 +17,8 @@ ROWS = [
     # ── Header / common ──
     ("nav-courses", "Курсы", "Kurslar", "Courses"),
     ("nav-mock", "Mock Exam", "Mock Exam", "Mock Exam"),
+    ("nav-portal", "Кабинет", "Kabinet", "Portal"),
+    ("portal-page-title", "Кабинет студента и преподавателя | Stanford Language Center", "Student hám oqıtıwshı kabineti | Stanford Language Center", "Student and teacher portal | Stanford Language Center"),
     ("nav-results", "Результаты", "Nátiyjeler", "Results"),
     ("nav-teachers", "Преподаватели", "Oqıtıwshılar", "Teachers"),
     ("nav-faq", "Вопросы", "Sorawlar", "FAQ"),

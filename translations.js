@@ -5,6 +5,8 @@ window.TRANSLATIONS = {
  "ru": {
   "nav-courses": "Курсы",
   "nav-mock": "Mock Exam",
+  "nav-portal": "Кабинет",
+  "portal-page-title": "Кабинет студента и преподавателя | Stanford Language Center",
   "nav-results": "Результаты",
   "nav-teachers": "Преподаватели",
   "nav-faq": "Вопросы",
@@ -249,6 +251,8 @@ window.TRANSLATIONS = {
  "kaa": {
   "nav-courses": "Kurslar",
   "nav-mock": "Mock Exam",
+  "nav-portal": "Kabinet",
+  "portal-page-title": "Student hám oqıtıwshı kabineti | Stanford Language Center",
   "nav-results": "Nátiyjeler",
   "nav-teachers": "Oqıtıwshılar",
   "nav-faq": "Sorawlar",
@@ -493,6 +497,8 @@ window.TRANSLATIONS = {
  "en": {
   "nav-courses": "Courses",
   "nav-mock": "Mock Exam",
+  "nav-portal": "Portal",
+  "portal-page-title": "Student and teacher portal | Stanford Language Center",
   "nav-results": "Results",
   "nav-teachers": "Teachers",
   "nav-faq": "FAQ",

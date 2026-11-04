@@ -97,6 +97,8 @@
   .nav-links a{ display:block; padding:7px 11px; border-radius:var(--pill); text-decoration:none; font-weight:600; font-size:13.5px; transition:background-color .2s; }
   .nav-links a:hover{ background:var(--mist); }
   .nav-actions{ display:flex; align-items:center; gap:8px; }
+  .portal-link{ display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 14px; border-radius:var(--pill); border:1.5px solid var(--line); font-weight:700; font-size:13px; text-decoration:none; transition:background-color .2s, border-color .2s; }
+  .portal-link:hover{ background:var(--yellow); border-color:var(--yellow); color:#141416; }
   .lang-switch{ display:inline-flex; padding:3px; gap:2px; border-radius:var(--pill); background:var(--mist); }
   .lang-switch button{ width:32px; height:28px; border:none; background:none; border-radius:var(--pill); font-weight:700; font-size:11px; transition:background-color .2s; }
   .lang-switch button:hover{ background:#E9EAED; }
@@ -354,6 +356,8 @@
     .lang-switch button{ width:26px; height:26px; font-size:10.5px; }
     .theme-toggle{ width:34px; height:34px; }
     .nav-actions{ gap:6px; }
+    .portal-link{ width:34px; height:34px; padding:0; justify-content:center; }
+    .portal-link span{ display:none; }
     .hamburger{ width:36px; height:36px; }
     .hamburger span{ left:10px; right:10px; }
     .hamburger span:nth-child(1){ top:12px; } .hamburger span:nth-child(2){ top:17px; } .hamburger span:nth-child(3){ top:22px; }
@@ -407,6 +411,7 @@
   <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g></symbol>
   <symbol id="i-trend" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></g></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></g></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></g></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></g></symbol>
@@ -434,6 +439,7 @@
           <button type="button" data-lang="kaa" lang="kaa" title="Qaraqalpaqsha">QQ</button>
           <button type="button" data-lang="en" lang="en">EN</button>
         </div>
+        <a href="portal.html" class="portal-link" data-i18n-aria="nav-portal" aria-label="Кабинет"><svg class="icon"><use href="#i-user"/></svg><span data-i18n="nav-portal">Кабинет</span></a>
         <a href="#apply" class="btn btn-ink btn-sm nav-enroll" data-i18n="nav-enroll">Записаться</a>
         <button type="button" class="hamburger" id="hamburger" aria-controls="navLinks" aria-expanded="false" data-i18n-aria="nav-menu" aria-label="Меню"><span></span><span></span><span></span></button>
       </div>
