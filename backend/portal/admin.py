@@ -7,10 +7,10 @@ from .models import Assignment, Book, Enrollment, Group, Lesson, Profile, Submis
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ["full_name", "role", "phone", "email", "note", "approved", "created_at"]
+    list_display = ["full_name", "role", "phone", "note", "approved", "created_at"]
     list_filter = ["role", "approved"]
     list_editable = ["approved"]
-    search_fields = ["full_name", "phone", "email"]
+    search_fields = ["full_name", "phone"]
     readonly_fields = ["user"]
 
 

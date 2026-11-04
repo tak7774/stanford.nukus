@@ -25,15 +25,21 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from core import telegram
-from core.models import StaffRole
 
 from .models import Assignment, Book, Group, Lesson, Profile, Submission, new_username
 
 PENDING_MESSAGE = "Заявка преподавателя ещё на рассмотрении. Мы позвоним вам, когда аккаунт будет готов."
 
 
-def phone_digits(value):
-    return re.sub(r"\D", "", str(value or ""))
+def normalize_phone(value):
+    """Digits only, always with the country code: '91 303 60 01' and '+998 91 303-60-01' are the same login.
+
+    Returns None when it cannot be a phone number.
+    """
+    digits = re.sub(r"\D", "", str(value or ""))
+    if len(digits) == 9:  # local Uzbek number without +998
+        digits = "998" + digits
+    return digits if 11 <= len(digits) <= 15 else None
 
 
 def profile_of(user):
@@ -83,7 +89,6 @@ class RegisterSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=["student", "teacher"])
     full_name = serializers.CharField(max_length=120)
     phone = serializers.CharField(max_length=30)
-    email = serializers.EmailField(max_length=254)
     password = serializers.CharField(max_length=128, write_only=True, trim_whitespace=False)
     note = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
 
@@ -94,19 +99,12 @@ class RegisterSerializer(serializers.Serializer):
         return v
 
     def validate_phone(self, v):
-        digits = phone_digits(v)
-        if not 9 <= len(digits) <= 15:
-            raise serializers.ValidationError("Введите телефон полностью")
+        digits = normalize_phone(v)
+        if not digits:
+            raise serializers.ValidationError("Введите телефон полностью, например +998 91 303 60 01")
         if Profile.objects.filter(phone=digits).exists():
             raise serializers.ValidationError("Этот телефон уже зарегистрирован")
         return digits
-
-    def validate_email(self, v):
-        v = v.strip().lower()
-        # An email that belongs to staff can never be used for a portal account.
-        if Profile.objects.filter(email=v).exists() or StaffRole.objects.filter(email__iexact=v).exists():
-            raise serializers.ValidationError("Этот email уже занят")
-        return v
 
     def validate(self, data):
         try:
@@ -143,10 +141,10 @@ class RegisterView(APIView):
                 user = User.objects.create_user(new_username(), "", d["password"])
                 profile = Profile.objects.create(
                     user=user, role=d["role"], full_name=d["full_name"], phone=d["phone"],
-                    email=d["email"], note=d["note"], approved=d["role"] == "student",
+                    note=d["note"], approved=d["role"] == "student",
                 )
-        except IntegrityError:  # two people registering the same email/phone at once
-            return Response({"errors": {"email": ["Этот email или телефон уже зарегистрирован"]}}, status=400)
+        except IntegrityError:  # two people registering the same phone at once
+            return Response({"errors": {"phone": ["Этот телефон уже зарегистрирован"]}}, status=400)
 
         if profile.role == "teacher":
             telegram.send_after_commit(
@@ -165,14 +163,14 @@ class LoginView(APIView):
     throttle_scope = "login"
 
     def post(self, request):
-        email = str(request.data.get("email", "")).strip().lower()
+        phone = normalize_phone(request.data.get("phone", ""))
         password = str(request.data.get("password", ""))
-        if not email or not password:
-            return Response({"detail": "Введите email и пароль"}, status=400)
-        profile = Profile.objects.select_related("user").filter(email=email).first()
+        if not str(request.data.get("phone", "")).strip() or not password:
+            return Response({"detail": "Введите телефон и пароль"}, status=400)
+        profile = Profile.objects.select_related("user").filter(phone=phone).first() if phone else None
         user = authenticate(request, username=profile.user.username, password=password) if profile else None
         if user is None:
-            return Response({"detail": "Неверный email или пароль"}, status=400)
+            return Response({"detail": "Неверный телефон или пароль"}, status=400)
         if profile.role == "teacher" and not profile.approved:
             return Response({"detail": PENDING_MESSAGE}, status=403)
         login(request, user)

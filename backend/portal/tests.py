@@ -5,8 +5,6 @@ from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.test import APIClient, APITestCase
 
-from core.models import StaffRole
-
 from .models import Assignment, Book, Enrollment, Group, Lesson, Profile, Submission
 
 PW = "Zq7!hello-portal"
@@ -14,7 +12,7 @@ PW = "Zq7!hello-portal"
 
 def signup(client, role="student", **kw):
     data = {"role": role, "full_name": "Aigerim Kasymova", "phone": "+998 91 303 60 01",
-            "email": "Aigerim@Example.com", "password": PW, "note": "IELTS"}
+            "password": PW, "note": "IELTS"}
     data.update(kw)
     return client.post("/api/portal/register/", data, format="json")
 
@@ -24,38 +22,49 @@ class PortalBase(APITestCase):
         cache.clear()
         self.teacher_user = get_user_model().objects.create_user("portal-t1", "", PW)
         self.teacher = Profile.objects.create(user=self.teacher_user, role="teacher", full_name="Teacher One",
-                                              phone="998900000001", email="t1@example.com", approved=True)
+                                              phone="998900000001", approved=True)
         self.other_user = get_user_model().objects.create_user("portal-t2", "", PW)
         self.other_teacher = Profile.objects.create(user=self.other_user, role="teacher", full_name="Teacher Two",
-                                                    phone="998900000002", email="t2@example.com", approved=True)
+                                                    phone="998900000002", approved=True)
         self.group = Group.objects.create(title="IELTS Intensive", teacher=self.teacher)
         self.other_group = Group.objects.create(title="Other group", teacher=self.other_teacher)
 
     def make_student(self, n=1, group=None):
         u = get_user_model().objects.create_user(f"portal-s{n}", "", PW)
-        p = Profile.objects.create(user=u, role="student", full_name=f"Student {n}", phone=f"99890000010{n}",
-                                   email=f"s{n}@example.com", approved=True)
+        p = Profile.objects.create(user=u, role="student", full_name=f"Student {n}", phone=f"99890000010{n}", approved=True)
         Enrollment.objects.create(group=group or self.group, student=p)
         return p
 
     def login_as(self, profile):
         c = APIClient()
-        r = c.post("/api/portal/login/", {"email": profile.email, "password": PW}, format="json")
+        r = c.post("/api/portal/login/", {"phone": profile.phone, "password": PW}, format="json")
         self.assertEqual(r.status_code, 200, r.content)
         return c
 
 
 class AccountTests(PortalBase):
+    def login(self, c, phone, password=PW):
+        return c.post("/api/portal/login/", {"phone": phone, "password": password}, format="json")
+
     def test_student_signup_logs_in_and_has_no_staff_rights(self):
         c = APIClient()
         r = signup(c)
         self.assertEqual(r.status_code, 201, r.content)
         self.assertEqual(c.get("/api/portal/me/").json()["role"], "student")
-        p = Profile.objects.get(email="aigerim@example.com")
-        self.assertEqual(p.phone, "998913036001")
+        p = Profile.objects.get(phone="998913036001")
         self.assertEqual(p.user.email, "")
         self.assertEqual(c.get("/api/auth/me/").json(), {"authenticated": False})   # not staff
         self.assertEqual(c.get("/api/admin/students/").status_code, 403)
+
+    def test_no_email_is_asked_or_stored(self):
+        self.assertFalse(hasattr(Profile, "email"))
+        self.assertEqual(signup(APIClient(), email="ignored@example.com").status_code, 201)
+        self.assertEqual(get_user_model().objects.get(portal_profile__phone="998913036001").email, "")
+
+    def test_login_accepts_any_way_of_writing_the_same_phone(self):
+        signup(APIClient())
+        for written in ["+998 91 303 60 01", "998913036001", "91 303 60 01", "(91) 303-60-01", "+998913036001"]:
+            self.assertEqual(self.login(APIClient(), written).status_code, 200, written)
 
     def test_teacher_signup_waits_for_approval(self):
         c = APIClient()
@@ -63,36 +72,33 @@ class AccountTests(PortalBase):
         self.assertEqual(r.status_code, 201)
         self.assertTrue(r.json()["pending"])
         self.assertEqual(c.get("/api/portal/me/").json(), {"authenticated": False})
-        r = c.post("/api/portal/login/", {"email": "aigerim@example.com", "password": PW}, format="json")
-        self.assertEqual(r.status_code, 403)
-        Profile.objects.filter(email="aigerim@example.com").update(approved=True)
-        r = c.post("/api/portal/login/", {"email": "AIGERIM@example.com", "password": PW}, format="json")
+        self.assertEqual(self.login(c, "+998 91 303 60 01").status_code, 403)
+        Profile.objects.filter(phone="998913036001").update(approved=True)
+        r = self.login(c, "91 303 60 01")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["role"], "teacher")
 
-    def test_staff_email_cannot_be_registered(self):
-        StaffRole.objects.create(email="owner@stanford.uz", role="owner")
-        r = signup(APIClient(), email="Owner@Stanford.uz")
-        self.assertEqual(r.status_code, 400)
-        self.assertIn("email", r.json()["errors"])
-
     def test_duplicates_and_weak_passwords_rejected(self):
         self.assertEqual(signup(APIClient()).status_code, 201)
-        self.assertIn("email", signup(APIClient(), phone="+998 90 111 22 33").json()["errors"])
-        self.assertIn("phone", signup(APIClient(), email="new@example.com").json()["errors"])
-        self.assertIn("password", signup(APIClient(), email="a@example.com", phone="998900009999", password="12345678").json()["errors"])
-        self.assertIn("phone", signup(APIClient(), email="b@example.com", phone="123").json()["errors"])
+        # the same number written differently is still a duplicate
+        self.assertIn("phone", signup(APIClient(), phone="91 303 60 01").json()["errors"])
+        self.assertIn("phone", signup(APIClient()).json()["errors"])
+        self.assertIn("password", signup(APIClient(), phone="998900009999", password="12345678").json()["errors"])
+        for bad in ["123", "abc", "", "99891"]:
+            self.assertIn("phone", signup(APIClient(), phone=bad).json()["errors"], bad)
 
-    def test_wrong_password_and_unknown_email_get_same_answer(self):
+    def test_wrong_password_and_unknown_phone_get_same_answer(self):
         c = APIClient()
-        a = c.post("/api/portal/login/", {"email": "t1@example.com", "password": "nope"}, format="json")
-        b = c.post("/api/portal/login/", {"email": "ghost@example.com", "password": "nope"}, format="json")
+        a = self.login(c, "998900000001", "nope")
+        b = self.login(c, "998911111111", "nope")
         self.assertEqual((a.status_code, a.json()), (b.status_code, b.json()))
+        self.assertEqual(self.login(c, "not a phone", "nope").status_code, 400)
+        self.assertEqual(c.post("/api/portal/login/", {"phone": "", "password": ""}, format="json").status_code, 400)
 
     def test_portal_user_cannot_use_staff_api_or_staff_login(self):
         c = self.login_as(self.teacher)
         self.assertEqual(c.get("/api/admin/dashboard/").status_code, 403)
-        r = APIClient().post("/api/auth/login/", {"email": "t1@example.com", "password": PW}, format="json")
+        r = APIClient().post("/api/auth/login/", {"email": "998900000001", "password": PW}, format="json")
         self.assertEqual(r.status_code, 400)
 
     def test_logout(self):
@@ -109,7 +115,7 @@ class AccountTests(PortalBase):
         self.assertEqual(self.login_as(self.teacher).get("/api/portal/student/").status_code, 403)
         unapproved = Profile.objects.create(
             user=get_user_model().objects.create_user("portal-x", "", PW), role="teacher", full_name="Pending T",
-            phone="998900000009", email="x@example.com", approved=False)
+            phone="998900000009", approved=False)
         c = APIClient(); c.force_login(unapproved.user)
         self.assertEqual(c.get("/api/portal/teacher/").status_code, 403)
         self.assertEqual(c.get("/api/portal/library/").status_code, 403)

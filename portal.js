@@ -129,21 +129,21 @@
   // ── Login ────────────────────────────────────────────────
   function renderLogin() {
     var err = h('div', { class: 'err', role: 'alert' });
-    var email = input('email', 'email', 'name@example.com', { autocomplete: 'email', required: true });
+    var phone = input('phone', 'tel', '+998 __ ___ __ __', { autocomplete: 'tel', inputmode: 'tel', required: true });
     var pass = input('pass', 'password', 'Ваш пароль', { autocomplete: 'current-password', required: true });
     var btn = h('button', { type: 'submit', class: 'btn btn-yellow btn-lg', text: 'Войти' });
     var form = h('form', { novalidate: true, onsubmit: function (e) {
       e.preventDefault(); err.textContent = ''; btn.disabled = true;
-      api('POST', 'login/', { email: email.value, password: pass.value }).then(function (res) {
+      api('POST', 'login/', { phone: phone.value, password: pass.value }).then(function (res) {
         btn.disabled = false;
         if (!res.ok) { err.textContent = firstError(res); return; }
         state.me = res.data; go(home());
       });
     } },
       h('div', { class: 'stack', style: 'gap:6px' }, h('h2', { style: 'font-size:28px', text: 'Вход в кабинет' }), h('p', { class: 'muted', text: 'Для студентов и преподавателей Stanford.' })),
-      field('email', 'Электронная почта', email), field('pass', 'Пароль', pass), err, btn);
+      field('phone', 'Номер телефона', phone), field('pass', 'Пароль', pass), err, btn);
     app.replaceChildren(h('div', { class: 'signup' }, authSide('Курсы, задания и книги в одном кабинете', BULLETS, 'Нет аккаунта?', '#register', 'Создать'), form));
-    email.focus();
+    phone.focus();
   }
 
   // ── Register ─────────────────────────────────────────────
@@ -151,8 +151,7 @@
     var role = 'student';
     var f = {
       name: input('name', 'text', 'Например, Айгерим Қасымова', { autocomplete: 'name', maxlength: 120 }),
-      phone: input('phone', 'tel', '+998 __ ___ __ __', { autocomplete: 'tel', maxlength: 30 }),
-      email: input('email', 'email', 'name@example.com', { autocomplete: 'email' }),
+      phone: input('phone', 'tel', '+998 __ ___ __ __', { autocomplete: 'tel', inputmode: 'tel', maxlength: 30 }),
       pass: input('pass', 'password', 'Не короче 8 символов', { autocomplete: 'new-password', maxlength: 128 }),
       subject: input('subject', 'text', 'Например, IELTS Writing', { maxlength: 120 })
     };
@@ -183,13 +182,13 @@
       Object.keys(errs).forEach(function (k) { errs[k].textContent = ''; });
       btn.disabled = true;
       api('POST', 'register/', {
-        role: role, full_name: f.name.value, phone: f.phone.value, email: f.email.value, password: f.pass.value,
+        role: role, full_name: f.name.value, phone: f.phone.value, password: f.pass.value,
         note: role === 'student' ? course.value : f.subject.value
       }).then(function (res) {
         btn.disabled = false;
         if (!res.ok) {
           var shown = false;
-          var map = { full_name: 'name', phone: 'phone', email: 'email', password: 'pass' };
+          var map = { full_name: 'name', phone: 'phone', password: 'pass' };
           Object.keys((res.data && res.data.errors) || {}).forEach(function (k) {
             var v = res.data.errors[k];
             var target = errs[map[k]];
@@ -204,7 +203,7 @@
     } },
       h('div', { class: 'stack', style: 'gap:6px' }, h('h2', { style: 'font-size:28px', text: 'Создать аккаунт' }), h('p', { class: 'muted', text: 'Выберите, кто вы, и заполните данные.' })),
       h('div', { class: 'seg', role: 'group', 'aria-label': 'Роль' }, bS, bT),
-      wrap('name', 'name', 'Имя и фамилия', f.name), wrap('phone', 'phone', 'Телефон', f.phone), wrap('email', 'email', 'Электронная почта', f.email),
+      wrap('name', 'name', 'Имя и фамилия', f.name), wrap('phone', 'phone', 'Номер телефона (по нему вы будете входить)', f.phone),
       courseBox, teacherBox, wrap('pass', 'pass', 'Пароль', f.pass), general, btn);
     app.replaceChildren(h('div', { class: 'signup' }, authSide('Курсы, задания и книги в одном кабинете', BULLETS, 'Уже есть аккаунт?', '#login', 'Войти'), form));
     f.name.focus();

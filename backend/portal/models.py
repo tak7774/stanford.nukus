@@ -1,9 +1,9 @@
 """Student / teacher portal (kabinet.html): accounts, groups, lessons, homework, books.
 
-Portal people are ordinary Django users, but they are NOT staff: their User row has
-no email and a random username, so core.permissions.get_role() (which matches the
-email against staff_roles) can never treat them as staff. The real email and phone
-live on Profile.
+Portal people sign in with phone + password. They are ordinary Django users, but NOT
+staff: their User row has no email and a random username, so
+core.permissions.get_role() (which matches the email against staff_roles) can never
+treat them as staff. The phone lives on Profile.
 """
 import uuid
 
@@ -24,8 +24,8 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="portal_profile")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     full_name = models.CharField(max_length=120)
+    # The login name. Digits only, always with the country code (998...).
     phone = models.CharField("Телефон (только цифры)", max_length=20, unique=True)
-    email = models.EmailField("Email (в нижнем регистре)", unique=True)
     # Student: the course they said they want. Teacher: what they teach.
     note = models.CharField(max_length=120, blank=True)
     # Students are approved at once. Teachers wait until staff tick this box.
