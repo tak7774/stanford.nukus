@@ -4,6 +4,7 @@ from django.http import FileResponse, Http404
 from django.urls import include, path, re_path
 
 urlpatterns = [
+    path("api/portal/", include("portal.urls")),
     path("api/", include("core.urls")),
     # Django's built-in admin: a backup tool for fixing data and managing logins.
     path("api/django-admin/", admin.site.urls),

@@ -74,7 +74,7 @@
   .lang-switch button:hover{ background:#E9EAED; }
   .lang-switch button.active{ background:var(--ink); color:#fff; }
 
-  main{ padding:28px 0 72px; }
+  main.wrap{ padding-top:28px; padding-bottom:72px; }
   .demo-note{ background:var(--yellow-soft); color:var(--on-soft); border-radius:var(--r-sm); padding:10px 16px; font-size:14px; margin-bottom:24px; }
 
   /* Card + shared bits */
@@ -122,7 +122,7 @@
 
   /* Forms */
   label{ font-weight:600; }
-  input[type=text],input[type=tel],input[type=email],input[type=password],input[type=date],input[type=search],select,textarea{ width:100%; height:48px; border:1px solid var(--muted); border-radius:var(--r-sm); padding:0 14px; background:var(--paper); }
+  input[type=text],input[type=tel],input[type=email],input[type=password],input[type=date],input[type=search],input[type=url],select,textarea{ width:100%; height:48px; border:1px solid var(--muted); border-radius:var(--r-sm); padding:0 14px; background:var(--paper); }
   textarea{ height:auto; padding:12px 14px; resize:vertical; }
   input[type=search]{ border-radius:var(--pill); padding:0 20px; }
   .field{ display:flex; flex-direction:column; gap:6px; }
@@ -132,9 +132,9 @@
   :root[data-theme="dark"] .seg button[aria-pressed="true"]{ background:var(--yellow); color:#141416; border-color:var(--yellow); }
   .notice{ background:var(--yellow-soft); color:var(--on-soft); border-radius:var(--r-sm); padding:12px 14px; }
   .filters{ display:flex; flex-wrap:wrap; gap:8px; }
-  .filters button{ height:40px; padding:0 18px; border-radius:var(--pill); border:2px solid var(--muted); background:var(--paper); font-weight:600; }
-  .filters button[aria-pressed="true"]{ background:var(--ink); color:#fff; border-color:var(--ink); }
-  :root[data-theme="dark"] .filters button[aria-pressed="true"]{ background:var(--yellow); color:#141416; border-color:var(--yellow); }
+  .chips button{ height:40px; padding:0 18px; border-radius:var(--pill); border:2px solid var(--muted); background:var(--paper); font-weight:600; }
+  .chips button[aria-pressed="true"]{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  :root[data-theme="dark"] .chips button[aria-pressed="true"]{ background:var(--yellow); color:#141416; border-color:var(--yellow); }
   .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
 
   /* Sign-up screen */
@@ -165,6 +165,32 @@
     .pbar{ border-radius:var(--r-md); }
   }
   @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+
+  /* ── Dynamic portal pieces ── */
+  .err{ color:#B42318; font-size:14px; font-weight:500; }
+  :root[data-theme="dark"] .err{ color:#FF8A80; }
+  .err:empty{ display:none; }
+  .empty{ padding:14px 0; }
+  .chip.late{ background:#FEE4E2; color:#912018; }
+  :root[data-theme="dark"] .chip.late{ background:#3B1613; color:#FF9E94; }
+  .row.wrap-row .panel{ flex-basis:100%; }
+  .panel{ display:flex; flex-direction:column; gap:12px; padding:14px 0 4px; }
+  .panel textarea{ width:100%; }
+  .pre{ white-space:pre-wrap; overflow-wrap:anywhere; }
+  .answer{ background:var(--mist); border-radius:var(--r-sm); padding:12px 14px; }
+  .row.nowrap{ flex-wrap:nowrap; }
+  .row .day{ width:96px; flex-shrink:0; font-weight:600; text-transform:capitalize; }
+  .between{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .toolbar{ display:flex; flex-wrap:wrap; gap:12px 16px; align-items:center; }
+  ul.plain{ list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .card.book{ display:flex; gap:16px; }
+  .btn:disabled{ opacity:.55; cursor:not-allowed; }
+  .toast{ position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); background:var(--ink); color:#fff; padding:12px 20px; border-radius:var(--pill); font-weight:600; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s var(--ease); z-index:200; max-width:calc(100vw - 28px); }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+  .toast.bad{ background:#B42318; }
+  :root[data-theme="dark"] .toast{ background:#F2F2F3; color:#141416; }
+  :root[data-theme="dark"] .toast.bad{ background:#FF8A80; color:#141416; }
+  .signup form{ align-self:center; }
 </style>
 </head>
 <body data-title-key="portal-page-title">
@@ -190,254 +216,12 @@
 </header>
 
 <main class="wrap">
-  <p class="demo-note" role="note">Это предварительный просмотр кабинета: данные в нём — примеры, вход и регистрация пока не работают.</p>
-
-  <!-- 1. Sign up -->
-  <section class="screen" id="register" aria-label="Регистрация">
-    <div class="signup">
-      <div class="side">
-        <div style="font-weight:700;font-size:18px">Stanford</div>
-        <div class="stack gap-4">
-          <h1>Курсы, задания и книги в одном кабинете</h1>
-          <ul>
-            <li>Материалы и расписание вашего курса</li>
-            <li>Домашние задания со сроками и оценками</li>
-            <li>Библиотека учебников и книг для чтения</li>
-          </ul>
-        </div>
-        <div>Уже есть аккаунт? <a href="#student">Войти</a></div>
-      </div>
-      <form id="signupForm" novalidate>
-        <div class="stack" style="gap:6px">
-          <h2 style="font-size:28px">Создать аккаунт</h2>
-          <p class="muted">Выберите, кто вы, и заполните данные.</p>
-        </div>
-        <div class="seg" role="group" aria-label="Роль">
-          <button type="button" id="roleStudent" aria-pressed="true">Я студент</button>
-          <button type="button" id="roleTeacher" aria-pressed="false">Я преподаватель</button>
-        </div>
-        <div class="field"><label for="name">Имя и фамилия</label><input id="name" type="text" autocomplete="name" placeholder="Например, Айгерим Қасымова"></div>
-        <div class="field"><label for="phone">Телефон</label><input id="phone" type="tel" autocomplete="tel" placeholder="+998 __ ___ __ __"></div>
-        <div class="field"><label for="email">Электронная почта</label><input id="email" type="email" autocomplete="email" placeholder="name@example.com"></div>
-        <div class="field" id="courseField">
-          <label for="course">Ваш курс</label>
-          <select id="course"><option>IELTS Intensive</option><option>General English</option><option>Пока не записан(а)</option></select>
-        </div>
-        <div id="teacherFields" hidden class="stack gap-3">
-          <div class="field"><label for="subject">Что вы преподаёте</label><input id="subject" type="text" placeholder="Например, IELTS Writing"></div>
-          <div class="notice">Аккаунт преподавателя включает администратор центра. Мы позвоним вам после заявки.</div>
-        </div>
-        <div class="field"><label for="pass">Пароль</label><input id="pass" type="password" autocomplete="new-password" placeholder="Не короче 8 символов"></div>
-        <button type="submit" class="btn btn-yellow btn-lg" id="signupBtn">Создать аккаунт</button>
-      </form>
-    </div>
-  </section>
-
-  <!-- 2. Student -->
-  <section class="screen" id="student" aria-label="Кабинет студента">
-    <div class="pbar">
-      <nav aria-label="Кабинет"><a href="#student" aria-current="page">Главная</a><a href="#student">Мои курсы</a><a href="#student">Задания</a><a href="#library">Библиотека</a></nav>
-      <div class="who"><span class="avatar">АҚ</span><span>Айгерим Қасымова</span></div>
-    </div>
-    <div class="stack gap-5">
-      <div class="stack" style="gap:4px">
-        <h1 class="page">Здравствуйте, Айгерим</h1>
-        <p class="muted">Сегодня среда, 4 ноября. До ближайшего задания остался 1 день.</p>
-      </div>
-      <div class="cols">
-        <div class="main stack gap-5">
-          <section class="stack gap-3">
-            <h2 class="sec">Мои курсы</h2>
-            <div class="grid">
-              <div class="card stack gap-3">
-                <div><div style="font-size:18px;font-weight:700">IELTS Intensive</div><div class="muted">Преподаватель: пример</div></div>
-                <div class="stack" style="gap:6px"><div class="bar"><i style="width:33%"></i></div><div class="muted small">8 из 24 уроков</div></div>
-                <div class="small">Следующее занятие: <b>пятница, 18:00</b></div>
-                <a href="#student" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть курс</a>
-              </div>
-              <div class="card stack gap-3">
-                <div><div style="font-size:18px;font-weight:700">General English</div><div class="muted">Преподаватель: пример</div></div>
-                <div class="stack" style="gap:6px"><div class="bar"><i style="width:62%"></i></div><div class="muted small">15 из 24 уроков</div></div>
-                <div class="small">Следующее занятие: <b>суббота, 10:00</b></div>
-                <a href="#student" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть курс</a>
-              </div>
-            </div>
-          </section>
-          <section class="stack gap-3">
-            <h2 class="sec">Задания</h2>
-            <div class="card list">
-              <div class="row"><div class="grow"><div style="font-weight:600">Writing Task 2: эссе о городах</div><div class="muted small">IELTS Intensive</div></div><div class="muted small">до 6 ноября</div><span class="chip soon">Осталось 2 дня</span></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Reading: Passage 3, вопросы 27–40</div><div class="muted small">IELTS Intensive</div></div><div class="muted small">до 9 ноября</div><span class="chip soon">Не начато</span></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Unit 6: словарь и упражнения</div><div class="muted small">General English</div></div><div class="muted small">сдано 30 октября</div><span class="chip wait">На проверке</span></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Listening: Section 2</div><div class="muted small">IELTS Intensive</div></div><div class="muted small">сдано 27 октября</div><span class="chip done">Проверено: 7.0</span></div>
-            </div>
-          </section>
-        </div>
-        <aside class="stack gap-5">
-          <section class="stack gap-3">
-            <h2 class="sec">Расписание на неделю</h2>
-            <div class="card list">
-              <div class="row" style="flex-wrap:nowrap"><div style="width:96px;font-weight:600;flex-shrink:0">Пятница</div><div><div style="font-weight:500">IELTS Intensive</div><div class="muted small">18:00–19:30</div></div></div>
-              <div class="row" style="flex-wrap:nowrap"><div style="width:96px;font-weight:600;flex-shrink:0">Суббота</div><div><div style="font-weight:500">General English</div><div class="muted small">10:00–11:30</div></div></div>
-              <div class="row" style="flex-wrap:nowrap"><div style="width:96px;font-weight:600;flex-shrink:0">Понедельник</div><div><div style="font-weight:500">IELTS Intensive</div><div class="muted small">18:00–19:30</div></div></div>
-            </div>
-          </section>
-          <section class="stack gap-3">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px"><h2 class="sec">Книги вашего курса</h2><a href="#library" style="font-weight:600">Вся библиотека</a></div>
-            <div class="books"><a href="#library" class="cover c1">Cambridge IELTS 18</a><a href="#library" class="cover c2">Grammar in Use</a><a href="#library" class="cover c3">Vocabulary Builder</a></div>
-          </section>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. Teacher -->
-  <section class="screen" id="teacher" aria-label="Кабинет преподавателя">
-    <div class="pbar">
-      <nav aria-label="Кабинет"><a href="#teacher" aria-current="page">Главная</a><a href="#teacher">Мои группы</a><a href="#teacher">Проверка работ</a><a href="#library">Библиотека</a></nav>
-      <div class="who"><span class="avatar dark">ПР</span><span>Преподаватель (пример)</span></div>
-    </div>
-    <div class="stack gap-5">
-      <div class="stack" style="gap:4px">
-        <h1 class="page">На проверке 4 работы</h1>
-        <p class="muted">Самая старая сдана 2 ноября. Начните с неё.</p>
-      </div>
-      <div class="cols">
-        <div class="main stack gap-5">
-          <section class="stack gap-3">
-            <h2 class="sec">Работы на проверку</h2>
-            <div class="card list">
-              <div class="row"><div class="grow"><div style="font-weight:600">Студент 1 (пример)</div><div class="muted small">Writing Task 2 · IELTS Intensive</div></div><div class="muted small">сдано 2 ноября</div><a href="#teacher" class="btn btn-ink btn-sm">Проверить</a></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Студент 2 (пример)</div><div class="muted small">Writing Task 2 · IELTS Intensive</div></div><div class="muted small">сдано 3 ноября</div><a href="#teacher" class="btn btn-ink btn-sm">Проверить</a></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Студент 3 (пример)</div><div class="muted small">Unit 6: упражнения · General English</div></div><div class="muted small">сдано 3 ноября</div><a href="#teacher" class="btn btn-ink btn-sm">Проверить</a></div>
-              <div class="row"><div class="grow"><div style="font-weight:600">Студент 4 (пример)</div><div class="muted small">Unit 6: упражнения · General English</div></div><div class="muted small">сдано 4 ноября</div><a href="#teacher" class="btn btn-ink btn-sm">Проверить</a></div>
-            </div>
-          </section>
-          <section class="stack gap-3">
-            <h2 class="sec">Мои группы</h2>
-            <div class="grid">
-              <div class="card stack gap-3">
-                <div><div style="font-size:18px;font-weight:700">IELTS Intensive, вечерняя</div><div class="muted">12 студентов</div></div>
-                <div class="small">Ближайшее занятие: <b>пятница, 18:00</b></div>
-                <div class="filters"><a href="#teacher" class="btn btn-ink btn-sm">Список студентов</a><a href="#teacher" class="btn btn-ghost btn-sm">Материалы</a></div>
-              </div>
-              <div class="card stack gap-3">
-                <div><div style="font-size:18px;font-weight:700">General English, утренняя</div><div class="muted">9 студентов</div></div>
-                <div class="small">Ближайшее занятие: <b>суббота, 10:00</b></div>
-                <div class="filters"><a href="#teacher" class="btn btn-ink btn-sm">Список студентов</a><a href="#teacher" class="btn btn-ghost btn-sm">Материалы</a></div>
-              </div>
-            </div>
-          </section>
-        </div>
-        <aside class="stack gap-5">
-          <section class="stack gap-3">
-            <h2 class="sec">Новое задание</h2>
-            <form class="card stack gap-3" onsubmit="return false">
-              <div class="field"><label for="t-title">Название</label><input id="t-title" type="text" placeholder="Например, Writing Task 1"></div>
-              <div class="field"><label for="t-group">Группа</label><select id="t-group"><option>IELTS Intensive, вечерняя</option><option>General English, утренняя</option></select></div>
-              <div class="field"><label for="t-due">Срок сдачи</label><input id="t-due" type="date"></div>
-              <div class="field"><label for="t-text">Что нужно сделать</label><textarea id="t-text" rows="3"></textarea></div>
-              <button type="button" class="btn btn-yellow btn-lg">Опубликовать задание</button>
-            </form>
-          </section>
-          <section class="stack gap-3">
-            <h2 class="sec">Книги и файлы</h2>
-            <div class="card stack gap-3">
-              <p class="muted">Загрузите PDF, аудио или ссылку. Студенты выбранной группы увидят файл в библиотеке.</p>
-              <button type="button" class="btn btn-ghost">Загрузить файл</button>
-            </div>
-          </section>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Library -->
-  <section class="screen" id="library" aria-label="Библиотека">
-    <div class="pbar">
-      <nav aria-label="Кабинет"><a href="#student">Главная</a><a href="#student">Мои курсы</a><a href="#student">Задания</a><a href="#library" aria-current="page">Библиотека</a></nav>
-      <div class="who"><span class="avatar">АҚ</span><span>Айгерим Қасымова</span></div>
-    </div>
-    <div class="stack gap-4">
-      <div class="stack" style="gap:4px">
-        <h1 class="page">Библиотека</h1>
-        <p class="muted">Учебники и материалы, которые открыли преподаватели для ваших курсов.</p>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center">
-        <div style="flex:1 1 280px"><label for="q" class="sr">Поиск по названию</label><input id="q" type="search" placeholder="Найти книгу по названию"></div>
-        <div class="filters" id="filters">
-          <button type="button" data-f="all" aria-pressed="true">Все</button>
-          <button type="button" data-f="IELTS Intensive" aria-pressed="false">IELTS</button>
-          <button type="button" data-f="General English" aria-pressed="false">General English</button>
-          <button type="button" data-f="Аудио" aria-pressed="false">Аудио</button>
-        </div>
-      </div>
-      <div class="grid" id="books">
-        <div class="card" data-course="IELTS Intensive" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c1">Cambridge IELTS 18</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Cambridge IELTS 18</div><div class="muted small">PDF</div><div class="muted small">IELTS Intensive</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="General English" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c2">Grammar in Use</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Grammar in Use</div><div class="muted small">PDF</div><div class="muted small">General English</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="General English" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c3">Vocabulary Builder</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Vocabulary Builder</div><div class="muted small">PDF</div><div class="muted small">General English</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="IELTS Intensive" data-kind="Аудио" style="display:flex;gap:16px"><a href="#library" class="cover c4">IELTS Listening: записи</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">IELTS Listening: записи</div><div class="muted small">Аудио</div><div class="muted small">IELTS Intensive</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Слушать</a></div></div>
-        <div class="card" data-course="IELTS Intensive" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c2">Writing Task 2: образцы</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Writing Task 2: образцы</div><div class="muted small">PDF</div><div class="muted small">IELTS Intensive</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="IELTS Intensive" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c1">Reading Practice</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Reading Practice</div><div class="muted small">PDF</div><div class="muted small">IELTS Intensive</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="General English" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c4">Phrasal Verbs</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Phrasal Verbs</div><div class="muted small">PDF</div><div class="muted small">General English</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-        <div class="card" data-course="IELTS Intensive" data-kind="PDF" style="display:flex;gap:16px"><a href="#library" class="cover c3">Speaking Cards</a><div class="stack" style="justify-content:space-between;gap:12px;min-width:0"><div><div style="font-weight:700">Speaking Cards</div><div class="muted small">PDF</div><div class="muted small">IELTS Intensive</div></div><a href="#library" class="btn btn-ink btn-sm" style="align-self:flex-start">Открыть</a></div></div>
-      </div>
-      <p class="muted" id="noBooks" hidden>Ничего не найдено. Измените запрос или фильтр.</p>
-    </div>
-  </section>
+  <div id="app" aria-live="polite"><p class="muted">Загрузка…</p></div>
+  <noscript><p class="demo-note">Для работы кабинета нужен JavaScript. Включите его в настройках браузера.</p></noscript>
 </main>
 
 <script src="translations.js"></script>
 <script src="i18n.js"></script>
-<script>
-(function () {
-  var screens = ['register', 'student', 'teacher', 'library'];
-  function show() {
-    var id = location.hash.replace('#', '');
-    if (screens.indexOf(id) < 0) id = 'register';
-    screens.forEach(function (s) { document.getElementById(s).classList.toggle('on', s === id); });
-    window.scrollTo(0, 0);
-  }
-  window.addEventListener('hashchange', show);
-  show();
-
-  // Sign-up: role switch (preview only: nothing is sent anywhere)
-  var isStudent = true;
-  var rs = document.getElementById('roleStudent'), rt = document.getElementById('roleTeacher');
-  function setRole(student) {
-    isStudent = student;
-    rs.setAttribute('aria-pressed', student); rt.setAttribute('aria-pressed', !student);
-    document.getElementById('courseField').hidden = !student;
-    document.getElementById('teacherFields').hidden = student;
-    document.getElementById('signupBtn').textContent = student ? 'Создать аккаунт' : 'Отправить заявку';
-  }
-  rs.addEventListener('click', function () { setRole(true); });
-  rt.addEventListener('click', function () { setRole(false); });
-  document.getElementById('signupForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    location.hash = isStudent ? '#student' : '#teacher';
-  });
-
-  // Library: search + filter
-  var cards = [].slice.call(document.querySelectorAll('#books .card'));
-  var q = document.getElementById('q'), filter = 'all';
-  function apply() {
-    var term = q.value.trim().toLowerCase(), shown = 0;
-    cards.forEach(function (c) {
-      var okF = filter === 'all' || c.dataset.course === filter || c.dataset.kind === filter;
-      var okQ = !term || c.textContent.toLowerCase().indexOf(term) >= 0;
-      c.hidden = !(okF && okQ); if (!c.hidden) shown++;
-    });
-    document.getElementById('noBooks').hidden = shown > 0;
-  }
-  q.addEventListener('input', apply);
-  document.getElementById('filters').addEventListener('click', function (e) {
-    var b = e.target.closest('button'); if (!b) return;
-    filter = b.dataset.f;
-    [].forEach.call(this.querySelectorAll('button'), function (x) { x.setAttribute('aria-pressed', x === b); });
-    apply();
-  });
-})();
-</script>
+<script src="portal.js"></script>
 </body>
 </html>

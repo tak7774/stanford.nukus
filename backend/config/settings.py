@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "core",
+    "portal",
 ]
 
 MIDDLEWARE = [
@@ -141,6 +142,7 @@ REST_FRAMEWORK = {
         "public_forms": "30/hour",
         "result_lookup": "10/hour",
         "login": "10/minute",
+        "portal_register": "10/hour",
     },
 }
 if DEBUG:
