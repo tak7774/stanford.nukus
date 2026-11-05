@@ -4,7 +4,6 @@ from rest_framework import serializers
 from .models import (
     validate_band,
     ExamRegistration,
-    GalleryPhoto,
     MockExam,
     News,
     StudentResult,
@@ -81,16 +80,23 @@ class PublicExamRegistrationSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
     gender = serializers.ChoiceField(choices=["male", "female"], required=False, allow_blank=True)
     payment_method = serializers.ChoiceField(choices=["click", "payme", "cash"], required=False, allow_blank=True)
+    # The student's own password for the portal. Write-only: it is never returned or stored here;
+    # the view hands it to Django's password hashing.
+    password = serializers.CharField(max_length=128, write_only=True, trim_whitespace=False)
 
     class Meta:
         model = ExamRegistration
         fields = [
-            "id", "ticket_no", "exam_id", "full_name", "phone", "first_name", "last_name",
+            "password", "id", "ticket_no", "exam_id", "full_name", "phone", "first_name", "last_name",
             "gender", "format", "payment_method",
             "payment_status", "amount_due", "amount_paid", "registered_at",
         ]
         # All mocks are computer-delivered: format is always saved as "computer".
         read_only_fields = ["id", "ticket_no", "format", "payment_status", "amount_due", "amount_paid", "registered_at"]
+
+    def create(self, validated_data):
+        validated_data.pop("password", None)
+        return super().create(validated_data)
 
 
 class MockResultLookupSerializer(serializers.Serializer):
@@ -170,14 +176,18 @@ class AdminExamRegistrationSerializer(serializers.ModelSerializer):
             "id", "ticket_no", "exam_id", "full_name", "phone", "first_name", "last_name",
             "gender", "payment_status", "payment_method", "amount_due", "amount_paid",
             "listening", "reading", "writing", "speaking", "overall", "attended",
-            "registered_at",
+            "results_published_at", "results_published_by", "registered_at",
         ]
         read_only_fields = [
             "id", "ticket_no", "exam_id", "full_name", "phone", "first_name", "last_name",
             "gender", "payment_method", "amount_due", "amount_paid", "overall", "registered_at",
+            "results_published_at", "results_published_by",
         ]
 
     def update(self, instance, validated_data):
+        # Once published the student can see the scores, so they are locked (an owner can unpublish).
+        if instance.results_published_at and set(validated_data) & {"listening", "reading", "writing", "speaking"}:
+            raise serializers.ValidationError({"detail": "Результаты уже опубликованы. Владелец может снять публикацию, чтобы изменить баллы."})
         # amount_paid is only filled in when staff confirm the payment.
         if "payment_status" in validated_data:
             new_status = validated_data["payment_status"]
@@ -198,23 +208,34 @@ class AdminTrialRegistrationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "full_name", "phone", "course", "source", "preferred_time", "comment", "created_at"]
 
 
-class NewsSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(max_length=300)
+class PublicNewsSerializer(serializers.ModelSerializer):
+    image_url = serializers.CharField(read_only=True)
 
     class Meta:
         model = News
-        fields = ["id", "title", "body", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = ["id", "title", "body", "kind", "event_date", "location", "image_url", "created_at"]
 
 
-class GalleryPhotoSerializer(serializers.ModelSerializer):
-    url = serializers.CharField(read_only=True)
-    caption = serializers.CharField(max_length=200, required=False, allow_blank=True)
+class DefaultTrueBooleanField(serializers.BooleanField):
+    """A missing checkbox in a multipart form means "use the default" (shown), not "False"."""
+
+    default_empty_html = serializers.empty
+
+
+class AdminNewsSerializer(serializers.ModelSerializer):
+    """News, events and clubs for the admin panel. Sent as JSON or as multipart (with a photo)."""
+
+    image_url = serializers.CharField(read_only=True)
+    title = serializers.CharField(max_length=300)
+    body = serializers.CharField(max_length=10000, required=False, allow_blank=True, allow_null=True)
+    location = serializers.CharField(max_length=300, required=False, allow_blank=True)
+    event_date = serializers.DateTimeField(required=False, allow_null=True)
+    is_published = DefaultTrueBooleanField(default=True)
 
     class Meta:
-        model = GalleryPhoto
-        fields = ["id", "url", "caption", "size", "position", "width", "height", "created_at"]
-        read_only_fields = ["id", "url", "position", "width", "height", "created_at"]
+        model = News
+        fields = ["id", "title", "body", "kind", "event_date", "location", "is_published", "image_url", "created_at"]
+        read_only_fields = ["id", "image_url", "created_at"]
 
 
 class AdminStudentResultSerializer(serializers.ModelSerializer):

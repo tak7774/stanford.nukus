@@ -143,6 +143,7 @@ REST_FRAMEWORK = {
         "result_lookup": "10/hour",
         "login": "10/minute",
         "portal_register": "10/hour",
+        "analytics": "300/hour",
     },
 }
 if DEBUG:

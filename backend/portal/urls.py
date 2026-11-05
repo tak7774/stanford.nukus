@@ -9,6 +9,7 @@ urlpatterns = [
     path("logout/", views.LogoutView.as_view()),
     path("student/", views.StudentDashboard.as_view()),
     path("student/assignments/<int:pk>/submit/", views.StudentSubmit.as_view()),
+    path("mock/", views.StudentMock.as_view()),
     path("teacher/", views.TeacherDashboard.as_view()),
     path("teacher/groups/<int:pk>/students/", views.TeacherGroupStudents.as_view()),
     path("teacher/assignments/", views.TeacherAssignmentCreate.as_view()),

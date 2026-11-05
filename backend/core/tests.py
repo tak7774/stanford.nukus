@@ -8,11 +8,13 @@ from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
+from portal.models import Profile
+
 from .models import (
     ExamRegistration,
-    GalleryPhoto,
     MockExam,
     News,
+    PageView,
     StaffRole,
     StudentResult,
     Teacher,
@@ -33,7 +35,7 @@ def make_exam(**kw):
 
 
 def reg_payload(exam, **kw):
-    data = dict(exam_id=exam.id, full_name="Ali Valiev", phone="+998901234567")
+    data = dict(exam_id=exam.id, full_name="Ali Valiev", phone="+998901234567", password="Stanford-2026!")
     data.update(kw)
     return data
 
@@ -279,87 +281,6 @@ def make_image_file(name="photo.jpg", size=(3000, 2000), fmt="JPEG", mode="RGB",
     return SimpleUploadedFile(name, buf.getvalue(), content_type=f"image/{fmt.lower()}")
 
 
-class GalleryTests(APITestCase):
-    def setUp(self):
-        cache.clear()
-        User = get_user_model()
-        User.objects.create_user("owner@stanford.uz", "owner@stanford.uz", "pw-owner-123")
-        User.objects.create_user("editor@stanford.uz", "editor@stanford.uz", "pw-editor-123")
-        StaffRole.objects.create(email="owner@stanford.uz", role="owner")
-        StaffRole.objects.create(email="editor@stanford.uz", role="editor")
-
-    def login(self, who="editor"):
-        self.client.post("/api/auth/login/", {"email": f"{who}@stanford.uz", "password": f"pw-{who}-123"}, format="json")
-
-    def upload(self, **kw):
-        return self.client.post("/api/admin/gallery/", {"image": make_image_file(**kw), "caption": "Класс", "size": "wide"}, format="multipart")
-
-    def test_public_cannot_upload(self):
-        self.assertEqual(self.upload().status_code, 403)
-
-    def test_upload_resizes_and_strips_metadata(self):
-        from PIL import Image
-        import io
-        self.login()
-        res = self.upload(exif_gps=True)
-        self.assertEqual(res.status_code, 201, res.data)
-        self.assertEqual((res.data["width"], res.data["height"]), (1600, 1067))
-        self.assertEqual(res.data["size"], "wide")
-
-        listing = self.client.get("/api/gallery/").data
-        self.assertEqual(len(listing), 1)
-        img_res = self.client.get(listing[0]["url"])
-        self.assertEqual(img_res.status_code, 200)
-        self.assertEqual(img_res["Content-Type"], "image/jpeg")
-        self.assertIn("immutable", img_res["Cache-Control"])
-        img = Image.open(io.BytesIO(img_res.content))
-        self.assertEqual(img.format, "JPEG")
-        self.assertNotIn(0x8825, img.getexif())  # GPS removed
-
-    def test_png_with_transparency_is_converted(self):
-        self.login()
-        res = self.upload(name="logo.png", fmt="PNG", mode="RGBA", size=(400, 300))
-        self.assertEqual(res.status_code, 201, res.data)
-        self.assertEqual(res.data["width"], 400)
-
-    def test_rejects_non_image(self):
-        from django.core.files.uploadedfile import SimpleUploadedFile
-        self.login()
-        res = self.client.post("/api/admin/gallery/", {"image": SimpleUploadedFile("x.jpg", b"not an image")}, format="multipart")
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(GalleryPhoto.objects.count(), 0)
-
-    def test_order_edit_and_owner_only_delete(self):
-        self.login()
-        ids = [self.upload(size=(100, 100)).data["id"] for _ in range(3)]
-        self.assertEqual([p["id"] for p in self.client.get("/api/gallery/").data], ids)
-
-        res = self.client.post("/api/admin/gallery/reorder/", {"ids": [ids[2], ids[0], ids[1]]}, format="json")
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual([p["id"] for p in self.client.get("/api/gallery/").data], [ids[2], ids[0], ids[1]])
-
-        res = self.client.patch(f"/api/admin/gallery/{ids[0]}/", {"caption": "Новая подпись", "size": "tall"}, format="json")
-        self.assertEqual(res.data["caption"], "Новая подпись")
-
-        self.assertEqual(self.client.delete(f"/api/admin/gallery/{ids[0]}/").status_code, 403)
-        self.client.post("/api/auth/logout/")
-        self.login("owner")
-        self.assertEqual(self.client.delete(f"/api/admin/gallery/{ids[0]}/").status_code, 204)
-        self.assertEqual(GalleryPhoto.objects.count(), 2)
-
-    def test_replace_photo_changes_url(self):
-        self.login()
-        photo = self.upload(size=(100, 100)).data
-        import time; time.sleep(1.1)
-        res = self.client.patch(f"/api/admin/gallery/{photo['id']}/", {"image": make_image_file(size=(50, 80))}, format="multipart")
-        self.assertEqual(res.status_code, 200, res.data)
-        self.assertEqual((res.data["width"], res.data["height"]), (50, 80))
-        self.assertNotEqual(res.data["url"], photo["url"])
-
-    def test_missing_image_404(self):
-        self.assertEqual(self.client.get("/api/gallery/999/image/").status_code, 404)
-
-
 class OverallRoundingTests(APITestCase):
     def test_ielts_rounding(self):
         cases = [
@@ -484,6 +405,13 @@ class MockResultLookupTests(APITestCase):
         self.assertNotIn("overall", res.data)
 
         self.reg.listening, self.reg.reading, self.reg.writing, self.reg.speaking = 7, 6.5, 6, 6.5
+        self.reg.save()
+        # scores are entered but not published yet: still hidden
+        res = self.lookup(self.reg.ticket_no, "+998901234567")
+        self.assertFalse(res.data["ready"])
+        self.assertNotIn("overall", res.data)
+
+        self.reg.results_published_at = timezone.now()
         self.reg.save()
         res = self.lookup(self.reg.ticket_no, "+998901234567")
         self.assertTrue(res.data["ready"])
@@ -628,9 +556,308 @@ class TeacherTests(StaffMixin, APITestCase):
         self.assertEqual(Teacher.objects.count(), 0)
 
 
+PW = "Stanford-2026!"
+
+
+class StudentAccountOnRegistrationTests(APITestCase):
+    """The mock form creates a portal account: phone + the password the student chose."""
+
+    def setUp(self):
+        cache.clear()
+
+    def register(self, exam, **kw):
+        return self.client.post("/api/exam-registrations/", reg_payload(exam, **kw), format="json")
+
+    def test_account_created_with_hashed_password_and_never_echoed(self):
+        exam = make_exam()
+        res = self.register(exam)
+        self.assertEqual(res.status_code, 201, res.data)
+        self.assertNotIn("password", res.data)
+        profile = Profile.objects.get(phone="998901234567")
+        self.assertEqual(profile.role, "student")
+        self.assertTrue(profile.approved)
+        user = profile.user
+        self.assertNotEqual(user.password, PW)
+        self.assertTrue(user.password.startswith(("pbkdf2_", "argon2", "bcrypt", "scrypt")))
+        self.assertTrue(user.check_password(PW))
+        self.assertEqual(user.email, "")  # never matches staff_roles
+        self.assertEqual(ExamRegistration.objects.get().student, profile)
+        # nowhere in the registration row
+        reg = ExamRegistration.objects.get()
+        self.assertNotIn(PW, " ".join(str(getattr(reg, f.name)) for f in reg._meta.fields))
+
+    def test_student_can_log_in_to_the_portal_with_phone_and_password(self):
+        self.register(make_exam())
+        res = self.client.post("/api/portal/login/", {"phone": "+998 90 123-45-67", "password": PW}, format="json")
+        self.assertEqual(res.status_code, 200, res.data)
+        self.assertEqual(res.data["role"], "student")
+
+    def test_password_is_required_and_must_be_strong(self):
+        exam = make_exam()
+        data = reg_payload(exam)
+        del data["password"]
+        self.assertEqual(self.client.post("/api/exam-registrations/", data, format="json").status_code, 400)
+        for weak in ["short1", "12345678", "password"]:
+            res = self.register(exam, password=weak)
+            self.assertEqual(res.status_code, 400, weak)
+            self.assertIn("password", res.data)
+        self.assertEqual(ExamRegistration.objects.count(), 0)
+        self.assertEqual(Profile.objects.count(), 0)
+
+    def test_gender_is_still_saved_and_no_passport_asked(self):
+        self.register(make_exam(), gender="female", passport_id="AB123")
+        reg = ExamRegistration.objects.get()
+        self.assertEqual(reg.gender, "female")
+        self.assertFalse(hasattr(reg, "passport_id"))
+
+    def test_same_phone_needs_the_same_password(self):
+        exam1, exam2 = make_exam(), make_exam(title="Mock #2")
+        self.assertEqual(self.register(exam1).status_code, 201)
+        res = self.register(exam2, password="Another-pass-77")
+        self.assertEqual((res.status_code, res.data["code"]), (403, "ACCOUNT_EXISTS"))
+        self.assertEqual(ExamRegistration.objects.count(), 1)
+        self.assertTrue(Profile.objects.get().user.check_password(PW))  # password not changed
+        # the right password works, and the phone stays unique
+        self.assertEqual(self.register(exam2).status_code, 201)
+        self.assertEqual(Profile.objects.count(), 1)
+        self.assertEqual(Profile.objects.get().mock_registrations.count(), 2)
+
+    def test_same_student_cannot_book_the_same_exam_twice(self):
+        exam = make_exam(max_seats=5)
+        self.register(exam)
+        res = self.register(exam)
+        self.assertEqual((res.status_code, res.data["code"]), (409, "ALREADY_REGISTERED"))
+
+    def test_telegram_message_has_no_password(self):
+        from . import telegram
+        self.register(make_exam())
+        self.assertNotIn(PW, telegram.exam_registration_text(ExamRegistration.objects.get()))
+
+
+class StudentPanelMockTests(APITestCase):
+    def setUp(self):
+        cache.clear()
+        self.exam = make_exam(exam_date=timezone.now() - timedelta(days=1))
+        self.exam.exam_date = timezone.now() + timedelta(days=1)  # registration needs an open exam
+        self.exam.save()
+        self.client.post("/api/exam-registrations/", reg_payload(self.exam), format="json")
+        self.client.post("/api/exam-registrations/", reg_payload(self.exam, phone="+998939999999", full_name="Other Student"), format="json")
+        MockExam.objects.filter(pk=self.exam.pk).update(exam_date=timezone.now() - timedelta(days=1))
+        self.mine = ExamRegistration.objects.get(phone="+998901234567")
+        for band in ("listening", "reading", "writing", "speaking"):
+            setattr(self.mine, band, 7)
+        self.mine.save()
+
+    def login(self, phone="+998901234567"):
+        self.client.post("/api/portal/login/", {"phone": phone, "password": PW}, format="json")
+
+    def test_needs_student_login(self):
+        self.assertEqual(self.client.get("/api/portal/mock/").status_code, 403)
+
+    def test_scores_hidden_until_published_then_visible(self):
+        self.login()
+        res = self.client.get("/api/portal/mock/")
+        self.assertEqual(res.status_code, 200)
+        row = res.data["registrations"][0]
+        self.assertEqual(row["ticket_no"], self.mine.ticket_no)
+        self.assertIsNone(row["result"])  # entered but not published
+        self.assertNotIn("7.0", str(res.data))
+
+        self.mine.results_published_at = timezone.now()
+        self.mine.save()
+        row = self.client.get("/api/portal/mock/").data["registrations"][0]
+        self.assertEqual(row["result"]["overall"], 7.0)
+
+    def test_student_sees_only_their_own_registrations(self):
+        self.login("+998939999999")
+        rows = self.client.get("/api/portal/mock/").data["registrations"]
+        self.assertEqual(len(rows), 1)
+        self.assertNotEqual(rows[0]["ticket_no"], self.mine.ticket_no)
+
+
+class MockBoardTests(StaffMixin, APITestCase):
+    def setUp(self):
+        self.make_staff()
+        self.future = make_exam(title="Future", max_seats=9, exam_date=timezone.now() + timedelta(days=3))
+        self.future2 = make_exam(title="Sooner", max_seats=9, exam_date=timezone.now() + timedelta(days=1))
+        self.past = make_exam(title="Past", max_seats=9, exam_date=timezone.now() - timedelta(days=2))
+        self.r_future = ExamRegistration.objects.create(exam=self.future, full_name="Zed Zulu", first_name="Zed", last_name="Zulu", phone="1")
+        self.r_sooner = ExamRegistration.objects.create(exam=self.future2, full_name="Old Row", phone="2")  # no first/last name saved
+        self.r_past = ExamRegistration.objects.create(exam=self.past, full_name="Ali Valiev", first_name="Ali", last_name="Valiev", phone="3")
+
+    def board(self, tab):
+        return self.client.get(f"/api/admin/mock-board/?tab={tab}")
+
+    def test_staff_only(self):
+        self.assertEqual(self.client.get("/api/admin/mock-board/").status_code, 403)
+
+    def test_upcoming_sorted_by_date_with_name_surname_phone(self):
+        self.login()
+        res = self.board("upcoming")
+        self.assertEqual([r["id"] for r in res.data["rows"]], [self.r_sooner.id, self.r_future.id])
+        first = res.data["rows"][0]
+        self.assertEqual((first["first_name"], first["last_name"]), ("Old", "Row"))  # split from full_name
+        self.assertEqual(first["phone"], "2")
+        self.assertEqual(res.data["counts"], {"upcoming": 2, "taken": 1, "completed": 0})
+        self.assertNotIn("password", str(res.data).lower())
+
+    def test_taken_tab_score_entry_with_official_rounding_and_publish(self):
+        self.login("editor")
+        self.assertEqual([r["id"] for r in self.board("taken").data["rows"]], [self.r_past.id])
+        # publishing before scores are saved is refused
+        self.assertEqual(self.client.post(f"/api/admin/exam-registrations/{self.r_past.id}/publish/").status_code, 400)
+        # 6.5 + 6.5 + 6.0 + 6.0 = 25 / 4 = 6.25 -> 6.5 ; and 6.75 -> 7.0
+        res = self.client.patch(f"/api/admin/exam-registrations/{self.r_past.id}/",
+                                {"listening": 6.5, "reading": 6.5, "writing": 6, "speaking": 6}, format="json")
+        self.assertEqual(res.data["overall"], 6.5)
+        res = self.client.patch(f"/api/admin/exam-registrations/{self.r_past.id}/",
+                                {"listening": 7, "reading": 7, "writing": 6.5, "speaking": 6.5}, format="json")
+        self.assertEqual(res.data["overall"], 7.0)  # 6.75 -> 7.0
+        # hidden from the student side until «Completed»
+        self.assertIsNone(self.r_past.results_published_at)
+        res = self.client.post(f"/api/admin/exam-registrations/{self.r_past.id}/publish/")
+        self.assertEqual(res.status_code, 200, res.data)
+        self.assertEqual(res.data["results_published_by"], "editor@stanford.uz")
+        self.assertIsNotNone(res.data["results_published_at"])
+        counts = self.board("completed").data
+        self.assertEqual(counts["counts"], {"upcoming": 2, "taken": 0, "completed": 1})
+        self.assertEqual(counts["rows"][0]["results_published_by"], "editor@stanford.uz")
+
+    def test_cannot_publish_before_the_exam_took_place(self):
+        self.login()
+        for band in ("listening", "reading", "writing", "speaking"):
+            setattr(self.r_future, band, 6)
+        self.r_future.save()
+        res = self.client.post(f"/api/admin/exam-registrations/{self.r_future.id}/publish/")
+        self.assertEqual(res.status_code, 400)
+
+    def test_scores_locked_after_publish_and_only_owner_can_unpublish(self):
+        self.login("editor")
+        self.client.patch(f"/api/admin/exam-registrations/{self.r_past.id}/",
+                          {"listening": 6, "reading": 6, "writing": 6, "speaking": 6}, format="json")
+        self.client.post(f"/api/admin/exam-registrations/{self.r_past.id}/publish/")
+        res = self.client.patch(f"/api/admin/exam-registrations/{self.r_past.id}/", {"reading": 9}, format="json")
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(self.client.post(f"/api/admin/exam-registrations/{self.r_past.id}/unpublish/").status_code, 403)
+        self.client.post("/api/auth/logout/")
+        self.login("owner")
+        self.assertEqual(self.client.post(f"/api/admin/exam-registrations/{self.r_past.id}/unpublish/").status_code, 200)
+        self.assertEqual(self.board("taken").data["counts"]["taken"], 1)
+
+
+class AnalyticsTests(StaffMixin, APITestCase):
+    def setUp(self):
+        self.make_staff()
+        self.v1 = "11111111-1111-4111-8111-111111111111"
+        self.v2 = "22222222-2222-4222-8222-222222222222"
+
+    def hit(self, visitor, path="/", **kw):
+        data = {"path": path, "visitor_id": visitor, "referrer": "", "device": "desktop"}
+        data.update(kw)
+        return self.client.post("/api/analytics/hit/", data, format="json")
+
+    def test_anonymous_can_insert_but_not_read(self):
+        self.assertEqual(self.hit(self.v1).status_code, 204)
+        self.assertEqual(PageView.objects.count(), 1)
+        self.assertEqual(self.client.get("/api/admin/analytics/").status_code, 403)
+        self.assertEqual(self.client.get("/api/analytics/hit/").status_code, 405)
+
+    def test_no_personal_data_is_stored(self):
+        self.hit(self.v1)
+        names = {f.name for f in PageView._meta.fields}
+        self.assertEqual(names, {"id", "created_at", "path", "visitor_id", "referrer", "device"})
+
+    def test_input_is_checked_and_referrer_reduced_to_host(self):
+        self.assertEqual(self.hit("not-a-uuid").status_code, 400)
+        self.assertEqual(self.hit(self.v1, path="/admin.html").status_code, 400)
+        self.assertEqual(self.hit(self.v1, path="/mock.html?exam=3#x", referrer="https://www.google.com/search?q=secret", device="mobile").status_code, 204)
+        view = PageView.objects.get()
+        self.assertEqual((view.path, view.referrer, view.device), ("/mock.html", "google.com", "mobile"))
+        self.hit(self.v1, referrer="http://testserver/index.html")
+        self.assertEqual(PageView.objects.latest("id").referrer, "")  # our own site is not a referrer
+        self.hit(self.v1, device="toaster")
+        self.assertEqual(PageView.objects.latest("id").device, "desktop")
+
+    def test_dashboard_numbers(self):
+        self.hit(self.v1)
+        self.hit(self.v1, path="/mock.html")
+        self.hit(self.v2)
+        old = PageView.objects.create(path="/", visitor_id=self.v2)
+        PageView.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=10))
+        exam = make_exam(max_seats=5)
+        ExamRegistration.objects.create(exam=exam, full_name="A", phone="1")
+        self.login("editor")  # every staff role may see it
+        res = self.client.get("/api/admin/analytics/")
+        self.assertEqual(res.status_code, 200)
+        today, d7, d30 = (res.data["periods"][k] for k in ("today", "d7", "d30"))
+        self.assertEqual((today["visitors"], today["views"], today["registrations"]), (2, 3, 1))
+        self.assertEqual(today["conversion"], 50.0)  # 1 registration / 2 visitors
+        self.assertEqual((d7["visitors"], d7["views"]), (2, 3))
+        self.assertEqual((d30["visitors"], d30["views"]), (2, 4))  # the 10-day-old view counts in 30 days only
+        pages = {p["path"]: p for p in res.data["pages"]["today"]}
+        self.assertEqual((pages["/"]["views"], pages["/"]["visitors"], pages["/mock.html"]["views"]), (2, 2, 1))
+        self.assertEqual(len(res.data["daily"]), 30)
+        last = res.data["daily"][-1]
+        self.assertEqual((last["visitors"], last["views"], last["registrations"]), (2, 3, 1))
+
+    def test_conversion_is_none_without_visitors(self):
+        self.login()
+        self.assertIsNone(self.client.get("/api/admin/analytics/").data["periods"]["today"]["conversion"])
+
+
+class NewsEventsTests(StaffMixin, APITestCase):
+    def setUp(self):
+        self.make_staff()
+
+    def post(self, **fields):
+        return self.client.post("/api/admin/news/", fields, format="multipart")
+
+    def test_post_with_photo_kind_date_and_place(self):
+        self.login()
+        when = (timezone.now() + timedelta(days=2)).isoformat()
+        res = self.post(title="Speaking club", body="Free talk", kind="speaking_club", event_date=when,
+                        location="Room 2", image=make_image_file(size=(1200, 800)))
+        self.assertEqual(res.status_code, 201, res.data)
+        self.assertTrue(res.data["image_url"].startswith("/api/news/"))
+        listing = self.client.get("/api/news/").data
+        self.assertEqual((listing[0]["kind"], listing[0]["location"]), ("speaking_club", "Room 2"))
+        img = self.client.get(listing[0]["image_url"])
+        self.assertEqual((img.status_code, img["Content-Type"]), (200, "image/jpeg"))
+
+    def test_many_events_upcoming_first_past_hidden_unpublished_hidden(self):
+        self.login()
+        now = timezone.now()
+        self.post(title="Plain news")
+        self.post(title="Later event", kind="event", event_date=(now + timedelta(days=9)).isoformat())
+        self.post(title="Sooner club", kind="speaking_club", event_date=(now + timedelta(days=1)).isoformat())
+        self.post(title="Finished event", kind="event", event_date=(now - timedelta(days=1)).isoformat())
+        self.post(title="Draft", is_published="false")
+        titles = [n["title"] for n in self.client.get("/api/news/").data]
+        self.assertEqual(titles, ["Sooner club", "Later event", "Plain news"])
+        self.assertEqual(len(self.client.get("/api/admin/news/").data), 5)  # staff still see everything
+
+    def test_unpublished_photo_is_not_public(self):
+        self.login()
+        nid = self.post(title="Draft", is_published="false", image=make_image_file(size=(100, 100))).data["id"]
+        self.client.post("/api/auth/logout/")
+        self.assertEqual(self.client.get(f"/api/news/{nid}/image/").status_code, 404)
+
+    def test_gallery_is_gone(self):
+        self.assertEqual(self.client.get("/api/gallery/").status_code, 404)
+        self.login()
+        self.assertEqual(self.client.get("/api/admin/gallery/").status_code, 404)
+
+
+
 class SupabaseSqlFileTests(APITestCase):
     def test_sql_file_matches_migration(self):
         import importlib
         migration = importlib.import_module("core.migrations.0006_results_leads_teachers")
         sql_file = Path(__file__).resolve().parents[2] / "supabase" / "migrations" / "002_results_leads_teachers.sql"
         self.assertIn(migration.POSTGRES_SQL.strip(), sql_file.read_text(encoding="utf-8").replace("\r\n", "\n"))
+
+    def test_sql_file_004_matches_migration(self):
+        import importlib
+        migration = importlib.import_module("core.migrations.0007_analytics_students_news")
+        sql_file = Path(__file__).resolve().parents[2] / "supabase" / "migrations" / "004_analytics_students_news.sql"
+        self.assertIn(migration.POSTGRES_SQL.strip(), sql_file.read_text(encoding="utf-8").replace(chr(13) + chr(10), chr(10)))

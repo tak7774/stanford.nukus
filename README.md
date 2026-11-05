@@ -117,12 +117,22 @@ requirements.txt                      → Python packages (used by Vercel)
 | Method | URL | Who |
 |---|---|---|
 | GET | `/api/mock-exams/` | public (with seat counts) |
-| GET | `/api/news/` | public |
+| GET | `/api/news/`, `/api/news/<id>/image/` | public: published news, events and speaking clubs (upcoming first) |
 | POST | `/api/trial-registrations/` | public |
-| POST | `/api/exam-registrations/` | public → `409 {code: EXAM_FULL / EXAM_CLOSED}` |
+| POST | `/api/exam-registrations/` | public; also takes the student's `password` (creates/uses the portal account) → `409 {code: EXAM_FULL / EXAM_CLOSED / ALREADY_REGISTERED}`, `403 {code: ACCOUNT_EXISTS}` |
+| POST | `/api/analytics/hit/` | public, insert-only page view (no IP, no user agent stored) |
+| GET | `/api/portal/mock/` | logged-in student: own mock registrations; scores only after they are published |
 | GET/POST | `/api/auth/me/`, `/api/auth/login/`, `/api/auth/logout/` | admin login |
 | GET… | `/api/admin/dashboard/`, `/api/admin/exams/`, `/api/admin/students/`, `/api/admin/news/`, `/api/admin/exam-registrations/<id>/` | staff only; DELETE = owner only |
+| GET | `/api/admin/analytics/` | staff: visitors, views, registrations, conversion, daily series |
+| GET | `/api/admin/mock-board/?tab=upcoming\|taken\|completed` | staff: students per tab |
+| POST | `/api/admin/exam-registrations/<id>/publish/` (`/unpublish/` = owner only) | staff: the «Завершено» button |
 | — | `/api/django-admin/` | Django's built-in admin (backup tool) |
+
+The gallery page was removed (News covers it). The `gallery_photos` table is kept
+untouched so no photo is lost; nothing reads it any more.
+
+SQL for Supabase is in `supabase/migrations/` (run by hand, in order, before deploying).
 
 Admin login: a Django user whose email is listed in `staff_roles`
 (`owner` or `editor`). A Django superuser counts as owner.

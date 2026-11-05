@@ -1,6 +1,6 @@
 // ============================================================
 // Stanford Admin Panel — Full Admin Logic
-// Django API (/api/...) + Mock Exams + Students + News
+// Django API (/api/...) + Analytics + Mock Exams + Students + News/events
 // ============================================================
 
 // ── API helper ──
@@ -120,7 +120,7 @@ function navigate(page) {
   currentPage = page;
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   $('sidebar').classList.remove('open');
-  const views = { dashboard: renderDashboard, exams: renderExams, students: renderStudents, news: renderNews, gallery: renderGallery, results: renderResults, teachers: renderTeachers };
+  const views = { dashboard: renderDashboard, analytics: renderAnalytics, exams: renderExams, students: renderStudents, news: renderNews, results: renderResults, teachers: renderTeachers };
   (views[page] || renderDashboard)();
 }
 
@@ -173,7 +173,7 @@ function ieltsOverall(bands) {
   return (Math.floor(avg * 2 + 0.5) / 2).toFixed(1);
 }
 function bandText(v) { return (v === null || v === undefined || v === '') ? '—' : Number(v).toFixed(1); }
-const roleLabels = { owner: 'Владелец', staff: 'Сотрудник' };
+const roleLabels = { owner: 'Владелец', editor: 'Сотрудник', staff: 'Сотрудник' };
 const examStatusLabels = { upcoming: 'Предстоит', in_progress: 'Идёт', completed: 'Завершён', cancelled: 'Отменён' };
 const statusBadge = { new: 'badge-gold', contacted: 'badge-blue', enrolled: 'badge-green', declined: 'badge-gray', upcoming: 'badge-blue', in_progress: 'badge-gold', completed: 'badge-green', cancelled: 'badge-gray' };
 
@@ -226,11 +226,173 @@ function esc(str) {
 // MOCK EXAMS
 // ════════════════════════════════════════════
 async function renderExams() {
-  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Mock-экзамены</h1><p>Создание экзаменов и записи студентов</p></div><button class="btn btn-primary" id="addExamBtn">+ Новый экзамен</button></div><div class="filter-bar"><select id="examFilter"><option value="">Все статусы</option><option value="upcoming">Предстоит</option><option value="in_progress">Идёт</option><option value="completed">Завершён</option><option value="cancelled">Отменён</option></select></div><div id="examsList">Загрузка…</div>';
-
+  mainContent.innerHTML = `
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+      <div><h1>Mock-экзамены</h1><p>Кто записан, ввод баллов и публикация результатов. Результат виден студенту в кабинете только после кнопки «Завершено».</p></div>
+      <button class="btn btn-primary" id="addExamBtn">+ Новый экзамен</button>
+    </div>
+    <div id="boardTabs"></div>
+    <div id="boardBody">Загрузка…</div>`;
   $('addExamBtn').addEventListener('click', () => openExamModal());
-  $('examFilter').addEventListener('change', () => loadExamsList());
-  await loadExamsList();
+  wireBoard();
+  await loadBoard();
+}
+
+// ── The three mock tabs (+ the list of exam sessions) ──
+let boardTab = 'upcoming';
+let boardCounts = {};
+const BOARD_TABS = [
+  ['upcoming', 'Предстоящие'],
+  ['taken', 'Сдали — ждут баллов'],
+  ['completed', 'Завершённые'],
+  ['sessions', 'Расписание экзаменов']
+];
+
+function paintBoardTabs() {
+  const box = $('boardTabs');
+  if (!box) return;
+  box.innerHTML = '<div class="tabs" role="tablist">' + BOARD_TABS.map(([k, label]) =>
+    `<button type="button" class="tab${boardTab === k ? ' active' : ''}" role="tab" aria-selected="${boardTab === k}" data-tab="${k}">${label}${boardCounts[k] !== undefined ? `<span class="count">${esc(boardCounts[k])}</span>` : ''}</button>`
+  ).join('') + '</div>';
+  box.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { boardTab = b.dataset.tab; loadBoard(); }));
+}
+
+function boardTable(head, rows) {
+  return `<div class="card"><div class="table-wrap"><table><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function boardEmpty(icon, title, text) {
+  return `<div class="card"><div class="empty-state"><div class="icon">${icon}</div><h3>${title}</h3><p>${text}</p></div></div>`;
+}
+function whoCells(r) {
+  return `<td style="color:var(--text);font-weight:600">${esc(r.first_name || '—')}</td><td style="color:var(--text);font-weight:600">${esc(r.last_name || '—')}</td><td><a href="tel:${esc(r.phone)}" style="white-space:nowrap">${esc(r.phone)}</a></td>`;
+}
+function studentCell(r) {
+  return `<td><span style="color:var(--text);font-weight:600">${esc(((r.first_name || '') + ' ' + (r.last_name || '')).trim() || '—')}</span><br><a href="tel:${esc(r.phone)}" style="font-size:.8rem;white-space:nowrap">${esc(r.phone)}</a></td>`;
+}
+function scoreInputCell(r, band) {
+  return `<td><input class="score-input" inputmode="decimal" data-band="${band}" value="${r[band] === null || r[band] === undefined ? '' : Number(r[band]).toFixed(1)}" placeholder="—" aria-label="${band}"/></td>`;
+}
+
+async function loadBoard() {
+  const tab = boardTab;
+  paintBoardTabs();
+  const body = $('boardBody');
+  if (!body) return;
+
+  if (tab === 'sessions') {
+    body.innerHTML = '<div class="filter-bar"><select id="examFilter"><option value="">Все статусы</option><option value="upcoming">Предстоит</option><option value="in_progress">Идёт</option><option value="completed">Завершён</option><option value="cancelled">Отменён</option></select></div><div id="examsList">Загрузка…</div>';
+    $('examFilter').addEventListener('change', () => loadExamsList());
+    await loadExamsList();
+    return;
+  }
+
+  body.textContent = 'Загрузка…';
+  const { data, error } = await api('GET', 'admin/mock-board/?tab=' + encodeURIComponent(tab));
+  if (tab !== boardTab) return;           // the user already switched tab
+  if (error) { body.textContent = errorMessage(error); return; }
+  boardCounts = Object.assign({}, boardCounts, data.counts);
+  paintBoardTabs();
+  const rows = data.rows;
+
+  if (tab === 'upcoming') {
+    body.innerHTML = rows.length
+      ? boardTable(['Дата и время', 'Имя', 'Фамилия', 'Телефон', 'Экзамен', 'Оплата'], rows.map(r => `<tr>
+          <td style="white-space:nowrap">${esc(fmtDateTime(r.exam_date))}</td>${whoCells(r)}
+          <td style="font-size:.84rem">${esc(r.exam_title)}</td>
+          <td><span class="badge badge-${r.payment_status === 'verified' ? 'green' : 'gold'}">${r.payment_status === 'verified' ? 'Оплачено' : 'Ожидает'}</span></td>
+        </tr>`).join(''))
+      : boardEmpty('📅', 'Записанных студентов пока нет', 'Когда кто-то запишется на предстоящий экзамен, он появится здесь');
+    return;
+  }
+
+  if (tab === 'taken') {
+    body.innerHTML = rows.length
+      ? '<p class="hint" style="margin:0 0 12px">Баллы Listening / Reading / Writing / Speaking: от 0 до 9 с шагом 0.5. Overall считается автоматически по правилам IELTS (среднее, округление до 0.5: .25 → .5, .75 → следующий целый балл). Сначала нажмите «Сохранить баллы», потом «Завершено» — студент увидит результат в кабинете.</p>'
+        + boardTable(['Экзамен', 'Студент', 'L', 'R', 'W', 'S', 'Overall', ''], rows.map(r => {
+          const complete = ['listening', 'reading', 'writing', 'speaking'].every(b => r[b] !== null && r[b] !== undefined);
+          return `<tr data-row="${r.id}">
+            <td style="white-space:nowrap">${esc(fmtDateTime(r.exam_date))}<br><span class="muted" style="font-size:.75rem">${esc(r.exam_title)}</span></td>${studentCell(r)}
+            ${scoreInputCell(r, 'listening')}${scoreInputCell(r, 'reading')}${scoreInputCell(r, 'writing')}${scoreInputCell(r, 'speaking')}
+            <td><span class="overall-pill" data-overall>${bandText(r.overall)}</span></td>
+            <td><div class="board-actions">
+              <button class="btn btn-sm btn-secondary" data-act="save" data-id="${r.id}">Сохранить баллы</button>
+              <button class="btn btn-sm btn-primary" data-act="publish" data-id="${r.id}" ${complete ? '' : 'disabled title="Сначала сохраните все четыре балла"'}>Завершено</button>
+            </div></td></tr>`;
+        }).join(''))
+      : boardEmpty('✅', 'Все баллы введены', 'Здесь появятся студенты, чей экзамен уже прошёл и чьи результаты ещё не опубликованы');
+    return;
+  }
+
+  // completed
+  body.innerHTML = rows.length
+    ? boardTable(['Экзамен', 'Студент', 'L / R / W / S', 'Overall', 'Опубликовал', ''], rows.map(r => `<tr>
+        <td style="white-space:nowrap">${esc(fmtDateTime(r.exam_date))}<br><span class="muted" style="font-size:.75rem">${esc(r.exam_title)}</span></td>${studentCell(r)}
+        <td class="bands">${[r.listening, r.reading, r.writing, r.speaking].map(bandText).join(' / ')}</td>
+        <td><span class="overall-pill">${bandText(r.overall)}</span></td>
+        <td style="font-size:.84rem">${esc(r.results_published_by || '—')}<br><span class="muted" style="font-size:.75rem">${esc(fmtDateTime(r.results_published_at))}</span></td>
+        <td>${session.role === 'owner' ? `<button class="btn btn-sm btn-secondary" data-act="unpublish" data-id="${r.id}">Снять публикацию</button>` : ''}</td>
+      </tr>`).join(''))
+    : boardEmpty('🏁', 'Опубликованных результатов пока нет', 'После кнопки «Завершено» результат попадёт сюда и в кабинет студента');
+}
+
+// One set of listeners for the board (the board element lives as long as the page is open)
+function wireBoard() {
+  const body = $('boardBody');
+  const bandsOf = tr => ['listening', 'reading', 'writing', 'speaking'].map(b => tr.querySelector(`.score-input[data-band="${b}"]`).value.trim().replace(',', '.'));
+
+  body.addEventListener('input', e => {
+    const inp = e.target.closest('.score-input');
+    if (!inp) return;
+    const tr = inp.closest('tr');
+    inp.classList.toggle('bad', inp.value.trim() !== '' && !isBand(inp.value.trim().replace(',', '.')));
+    tr.querySelector('[data-overall]').textContent = ieltsOverall(bandsOf(tr)) ?? '—';
+    const publish = tr.querySelector('[data-act="publish"]');
+    if (publish) { publish.disabled = true; publish.title = 'Сначала сохраните баллы'; }
+  });
+
+  body.addEventListener('click', async e => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn || btn.disabled) return;
+    const id = btn.dataset.id, act = btn.dataset.act, tr = btn.closest('tr');
+
+    if (act === 'save') {
+      const values = bandsOf(tr);
+      const names = ['listening', 'reading', 'writing', 'speaking'];
+      const payload = {};
+      for (let i = 0; i < 4; i++) {
+        if (values[i] !== '' && !isBand(values[i])) { toast(`${names[i]}: от 0 до 9 с шагом 0.5`, 'error'); return; }
+        payload[names[i]] = values[i] === '' ? null : values[i];
+      }
+      btn.disabled = true;
+      const { data, error } = await api('PATCH', 'admin/exam-registrations/' + id + '/', payload);
+      btn.disabled = false;
+      if (error) { showApiError(error); return; }
+      tr.querySelector('[data-overall]').textContent = bandText(data.overall);
+      const publish = tr.querySelector('[data-act="publish"]');
+      if (publish) {
+        publish.disabled = data.overall === null;
+        publish.title = data.overall === null ? 'Сначала сохраните все четыре балла' : '';
+      }
+      toast(data.overall !== null ? `Баллы сохранены. Overall ${bandText(data.overall)}` : 'Баллы сохранены');
+    }
+
+    if (act === 'publish') {
+      if (!confirm('Опубликовать результат? После этого студент увидит баллы в своём кабинете, а изменить их сможет только владелец.')) return;
+      btn.disabled = true;
+      const { error } = await api('POST', 'admin/exam-registrations/' + id + '/publish/');
+      if (error) { btn.disabled = false; showApiError(error); return; }
+      toast('Результат опубликован — студент видит его в кабинете');
+      loadBoard();
+    }
+
+    if (act === 'unpublish') {
+      if (!confirm('Снять публикацию? Студент больше не увидит результат, пока вы не нажмёте «Завершено» снова.')) return;
+      const { error } = await api('POST', 'admin/exam-registrations/' + id + '/unpublish/');
+      if (error) { showApiError(error); return; }
+      toast('Публикация снята');
+      loadBoard();
+    }
+  });
 }
 
 async function loadExamsList() {
@@ -498,87 +660,122 @@ async function updateStudentStatus(id, status) {
 }
 
 // ════════════════════════════════════════════
-// NEWS
+// NEWS, EVENTS, SPEAKING CLUBS (shown on the main site right after the first screen)
 // ════════════════════════════════════════════
+const newsKindLabels = { news: 'Новость', event: 'Мероприятие', speaking_club: 'Speaking club', other: 'Другое' };
+const newsKindBadge = { news: 'badge-gray', event: 'badge-blue', speaking_club: 'badge-green', other: 'badge-purple' };
+let newsRows = [];
+
 async function renderNews() {
-  mainContent.innerHTML = '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>Новости</h1><p>Новости центра</p></div><button class="btn btn-primary" id="addNewsBtn">+ Новая новость</button></div><div id="newsList">Загрузка…</div>';
+  mainContent.innerHTML = `
+    <div class="page-header page-header-row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+      <div><h1>Новости и события</h1><p>Новости, ближайшие мероприятия, speaking clubs и другие события — с фото и текстом. Добавлять можно сколько угодно. На главной странице они идут сразу после первого экрана: события с датой сверху (ближайшие первыми), потом новости. Прошедшие события с сайта пропадают сами.</p></div>
+      <button class="btn btn-primary" id="addNewsBtn">+ Добавить</button>
+    </div>
+    <div id="newsList">Загрузка…</div>`;
   $('addNewsBtn').addEventListener('click', () => openNewsModal());
   await loadNews();
 }
 
 async function loadNews() {
   const { data, error } = await api('GET', 'admin/news/');
-  if (error) { $('newsList').textContent = error.detail || 'Не удалось загрузить новости'; return; }
-  const news = data || [];
-
-  if (!news.length) {
-    $('newsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📰</div><h3>Новостей пока нет</h3><p>Опубликуйте первую новость</p></div></div>';
+  if (error) { $('newsList').textContent = errorMessage(error); return; }
+  newsRows = data || [];
+  if (!newsRows.length) {
+    $('newsList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📰</div><h3>Пока ничего нет</h3><p>Добавьте первую новость или мероприятие — оно появится на главной странице</p></div></div>';
     return;
   }
-
-  $('newsList').innerHTML = news.map(n => `
-    <div class="card">
-      <div class="card-title"><span>${esc(n.title)}</span><span style="font-size:.75rem;color:var(--text3);font-family:Inter,sans-serif;font-weight:400">${fmtDate(n.created_at)}</span></div>
-      <p style="font-size:.88rem;color:var(--text2);line-height:1.65;margin-bottom:16px">${esc(n.body || '')}</p>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-sm btn-secondary" onclick="openNewsModal(${n.id})">✏️ Изменить</button>
-        ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deleteNews(${n.id})">🗑 Удалить</button>` : ''}
+  const now = Date.now();
+  $('newsList').innerHTML = newsRows.map(n => {
+    const past = n.event_date && new Date(n.event_date).getTime() < now;
+    const badges = [`<span class="badge ${newsKindBadge[n.kind] || 'badge-gray'}">${esc(newsKindLabels[n.kind] || n.kind)}</span>`];
+    if (n.event_date) badges.push(`<span class="badge badge-gold">${esc(fmtDateTime(n.event_date))}</span>`);
+    if (past) badges.push('<span class="badge badge-gray">Прошло — скрыто на сайте</span>');
+    if (!n.is_published) badges.push('<span class="badge badge-warn">Скрыто с сайта</span>');
+    const excerpt = (n.body || '').length > 220 ? n.body.slice(0, 220) + '…' : (n.body || '');
+    return `
+    <div class="card news-admin">
+      ${n.image_url ? `<img class="news-thumb" src="${esc(n.image_url)}" alt="" loading="lazy"/>` : '<span class="news-thumb" aria-hidden="true"></span>'}
+      <div class="news-admin-main">
+        <div class="news-admin-badges">${badges.join('')}</div>
+        <h3 class="news-admin-title">${esc(n.title)}</h3>
+        ${n.location ? `<div class="muted" style="font-size:.84rem">📍 ${esc(n.location)}</div>` : ''}
+        ${excerpt ? `<p class="news-admin-text">${esc(excerpt)}</p>` : ''}
+        <div class="news-admin-actions">
+          <label class="switch"><input type="checkbox" ${n.is_published ? 'checked' : ''} onchange="toggleNewsPublished(${n.id}, this.checked)"/> На сайте</label>
+          <button class="btn btn-sm btn-secondary" onclick="openNewsModal(${n.id})">✏️ Изменить</button>
+          ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deleteNews(${n.id})">🗑 Удалить</button>` : ''}
+          <span class="muted" style="font-size:.75rem">Добавлено ${esc(fmtDate(n.created_at))}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function openNewsModal(editId) {
-  const isEdit = typeof editId === 'number';
-  openModal(`<div class="modal-title">${isEdit ? 'Изменить новость' : 'Новая новость'}<button class="modal-close" onclick="closeModal()">✕</button></div><div id="newsFormBody">Загрузка…</div>`);
-
-  if (isEdit) {
-    api('GET', 'admin/news/' + editId + '/').then(({ data: n, error }) => {
-      if (error) { showApiError(error); closeModal(); return; }
-      fillNewsForm(n.title, n.body || '', editId);
-    });
-  } else {
-    fillNewsForm('', '', null);
+  const n = newsRows.find(x => x.id === editId) || { title: '', body: '', kind: 'news', event_date: null, location: '', is_published: true, image_url: null };
+  let dateValue = '';
+  if (n.event_date) {
+    const d = new Date(n.event_date);
+    const p = x => String(x).padStart(2, '0');
+    dateValue = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
   }
-}
-
-function fillNewsForm(title, body, editId) {
-  $('newsFormBody').innerHTML = `
-    <div class="form-group"><label>Заголовок</label><input class="form-control" id="newsTitle" value="${esc(title)}" placeholder="например: Открыт набор в группу IELTS"/></div>
-    <div class="form-group"><label>Текст</label><textarea class="form-control" id="newsBody" rows="4" placeholder="Текст новости">${esc(body)}</textarea></div>
+  openModal(`
+    <div class="modal-title">${editId ? 'Изменить' : 'Добавить'}<button class="modal-close" onclick="closeModal()" aria-label="Закрыть">✕</button></div>
+    <div class="form-row">
+      <div class="form-group"><label for="newsKind">Что это</label><select class="form-control" id="newsKind">${Object.entries(newsKindLabels).map(([v, l]) => `<option value="${v}" ${n.kind === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="form-group"><label for="newsDate">Дата и время (Ташкент)</label><input class="form-control" type="datetime-local" id="newsDate" value="${esc(dateValue)}"/></div>
+    </div>
+    <p class="hint" style="margin:-6px 0 14px">Дата нужна для мероприятий и speaking clubs: ближайшие показываются первыми, а после начала пропадают с сайта. У новости дату можно не указывать.</p>
+    <div class="form-group"><label for="newsTitle">Заголовок</label><input class="form-control" id="newsTitle" maxlength="300" value="${esc(n.title)}" placeholder="например: Speaking club — обсуждаем путешествия"/></div>
+    <div class="form-group"><label for="newsPlace">Место (необязательно)</label><input class="form-control" id="newsPlace" maxlength="300" value="${esc(n.location || '')}" placeholder="например: Stanford, 2 этаж"/></div>
+    <div class="form-group"><label for="newsBody">Текст</label><textarea class="form-control" id="newsBody" rows="6" maxlength="10000" placeholder="Подробности: о чём, для кого, как попасть, что взять с собой">${esc(n.body || '')}</textarea></div>
+    ${photoPickerHtml(n.image_url, false, 'Фото (необязательно)', 'Лучше горизонтальное фото. Без фото на сайте будет жёлтая карточка с датой.')}
+    <label class="switch"><input type="checkbox" id="newsPublished" ${n.is_published ? 'checked' : ''}/> Показывать на сайте</label>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Отмена</button><button class="btn btn-primary" id="saveNewsBtn">${editId ? 'Сохранить' : 'Опубликовать'}</button></div>
-  `;
+  `, true);
+  wirePhotoPicker();
   $('saveNewsBtn').addEventListener('click', () => saveNews(editId));
 }
 
 async function saveNews(editId) {
   const title = $('newsTitle').value.trim();
-  const body = $('newsBody').value.trim();
-  if (!title) { alert('Укажите заголовок'); return; }
-
-  const { error } = editId
-    ? await api('PATCH', 'admin/news/' + editId + '/', { title, body })
-    : await api('POST', 'admin/news/', { title, body });
+  const kind = $('newsKind').value;
+  const dateValue = $('newsDate').value;
+  if (!title) { toast('Укажите заголовок', 'error'); return; }
+  if ((kind === 'event' || kind === 'speaking_club') && !dateValue) { toast('Укажите дату и время — иначе событие не попадёт в «ближайшие»', 'error'); return; }
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('kind', kind);
+  fd.append('body', $('newsBody').value.trim());
+  fd.append('location', $('newsPlace').value.trim());
+  fd.append('event_date', dateValue ? new Date(dateValue).toISOString() : '');
+  fd.append('is_published', $('newsPublished').checked ? 'true' : 'false');
+  $('saveNewsBtn').disabled = true;
+  await appendPhoto(fd);
+  const { error } = editId ? await apiUpload('PATCH', 'admin/news/' + editId + '/', fd) : await apiUpload('POST', 'admin/news/', fd);
+  if ($('saveNewsBtn')) $('saveNewsBtn').disabled = false;
   if (error) { showApiError(error); return; }
-  toast(editId ? 'Новость сохранена' : 'Новость опубликована');
+  toast(editId ? 'Сохранено' : 'Опубликовано');
   closeModal();
-  renderNews();
+  loadNews();
+}
+
+async function toggleNewsPublished(id, published) {
+  const { error } = await api('PATCH', 'admin/news/' + id + '/', { is_published: published });
+  if (error) showApiError(error); else toast(published ? 'Показано на сайте' : 'Скрыто с сайта');
+  loadNews();
 }
 
 async function deleteNews(id) {
-  if (!confirm('Удалить эту новость?')) return;
+  if (!confirm('Удалить навсегда?')) return;
   const { error } = await api('DELETE', 'admin/news/' + id + '/');
   if (error) { showApiError(error); return; }
-  toast('Новость удалена');
-  renderNews();
+  toast('Удалено');
+  loadNews();
 }
 
-
-// ════════════════════════════════════════════
-// GALLERY («Жизнь центра изнутри» on the main site)
-// ════════════════════════════════════════════
-const sizeLabels = { normal: 'Обычное (1×1)', tall: 'Высокое (1×2)', wide: 'Широкое (2×1)' };
-
+// Upload helpers shared by news, results and teachers
 // Upload a file with FormData (multipart). The api() helper only sends JSON.
 async function apiUpload(method, path, formData) {
   try {
@@ -612,123 +809,135 @@ async function shrinkImage(file, maxSide = 2000, quality = 0.88) {
   return blob ? new File([blob], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file;
 }
 
-let galleryPhotos = [];
 
-async function renderGallery() {
+// ════════════════════════════════════════════
+// ANALYTICS (visitors, page views, mock registrations)
+// ════════════════════════════════════════════
+const pageNames = { '/': 'Главная страница', '/mock.html': 'Mock Exam', '/portal.html': 'Кабинет' };
+const rangeLabels = { today: 'Сегодня', d7: '7 дней', d30: '30 дней' };
+let analytics = null;
+let analyticsRange = 'd7';
+
+async function renderAnalytics() {
   mainContent.innerHTML = `
-    <div class="page-header"><h1>Галерея</h1><p>Фото для раздела «Галерея» на главной странице. Пока здесь нет фото, раздел на сайте скрыт.</p></div>
+    <div class="page-header"><h1>Аналитика</h1>
+      <p>Сколько людей заходит на сайт и сколько из них записывается на Mock. Личные данные не собираются: ни IP-адресов, ни имён — только случайный номер браузера, страница, откуда пришли и телефон это или компьютер.</p></div>
+    <div id="anaBody">Загрузка…</div>`;
+  const { data, error } = await api('GET', 'admin/analytics/');
+  if (error) { $('anaBody').textContent = errorMessage(error); return; }
+  analytics = data;
+  paintAnalytics();
+}
+
+function pct(v) { return v === null || v === undefined ? '—' : String(v).replace('.', ',') + '%'; }
+function fmtDayShort(iso) { return new Date(iso + 'T12:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', ''); }
+
+function paintAnalytics() {
+  const p = analytics.periods;
+  const row = (label, key, fmt) => `<tr><th scope="row">${label}</th>${['today', 'd7', 'd30'].map(k => `<td>${fmt ? fmt(p[k][key]) : esc(p[k][key])}</td>`).join('')}</tr>`;
+  const days = analyticsRange === 'd30' ? analytics.daily : analytics.daily.slice(-7);
+  const pages = analytics.pages[analyticsRange] || [];
+  const maxViews = Math.max(1, ...pages.map(x => x.views));
+  const total = days.reduce((a, d) => ({ visitors: a.visitors + d.visitors, registrations: a.registrations + d.registrations }), { visitors: 0, registrations: 0 });
+
+  $('anaBody').innerHTML = `
     <div class="card">
-      <div class="card-title">Добавить фото</div>
-      <div class="upload-zone" id="uploadZone">📷 Нажмите или перетащите сюда фото (можно несколько)<br><span style="font-size:.78rem;color:var(--text3)">JPG, PNG или WEBP · большие фото уменьшаются автоматически</span></div>
-      <input type="file" id="galleryFile" accept="image/jpeg,image/png,image/webp" multiple style="display:none"/>
-      <div class="form-row" style="margin-top:14px">
-        <div class="form-group"><label>Подпись (необязательно)</label><input class="form-control" id="galleryCaption" placeholder="например: Урок для детей"/></div>
-        <div class="form-group"><label>Размер на сайте</label><select class="form-control" id="gallerySize">${Object.entries(sizeLabels).map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select></div>
-      </div>
-      <div id="uploadStatus" style="font-size:.84rem;color:var(--text2)"></div>
+      <div class="card-title">Сводка</div>
+      <div class="table-wrap"><table class="ana-table">
+        <thead><tr><th></th><th>Сегодня</th><th>7 дней</th><th>30 дней</th></tr></thead>
+        <tbody>
+          ${row('Уникальные посетители', 'visitors')}
+          ${row('Просмотры страниц', 'views')}
+          ${row('Записи на Mock', 'registrations')}
+          ${row('Конверсия', 'conversion', pct)}
+        </tbody></table></div>
+      <p class="hint">Конверсия = записи на Mock ÷ уникальные посетители за тот же период. Один человек, заходивший много раз, считается один раз. «7 дней» и «30 дней» включают сегодня.</p>
     </div>
-    <div id="galleryList">Загрузка…</div>
-  `;
 
-  const zone = $('uploadZone');
-  const input = $('galleryFile');
-  zone.addEventListener('click', () => input.click());
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
-  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); uploadPhotos(e.dataTransfer.files); });
-  input.addEventListener('change', () => { uploadPhotos(input.files); input.value = ''; });
+    <div class="range-switch" role="group" aria-label="Период для страниц и графиков">
+      ${Object.entries(rangeLabels).map(([k, l]) => `<button type="button" data-range="${k}" aria-pressed="${analyticsRange === k}">${l}</button>`).join('')}
+    </div>
 
-  await loadGallery();
+    <div class="card">
+      <div class="card-title">Просмотры по страницам — ${rangeLabels[analyticsRange].toLowerCase()}</div>
+      ${pages.length ? `<div class="table-wrap"><table class="ana-table"><thead><tr><th>Страница</th><th>Просмотры</th><th>Посетители</th><th class="ana-share-col"></th></tr></thead><tbody>
+        ${pages.map(x => `<tr><th scope="row">${esc(pageNames[x.path] || x.path)}</th><td>${esc(x.views)}</td><td>${esc(x.visitors)}</td><td class="ana-share-col"><span class="ana-share"><i style="width:${Math.round(x.views * 100 / maxViews)}%"></i></span></td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="empty-state" style="padding:24px"><p>За этот период просмотров пока нет</p></div>'}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Посетители по дням <span class="chart-total">${total.visitors} за ${days.length} ${days.length === 1 ? 'день' : 'дн.'} (сумма по дням)</span></div>
+      <div class="chart-box" id="chartVisitors">${barChartSvg(days, 'visitors', 'var(--blue)', 'посетителей')}<div class="chart-tip" role="status"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Записи на Mock по дням <span class="chart-total">${total.registrations} за ${days.length} ${days.length === 1 ? 'день' : 'дн.'}</span></div>
+      <div class="chart-box" id="chartRegs">${barChartSvg(days, 'registrations', 'var(--green)', 'записей')}<div class="chart-tip" role="status"></div></div>
+      <p class="hint">${analyticsRange === 'today' ? 'Для «Сегодня» показаны последние 7 дней. ' : ''}Два графика, а не один: посетителей намного больше, чем записей, и на общей шкале записи были бы не видны.</p>
+    </div>
+
+    <details class="card ana-details">
+      <summary>Показать таблицей</summary>
+      <div class="table-wrap"><table class="ana-table"><thead><tr><th>День</th><th>Посетители</th><th>Просмотры</th><th>Записи на Mock</th></tr></thead><tbody>
+        ${days.slice().reverse().map(d => `<tr><th scope="row">${esc(fmtDayShort(d.date))}</th><td>${esc(d.visitors)}</td><td>${esc(d.views)}</td><td>${esc(d.registrations)}</td></tr>`).join('')}
+      </tbody></table></div>
+    </details>`;
+
+  $('anaBody').querySelectorAll('[data-range]').forEach(b => b.addEventListener('click', () => { analyticsRange = b.dataset.range; paintAnalytics(); }));
+  attachChartTip($('chartVisitors'), days, 'visitors', ['посетитель', 'посетителя', 'посетителей']);
+  attachChartTip($('chartRegs'), days, 'registrations', ['запись', 'записи', 'записей']);
 }
 
-async function uploadPhotos(fileList) {
-  const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/'));
-  if (!files.length) return;
-  const status = $('uploadStatus');
-  let ok = 0;
-  for (let i = 0; i < files.length; i++) {
-    status.textContent = `Загрузка ${i + 1} из ${files.length}...`;
-    const fd = new FormData();
-    fd.append('image', await shrinkImage(files[i]));
-    fd.append('caption', $('galleryCaption').value.trim());
-    fd.append('size', $('gallerySize').value);
-    const { error } = await apiUpload('POST', 'admin/gallery/', fd);
-    if (error) { status.textContent = ''; showApiError(error); break; }
-    ok++;
-  }
-  status.textContent = '';
-  if (ok) { toast(ok === 1 ? 'Фото добавлено' : `Добавлено фото: ${ok}`); $('galleryCaption').value = ''; }
-  loadGallery();
+function niceMax(v) {
+  if (v <= 4) return 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(v)));
+  const f = v / pow;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * pow;
 }
 
-async function loadGallery() {
-  const { data, error } = await api('GET', 'admin/gallery/');
-  if (error) { $('galleryList').textContent = error.detail || 'Не удалось загрузить фото'; return; }
-  galleryPhotos = data || [];
-
-  if (!galleryPhotos.length) {
-    $('galleryList').innerHTML = '<div class="card"><div class="empty-state"><div class="icon">🖼️</div><h3>Фото пока нет</h3><p>Раздел «Галерея» на сайте скрыт, пока здесь нет ни одного фото</p></div></div>';
-    return;
-  }
-
-  $('galleryList').innerHTML = '<div class="gallery-admin-grid">' + galleryPhotos.map((p, i) => `
-    <div class="gallery-admin-card">
-      <img src="${esc(p.url)}" alt="${esc(p.caption || '')}" loading="lazy"/>
-      <div class="gallery-admin-body">
-        <span class="gallery-pos">#${i + 1} на сайте · ${esc(p.width)}×${esc(p.height)}</span>
-        <input class="form-control" value="${esc(p.caption || '')}" placeholder="Подпись" onchange="updatePhoto(${p.id}, { caption: this.value.trim() })"/>
-        <select class="form-control" onchange="updatePhoto(${p.id}, { size: this.value })">
-          ${Object.entries(sizeLabels).map(([v, l]) => `<option value="${v}" ${p.size === v ? 'selected' : ''}>${l}</option>`).join('')}
-        </select>
-        <div class="gallery-admin-actions">
-          <button class="btn btn-sm btn-secondary" title="Раньше" onclick="movePhoto(${p.id}, -1)" ${i === 0 ? 'disabled' : ''}>←</button>
-          <button class="btn btn-sm btn-secondary" title="Позже" onclick="movePhoto(${p.id}, 1)" ${i === galleryPhotos.length - 1 ? 'disabled' : ''}>→</button>
-          <button class="btn btn-sm btn-secondary" onclick="replacePhoto(${p.id})">🔄 Заменить</button>
-          ${session.role === 'owner' ? `<button class="btn btn-sm btn-danger" onclick="deletePhoto(${p.id})">🗑</button>` : ''}
-        </div>
-      </div>
-    </div>`).join('') + '</div>';
-}
-
-async function updatePhoto(id, changes) {
-  const { error } = await api('PATCH', 'admin/gallery/' + id + '/', changes);
-  if (error) { showApiError(error); return; }
-  toast('Сохранено');
-}
-
-async function movePhoto(id, direction) {
-  const ids = galleryPhotos.map(p => p.id);
-  const i = ids.indexOf(id);
-  const j = i + direction;
-  if (i < 0 || j < 0 || j >= ids.length) return;
-  [ids[i], ids[j]] = [ids[j], ids[i]];
-  const { error } = await api('POST', 'admin/gallery/reorder/', { ids });
-  if (error) { showApiError(error); return; }
-  loadGallery();
-}
-
-function replacePhoto(id) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/jpeg,image/png,image/webp';
-  input.addEventListener('change', async () => {
-    if (!input.files.length) return;
-    const fd = new FormData();
-    fd.append('image', await shrinkImage(input.files[0]));
-    const { error } = await apiUpload('PATCH', 'admin/gallery/' + id + '/', fd);
-    if (error) { showApiError(error); return; }
-    toast('Фото заменено');
-    loadGallery();
+// One measure per chart (no second axis). Bars have rounded tops, a gap between them, a light grid.
+function barChartSvg(days, key, color, noun) {
+  const W = 720, H = 210, L = 38, R = 8, T = 10, B = 26;
+  const pw = W - L - R, ph = H - T - B;
+  const max = niceMax(Math.max(0, ...days.map(d => d[key])));
+  const n = days.length, slot = pw / n, bw = Math.max(3, Math.min(30, slot - 4));
+  const y = v => T + ph - (v / max) * ph;
+  const step = n > 10 ? 5 : 1;
+  let g = '';
+  [0, max / 2, max].forEach(t => {
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="${t === 0 ? 'var(--border2)' : 'var(--border)'}" stroke-width="1"/>`
+      + `<text x="${L - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--text3)">${Number.isInteger(t) ? t : t.toFixed(1)}</text>`;
   });
-  input.click();
+  days.forEach((d, i) => {
+    const x = L + i * slot + (slot - bw) / 2;
+    const h = (d[key] / max) * ph;
+    if (h > 0) {
+      const r = Math.min(4, bw / 2, h), top = T + ph - h;
+      g += `<path d="M${x} ${T + ph}V${top + r}Q${x} ${top} ${x + r} ${top}H${x + bw - r}Q${x + bw} ${top} ${x + bw} ${top + r}V${T + ph}Z" fill="${color}"/>`;
+    }
+    if ((n - 1 - i) % step === 0) g += `<text x="${L + i * slot + slot / 2}" y="${H - 8}" text-anchor="middle" font-size="11" fill="var(--text3)">${esc(fmtDayShort(d.date))}</text>`;
+    g += `<rect class="chart-hit" x="${L + i * slot}" y="${T}" width="${slot}" height="${ph}" fill="transparent" data-i="${i}" tabindex="0" aria-label="${esc(fmtDayShort(d.date) + ': ' + d[key] + ' ' + noun)}"/>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="group" aria-label="График: ${esc(noun)} по дням">${g}</svg>`;
 }
 
-async function deletePhoto(id) {
-  if (!confirm('Удалить это фото с сайта?')) return;
-  const { error } = await api('DELETE', 'admin/gallery/' + id + '/');
-  if (error) { showApiError(error); return; }
-  toast('Фото удалено');
-  loadGallery();
+function attachChartTip(box, days, key, words) {
+  const tip = box.querySelector('.chart-tip');
+  const word = n => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? words[0] : (a >= 2 && a <= 4 && (b < 10 || b >= 20)) ? words[1] : words[2]; };
+  const show = (el, evt) => {
+    const d = days[+el.dataset.i];
+    tip.textContent = `${fmtDayShort(d.date)} — ${d[key]} ${word(d[key])}`;
+    tip.classList.add('show');
+    const b = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+    const x = (evt && evt.clientX !== undefined && evt.type.startsWith('mouse') ? evt.clientX : r.left + r.width / 2) - b.left;
+    tip.style.left = Math.max(60, Math.min(b.width - 60, x)) + 'px';
+  };
+  box.querySelectorAll('.chart-hit').forEach(el => {
+    el.addEventListener('mousemove', e => show(el, e));
+    el.addEventListener('focus', e => show(el, e));
+    el.addEventListener('mouseleave', () => tip.classList.remove('show'));
+    el.addEventListener('blur', () => tip.classList.remove('show'));
+  });
 }
 
 // ════════════════════════════════════════════
@@ -780,15 +989,15 @@ function bandSelect(id, value, allowEmpty) {
 // Photo picker shared by the result and teacher forms
 let pickedPhoto = null;   // File chosen in the form (null = keep the current one)
 let removePhoto = false;
-function photoPickerHtml(currentUrl, square) {
+function photoPickerHtml(currentUrl, square, label, hint) {
   return `
-    <div class="form-group"><label>${square ? 'Фото преподавателя' : 'Фото сертификата (необязательно)'}</label>
+    <div class="form-group"><label>${esc(label || (square ? 'Фото преподавателя' : 'Фото сертификата (необязательно)'))}</label>
       <div class="photo-pick">
         <img class="photo-preview ${square ? 'square' : ''}" id="photoPreview" src="${currentUrl ? esc(currentUrl) : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='}" alt=""/>
         <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
           <button type="button" class="btn btn-sm btn-secondary" id="photoPickBtn">📷 Выбрать фото</button>
           <button type="button" class="btn btn-sm btn-secondary" id="photoRemoveBtn" ${currentUrl ? '' : 'style="display:none"'}>Убрать фото</button>
-          <span class="hint">${square ? 'Лучше квадратное или вертикальное фото, лицо по центру.' : 'Вертикальное фото 9:16. Без фото карточка будет жёлтой.'}</span>
+          <span class="hint">${esc(hint || (square ? 'Лучше квадратное или вертикальное фото, лицо по центру.' : 'Вертикальное фото 9:16. Без фото карточка будет жёлтой.'))}</span>
         </div>
       </div>
       <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" style="display:none"/>
@@ -983,11 +1192,8 @@ window.viewExamRegs = viewExamRegs;
 window.updateStudentStatus = updateStudentStatus;
 window.openNewsModal = openNewsModal;
 window.deleteNews = deleteNews;
+window.toggleNewsPublished = toggleNewsPublished;
 window.closeModal = closeModal;
-window.updatePhoto = updatePhoto;
-window.movePhoto = movePhoto;
-window.replacePhoto = replacePhoto;
-window.deletePhoto = deletePhoto;
 window.openResultModal = openResultModal;
 window.openTeacherModal = openTeacherModal;
 window.togglePublished = togglePublished;

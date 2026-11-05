@@ -396,3 +396,37 @@ class LibraryBook(APIView):
         book = get_object_or_404(Book, pk=pk, group__teacher=request.user.portal_profile)
         book.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ── Mock exam (the student's own registrations and published results) ──
+
+class StudentMock(APIView):
+    """GET /api/portal/mock/ — only the logged-in student's own mock registrations.
+
+    The scores are included only after staff pressed «Completed» (published); until then
+    the answer carries `result: null`, never the numbers.
+    """
+
+    permission_classes = [IsPortalStudent]
+
+    def get(self, request):
+        me = request.user.portal_profile
+        rows = []
+        for reg in me.mock_registrations.select_related("exam").order_by("-exam__exam_date", "-id"):
+            result = None
+            if reg.results_published_at is not None and reg.overall is not None:
+                result = {
+                    "listening": float(reg.listening), "reading": float(reg.reading),
+                    "writing": float(reg.writing), "speaking": float(reg.speaking),
+                    "overall": float(reg.overall), "published_at": reg.results_published_at,
+                }
+            rows.append({
+                "id": reg.id,
+                "ticket_no": reg.ticket_no,
+                "exam_title": reg.exam.title if reg.exam else "",
+                "exam_date": reg.exam.exam_date if reg.exam else None,
+                "location": reg.exam.location if reg.exam else "",
+                "payment_status": reg.payment_status,
+                "result": result,
+            })
+        return Response({"registrations": rows})

@@ -145,13 +145,46 @@ select.form-control{cursor:pointer}
 
 .filter-bar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
 .filter-bar select{height:38px;padding:0 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:.84rem;outline:none}
-.gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-.gallery-admin-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
-.gallery-admin-card img{width:100%;height:160px;object-fit:cover;display:block;background:var(--bg3)}
-.gallery-admin-body{padding:12px;display:flex;flex-direction:column;gap:8px}
-.gallery-admin-body .form-control{height:36px;font-size:.82rem}
-.gallery-admin-actions{display:flex;gap:6px;flex-wrap:wrap}
-.gallery-pos{font-size:.75rem;color:var(--text3)}
+/* ── Tabs (Mock exams) ── */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:none;background:none;font-size:.9rem;font-weight:600;color:var(--text2);border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:8px 8px 0 0}
+.tab:hover{color:var(--text);background:var(--bg3)}
+.tab.active{color:var(--text);border-bottom-color:var(--gold)}
+.tab .count{margin-left:8px;background:var(--bg3);border-radius:999px;padding:1px 9px;font-size:.75rem;font-weight:700}
+.tab.active .count{background:var(--gold-soft)}
+.bands{white-space:nowrap;font-variant-numeric:tabular-nums}
+.board-actions{display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:132px}
+#boardBody .score-input{width:56px}
+/* ── News / events list ── */
+.news-admin{display:flex;gap:18px;align-items:flex-start}
+.news-thumb{width:150px;height:100px;flex-shrink:0;border-radius:10px;object-fit:cover;background:var(--gold-soft);display:block}
+.news-admin-main{min-width:0;flex:1}
+.news-admin-badges{display:flex;gap:6px;flex-wrap:wrap}
+.news-admin-title{font-size:1.02rem;margin:8px 0 4px;line-height:1.3}
+.news-admin-text{font-size:.86rem;color:var(--text2);line-height:1.6;margin:6px 0 0;white-space:pre-line}
+.news-admin-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+/* ── Analytics ── */
+.ana-table{width:100%;border-collapse:collapse}
+.ana-table th,.ana-table td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.ana-table th:first-child,.ana-table td:first-child{text-align:left}
+.ana-table thead th{font-size:.75rem;color:var(--text3);font-weight:600}
+.ana-table tbody th{font-weight:600;color:var(--text)}
+.ana-table td{font-weight:700}
+.ana-share-col{width:34%}
+.ana-share{display:block;height:8px;border-radius:999px;background:var(--bg3);overflow:hidden}
+.ana-share i{display:block;height:100%;border-radius:999px;background:var(--blue)}
+.range-switch{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--bg3);margin:4px 0 18px}
+.range-switch button{border:none;background:none;padding:7px 16px;border-radius:999px;font-weight:600;font-size:.85rem;color:var(--text2)}
+.range-switch button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.chart-total{font-family:Inter,sans-serif;font-weight:500;font-size:.78rem;color:var(--text3);margin-left:10px}
+.chart-box{position:relative}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart-hit:hover,.chart-hit:focus{fill:rgba(20,20,22,.05);outline:none}
+.chart-tip{position:absolute;top:2px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:.78rem;font-weight:600;padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s}
+.chart-tip.show{opacity:1}
+.ana-details summary{cursor:pointer;font-weight:600;font-size:.88rem}
+.ana-details .table-wrap{margin-top:12px}
+@media(max-width:700px){.news-admin{flex-direction:column}.news-thumb{width:100%;height:150px}.ana-share-col{display:none}}
 .upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:26px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;color:var(--text2);font-size:.9rem;line-height:1.6}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--ink);background:var(--gold-soft)}
 
@@ -221,12 +254,12 @@ select.form-control{cursor:pointer}
     <div class="sidebar-logo"><img src="images/logo-row-black.png" alt="Stanford language center"/><small>Панель администратора</small></div>
     <nav class="sidebar-nav" id="sidebarNav">
       <button class="nav-item active" data-page="dashboard"><span class="icon">📊</span> Обзор</button>
+      <button class="nav-item" data-page="analytics"><span class="icon">📈</span> Аналитика</button>
       <button class="nav-item" data-page="exams"><span class="icon">📝</span> Mock-экзамены</button>
       <button class="nav-item" data-page="students"><span class="icon">👥</span> Заявки</button>
       <button class="nav-item" data-page="results"><span class="icon">🏆</span> Результаты</button>
       <button class="nav-item" data-page="teachers"><span class="icon">🎓</span> Преподаватели</button>
-      <button class="nav-item" data-page="gallery"><span class="icon">🖼️</span> Галерея</button>
-      <button class="nav-item" data-page="news"><span class="icon">📰</span> Новости</button>
+      <button class="nav-item" data-page="news"><span class="icon">📰</span> Новости и события</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info">

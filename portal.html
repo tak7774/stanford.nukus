@@ -48,6 +48,13 @@
   .btn-ghost{ background:none; border-color:var(--muted); }
   .btn-ghost:hover{ border-color:var(--text); }
   .btn-sm{ height:38px; padding:0 18px; }
+  .mock-bands{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
+  .mock-band{ background:var(--mist); border-radius:var(--r-sm); padding:10px 6px; text-align:center; }
+  .mock-band small{ display:block; font-size:12px; color:var(--muted); font-weight:600; }
+  .mock-band b{ display:block; font-size:22px; font-weight:800; line-height:1.2; }
+  .mock-band.overall{ background:var(--yellow); color:#141416; }
+  .mock-band.overall small{ color:#3A2E05; }
+  @media (max-width:520px){ .mock-bands{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
   .btn-lg{ height:52px; font-size:16px; }
 
   .for-dark{ display:none; }
@@ -220,6 +227,7 @@
   <noscript><p class="demo-note">Для работы кабинета нужен JavaScript. Включите его в настройках браузера.</p></noscript>
 </main>
 
+<script src="track.js" defer></script>
 <script src="translations.js"></script>
 <script src="i18n.js"></script>
 <script src="portal.js"></script>

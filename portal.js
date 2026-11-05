@@ -260,10 +260,39 @@
 
   function bookCover(i) { return 'cover c' + ((i % 4) + 1); }
 
+  // «Мой Mock-экзамен»: the student's own registrations. Scores appear here only after
+  // staff published them (the server sends result: null until then).
+  function mockCard(r) {
+    var past = r.exam_date && new Date(r.exam_date) < new Date();
+    var result;
+    if (r.result) {
+      var b = function (label, v, cls) { return h('div', { class: 'mock-band' + (cls ? ' ' + cls : '') }, h('small', { text: label }), h('b', { text: Number(v).toFixed(1) })); };
+      result = h('div', { class: 'stack gap-2' },
+        h('div', { class: 'mock-bands' }, b('Overall', r.result.overall, 'overall'), b('Listening', r.result.listening), b('Reading', r.result.reading), b('Writing', r.result.writing), b('Speaking', r.result.speaking)),
+        h('div', { class: 'muted small', text: 'Результат опубликован ' + fmtDate(r.result.published_at, { day: 'numeric', month: 'long' }) }));
+    } else {
+      result = h('p', { class: 'muted small', text: past
+        ? 'Результат ещё проверяется. Он появится здесь, когда будет готов.'
+        : 'Здесь появится ваш результат после экзамена.' });
+    }
+    return h('div', { class: 'card stack gap-3' },
+      h('div', null,
+        h('div', { style: 'font-size:18px;font-weight:700', text: r.exam_title || 'IELTS CD Mock' }),
+        r.exam_date ? h('div', { class: 'small' }, h('b', { text: fmtWhen(r.exam_date) })) : null,
+        r.location ? h('div', { class: 'muted small', text: r.location }) : null),
+      h('div', { class: 'muted small', text: 'Билет: ' + (r.ticket_no || '—') + ' · ' + (r.payment_status === 'verified' ? 'оплачено' : 'оплата ожидает подтверждения') }),
+      result);
+  }
+
   function renderStudent() {
     loading();
-    api('GET', 'student/').then(function (res) {
+    Promise.all([api('GET', 'student/'), api('GET', 'mock/')]).then(function (both) {
+      var res = both[0];
       if (!res.ok) { return authFail(res); }
+      var mockRows = both[1].ok ? both[1].data.registrations : [];
+      var mockSection = h('section', { class: 'stack gap-3' }, h('h2', { class: 'sec', text: 'Мой Mock-экзамен' }),
+        mockRows.length ? h('div', { class: 'grid' }, mockRows.map(mockCard))
+          : h('div', { class: 'card' }, empty('Вы пока не записаны на Mock-экзамен. '), h('a', { href: 'mock.html', style: 'font-weight:600', text: 'Записаться на Mock' })));
       var d = res.data;
       var open = d.tasks.filter(function (t) { return t.state === 'todo'; });
       var sub = open.length
@@ -290,6 +319,7 @@
         h('div', { class: 'stack', style: 'gap:4px' }, h('h1', { class: 'page', text: 'Здравствуйте, ' + firstName(d.full_name) }), h('p', { class: 'muted', text: sub })),
         h('div', { class: 'cols' },
           h('div', { class: 'main stack gap-5' },
+            mockSection,
             h('section', { class: 'stack gap-3' }, h('h2', { class: 'sec', text: 'Мои курсы' }), h('div', { class: 'grid' }, courses)),
             h('section', { class: 'stack gap-3' }, h('h2', { class: 'sec', text: 'Задания' }), h('div', { class: 'card list' }, tasks))),
           h('aside', { class: 'stack gap-5' },

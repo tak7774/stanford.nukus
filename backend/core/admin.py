@@ -3,7 +3,7 @@ from django.contrib import admin
 
 from django.utils.html import format_html
 
-from .models import ExamRegistration, GalleryPhoto, MockExam, News, StaffRole, StudentResult, Teacher, TrialRegistration
+from .models import ExamRegistration, MockExam, News, PageView, StaffRole, StudentResult, Teacher, TrialRegistration
 
 
 @admin.register(StaffRole)
@@ -13,8 +13,16 @@ class StaffRoleAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ["title", "created_at"]
+    list_display = ["title", "kind", "event_date", "is_published", "created_at"]
+    list_filter = ["kind", "is_published"]
     search_fields = ["title", "body"]
+    exclude = ["image", "content_type", "width", "height"]  # upload photos from admin.html -> News
+
+
+@admin.register(PageView)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ["created_at", "path", "device", "referrer"]
+    list_filter = ["path", "device"]
 
 
 @admin.register(TrialRegistration)
@@ -39,29 +47,9 @@ class MockExamAdmin(admin.ModelAdmin):
 
 @admin.register(ExamRegistration)
 class ExamRegistrationAdmin(admin.ModelAdmin):
-    list_display = ["full_name", "phone", "exam", "payment_method", "payment_status", "registered_at"]
+    list_display = ["full_name", "phone", "exam", "payment_method", "payment_status", "results_published_at", "registered_at"]
     list_filter = ["payment_status", "payment_method", "exam"]
     search_fields = ["full_name", "phone"]
-
-
-@admin.register(GalleryPhoto)
-class GalleryPhotoAdmin(admin.ModelAdmin):
-    list_display = ["thumb", "caption", "size", "position", "created_at"]
-    list_editable = ["caption", "size", "position"]
-    fields = ["thumb", "caption", "size", "position"]
-    readonly_fields = ["thumb"]
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).defer("image")
-
-    def has_add_permission(self, request):
-        return False  # upload photos from admin.html → Gallery
-
-    @admin.display(description="Photo")
-    def thumb(self, obj):
-        if not obj.pk:
-            return ""
-        return format_html('<img src="{}" style="height:60px;border-radius:4px">', obj.url)
 
 
 @admin.register(StudentResult)

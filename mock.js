@@ -50,7 +50,7 @@ const CAL_MAX_DAYS = 62;  // a ?exam= link further away stretches the calendar u
 // ── State ──
 const state = {
   step: 1,
-  first: '', last: '', phone: '', gender: '',
+  first: '', last: '', phone: '', gender: '', password: '',
   exams: null,          // null = loading, 'error', or array
   dayKey: null,         // 'YYYY-MM-DD' (Tashkent)
   exam: null,           // chosen exam object
@@ -259,13 +259,21 @@ async function submit() {
     last_name: state.last,
     phone: state.phone,
     gender: state.gender,
-    payment_method: state.pay
+    payment_method: state.pay,
+    password: state.password
   });
   btn.disabled = false;
   btn.innerHTML = label;
   if (error) {
     console.warn('Could not save exam registration:', error);
-    if (error.code === 'EXAM_FULL' || error.code === 'EXAM_CLOSED') {
+    if (error.code === 'ACCOUNT_EXISTS' || error.password) {
+      // The phone already has a portal account (wrong password) or the password is too weak
+      alert(t(error.code === 'ACCOUNT_EXISTS' ? 'm-err-account' : 'm-err-pw'));
+      goToStep(1);
+      document.getElementById('fPw').focus();
+    } else if (error.code === 'ALREADY_REGISTERED') {
+      alert(t('m-already'));
+    } else if (error.code === 'EXAM_FULL' || error.code === 'EXAM_CLOSED') {
       alert(t(error.code === 'EXAM_FULL' ? 'm-full' : 'm-closed'));
       state.exam = null;
       await loadExams();
@@ -275,6 +283,8 @@ async function submit() {
     }
     return;
   }
+  state.password = ''; // not needed any more
+  ['fPw', 'fPw2'].forEach(id => { document.getElementById(id).value = ''; });
   ticket = { no: data.ticket_no || '—', name: `${state.first} ${state.last}`, exam: state.exam, pay: state.pay };
   renderTicket();
   goToStep(4);
@@ -294,6 +304,11 @@ function initSteps() {
     ok = setInvalid('last', !state.last) && ok;
     ok = setInvalid('phone', !phoneIsComplete(state.phone)) && ok;
     ok = setInvalid('gender', !state.gender) && ok;
+    const pw = document.getElementById('fPw').value;
+    const pwWeak = pw.length < 8 || /^\d+$/.test(pw);
+    ok = setInvalid('pw', pwWeak) && ok;
+    ok = setInvalid('pw2', document.getElementById('fPw2').value !== pw) && ok;
+    state.password = pw;
     if (!ok) { const f = s1.querySelector('.field.invalid input'); if (f) f.focus(); return; }
     goToStep(2);
   });

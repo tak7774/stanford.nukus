@@ -1,8 +1,15 @@
-from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.db import transaction
 import re
+import uuid
+from datetime import datetime, time, timedelta
+from urllib.parse import urlparse
 
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.db.models import BooleanField, Count, ExpressionWrapper, Max, Q
+from django.db.models.functions import TruncDate
+from django.shortcuts import get_object_or_404
 from django.http import Http404, HttpResponse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
@@ -16,13 +23,16 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from portal.models import Profile, new_username
+from portal.views import normalize_phone
+
 from . import telegram
 from .images import ImageError, process_upload
 from .models import (
     ExamRegistration,
-    GalleryPhoto,
     MockExam,
     News,
+    PageView,
     StudentResult,
     Teacher,
     TrialRegistration,
@@ -32,13 +42,13 @@ from .serializers import (
     DEFAULT_EXAM_PRICE_UZS,
     AdminExamRegistrationSerializer,
     AdminMockExamSerializer,
+    AdminNewsSerializer,
     AdminStudentResultSerializer,
     AdminTeacherSerializer,
     AdminTrialRegistrationSerializer,
-    GalleryPhotoSerializer,
     MockResultLookupSerializer,
-    NewsSerializer,
     PublicExamRegistrationSerializer,
+    PublicNewsSerializer,
     PublicMockExamSerializer,
     PublicStudentResultSerializer,
     PublicTeacherSerializer,
@@ -76,14 +86,6 @@ class PublicMockExamList(PublicView, generics.ListAPIView):
         )
 
 
-class PublicNewsList(PublicView, generics.ListAPIView):
-    """GET /api/news/ — published news posts, newest first."""
-
-    serializer_class = NewsSerializer
-    pagination_class = None
-    queryset = News.objects.order_by("-created_at")[:50]
-
-
 class PublicTrialRegistrationCreate(PublicView, generics.CreateAPIView):
     """POST /api/trial-registrations/ — both lead forms on the main site
     (source "course_card" = course modal, "apply_form" = «Оставить заявку»)."""
@@ -100,9 +102,17 @@ class PublicTrialRegistrationCreate(PublicView, generics.CreateAPIView):
 class PublicExamRegistrationCreate(PublicView, APIView):
     """POST /api/exam-registrations/ — sign up for a mock exam.
 
+    The student also sets a password. It becomes (or must match) the password of their
+    portal account, which logs in with phone + password; Django stores only a hash.
+    If the phone number already has a portal account, the password must be that account's
+    password: nobody can attach a registration to someone else's account.
+
     Errors the website understands:
-      409 {"code": "EXAM_FULL"}    all seats are taken
-      409 {"code": "EXAM_CLOSED"}  exam is not 'upcoming' or its date has passed
+      409 {"code": "EXAM_FULL"}           all seats are taken
+      409 {"code": "EXAM_CLOSED"}         exam is not 'upcoming' or its date has passed
+      409 {"code": "ALREADY_REGISTERED"}  this student is already signed up for this exam
+      403 {"code": "ACCOUNT_EXISTS"}      the phone has an account and the password is different
+      400 {"password": [...]}             password too weak
     """
 
     throttle_classes = [ScopedRateThrottle]
@@ -111,6 +121,10 @@ class PublicExamRegistrationCreate(PublicView, APIView):
     def post(self, request):
         serializer = PublicExamRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        password = serializer.validated_data["password"]
+        digits = normalize_phone(serializer.validated_data["phone"])
+        if not digits:
+            raise ValidationError({"phone": ["Введите номер телефона полностью."]})
 
         with transaction.atomic():
             # Lock the exam row so two people can't take the last seat at the same time.
@@ -127,10 +141,41 @@ class PublicExamRegistrationCreate(PublicView, APIView):
                     {"code": "EXAM_FULL", "detail": "Все места на этот экзамен заняты."},
                     status=status.HTTP_409_CONFLICT,
                 )
+
+            profile = Profile.objects.select_related("user").filter(phone=digits).first()
+            if profile is None:
+                try:
+                    validate_password(password)
+                except DjangoValidationError as e:
+                    raise ValidationError({"password": list(e.messages)})
+                # No email on the User row on purpose: see portal/models.py.
+                user = get_user_model().objects.create_user(new_username(), "", password)
+                profile = Profile.objects.create(
+                    user=user, role="student", approved=True, phone=digits,
+                    full_name=" ".join(serializer.validated_data["full_name"].split()),
+                    note="Mock exam",
+                )
+            else:
+                ok = profile.role == "student" and authenticate(
+                    request, username=profile.user.username, password=password
+                ) is not None
+                if not ok:
+                    return Response(
+                        {"code": "ACCOUNT_EXISTS",
+                         "detail": "На этот номер уже есть кабинет. Введите пароль от него."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                if ExamRegistration.objects.filter(exam=exam, student=profile).exists():
+                    return Response(
+                        {"code": "ALREADY_REGISTERED", "detail": "Вы уже записаны на этот экзамен."},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+
             # Payment is never trusted from the browser: an admin verifies it in admin.html.
             # amount_paid stays empty until then; the price goes into amount_due.
             registration = serializer.save(
                 exam=exam,
+                student=profile,
                 format="computer",  # all mocks are computer-delivered (CD)
                 payment_status="pending",
                 amount_due=exam.price_uzs or DEFAULT_EXAM_PRICE_UZS,
@@ -176,21 +221,23 @@ class MockResultLookup(PublicView, APIView):
         reg = ExamRegistration.objects.select_related("exam").filter(ticket_no__iexact=ticket).first()
         if reg is None or phone_digits(reg.phone) != phone:
             return not_found
+        # Scores stay hidden until staff press «Completed» (publish).
+        ready = reg.overall is not None and reg.results_published_at is not None
         result = {
-            "ready": reg.overall is not None,
+            "ready": ready,
             "first_name": reg.first_name or (reg.full_name or "").split(" ")[0],
             "exam_title": reg.exam.title if reg.exam else "",
             "exam_date": reg.exam.exam_date if reg.exam else None,
             "ticket_no": reg.ticket_no,
         }
-        if reg.overall is not None:
+        if ready:
             for band in ("listening", "reading", "writing", "speaking", "overall"):
                 result[band] = float(getattr(reg, band))
         return Response(result)
 
 
 # ════════════════════════════════════════════
-# RESULTS & TEACHERS — photo stored in the database, like the gallery
+# RESULTS, TEACHERS & NEWS — photo stored in the database
 # ════════════════════════════════════════════
 
 def with_has_image(qs):
@@ -489,108 +536,247 @@ class AdminStudentDetail(generics.RetrieveUpdateAPIView):
     queryset = TrialRegistration.objects.all()
 
 
-class AdminNewsList(generics.ListCreateAPIView):
-    """GET/POST /api/admin/news/"""
-
-    serializer_class = NewsSerializer
-    pagination_class = None
-    queryset = News.objects.order_by("-created_at")
-
-
-class AdminNewsDetail(generics.RetrieveUpdateDestroyAPIView):
-    """GET/PATCH/DELETE /api/admin/news/<id>/"""
-
-    serializer_class = NewsSerializer
-    queryset = News.objects.all()
-
-
 # ════════════════════════════════════════════
-# GALLERY — «Жизнь центра изнутри»
+# NEWS, EVENTS, SPEAKING CLUBS — shown right after the first screen of index.html
 # ════════════════════════════════════════════
-
-def gallery_queryset():
-    # Never load the image bytes when only listing photos.
-    return GalleryPhoto.objects.defer("image").order_by("position", "id")
-
-
-class PublicGalleryList(PublicView, generics.ListAPIView):
-    """GET /api/gallery/ — photos for the website, in display order."""
-
-    serializer_class = GalleryPhotoSerializer
-    pagination_class = None
-
-    def get_queryset(self):
-        return gallery_queryset()
-
 
 @require_GET
-def gallery_image(request, pk):
-    """GET /api/gallery/<id>/image/ — the photo itself (cached by browsers and Vercel)."""
-    photo = GalleryPhoto.objects.filter(pk=pk).only("image", "content_type").first()
-    if photo is None:
-        raise Http404
-    response = HttpResponse(bytes(photo.image), content_type=photo.content_type)
-    response["Cache-Control"] = "public, max-age=31536000, immutable"
-    return response
+def news_image(request, pk):
+    """GET /api/news/<id>/image/"""
+    return photo_response(News, pk, request)
 
 
-class AdminGalleryList(generics.ListCreateAPIView):
-    """GET /api/admin/gallery/ ; POST (multipart: image, caption, size) uploads a photo."""
+class PublicNewsList(PublicView, generics.ListAPIView):
+    """GET /api/news/ — published posts. Upcoming events and clubs come first (soonest on top);
+    after them the other posts, newest first. Events that already started are left out."""
 
-    serializer_class = GalleryPhotoSerializer
+    serializer_class = PublicNewsSerializer
     pagination_class = None
-    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        return gallery_queryset()
-
-    def create(self, request, *args, **kwargs):
-        upload = request.FILES.get("image")
-        if upload is None:
-            return Response({"detail": "Выберите фото."}, status=400)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            data, width, height = process_upload(upload)
-        except ImageError as e:
-            return Response({"detail": str(e)}, status=400)
-        last = GalleryPhoto.objects.aggregate(m=Max("position"))["m"]
-        photo = serializer.save(
-            image=data, content_type="image/jpeg", width=width, height=height,
-            position=(last + 1) if last is not None else 0,
+        rows = list(
+            with_has_image(News.objects.filter(is_published=True))
+            .exclude(event_date__lt=timezone.now())
+            .order_by("-created_at")[:60]
         )
-        return Response(self.get_serializer(photo).data, status=201)
+        upcoming = sorted((n for n in rows if n.event_date), key=lambda n: n.event_date)
+        others = [n for n in rows if not n.event_date]
+        return upcoming + others
 
 
-class AdminGalleryDetail(generics.RetrieveUpdateDestroyAPIView):
-    """PATCH /api/admin/gallery/<id>/ (caption, size, optional new image) ; DELETE (owner only)."""
-
-    serializer_class = GalleryPhotoSerializer
-    parser_classes = [JSONParser, MultiPartParser, FormParser]
+class AdminNewsMixin(PhotoRowAdminMixin):
+    model = News
+    serializer_class = AdminNewsSerializer
 
     def get_queryset(self):
-        return gallery_queryset()
+        return with_has_image(News.objects.all()).order_by("-created_at")
 
-    def perform_update(self, serializer):
-        extra = {}
-        upload = self.request.FILES.get("image")
-        if upload is not None:
-            try:
-                data, width, height = process_upload(upload)
-            except ImageError as e:
-                raise ValidationError({"detail": str(e)})
-            extra = dict(image=data, content_type="image/jpeg", width=width, height=height)
-        serializer.save(**extra)
+    def perform_create(self, serializer):
+        serializer.save(**self.photo_fields())
 
 
-class AdminGalleryReorder(APIView):
-    """POST /api/admin/gallery/reorder/ {"ids": [3, 1, 2]} — new display order."""
+class AdminNewsList(AdminNewsMixin, generics.ListCreateAPIView):
+    """GET/POST /api/admin/news/ — JSON, or multipart with an `image` photo."""
+
+
+class AdminNewsDetail(AdminNewsMixin, generics.RetrieveUpdateDestroyAPIView):
+    """GET/PATCH/DELETE /api/admin/news/<id>/ — DELETE is owner-only."""
+
+
+# ════════════════════════════════════════════
+# ANALYTICS — page views (public, insert-only) and the staff dashboard
+# ════════════════════════════════════════════
+
+PAGE_PATHS = {"": "/", "index": "/", "mock": "/mock.html", "portal": "/portal.html"}
+
+
+class PageViewCreate(PublicView, APIView):
+    """POST /api/analytics/hit/ {path, visitor_id, referrer, device} -> 204.
+
+    Insert-only for visitors. Nothing personal is kept: no IP address, no user agent.
+    The referrer is cut down to the host name of the site that linked here.
+    """
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "analytics"
 
     def post(self, request):
-        ids = request.data.get("ids")
-        if not isinstance(ids, list) or not all(isinstance(i, int) for i in ids):
-            return Response({"detail": "ids must be a list of photo ids"}, status=400)
-        with transaction.atomic():
-            for position, pk in enumerate(ids):
-                GalleryPhoto.objects.filter(pk=pk).update(position=position)
-        return Response(GalleryPhotoSerializer(gallery_queryset(), many=True).data)
+        raw_path = str(request.data.get("path", ""))[:200].split("?")[0].split("#")[0]
+        name = raw_path.strip("/").lower()
+        if name.endswith(".html"):
+            name = name[:-5]
+        path = PAGE_PATHS.get(name)
+        try:
+            visitor = uuid.UUID(str(request.data.get("visitor_id", "")))
+        except ValueError:
+            visitor = None
+        if path is None or visitor is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        host = (urlparse(str(request.data.get("referrer", ""))[:500]).hostname or "").lower()
+        if host.startswith("www."):
+            host = host[4:]
+        own_host = request.get_host().split(":")[0].lower()
+        if host == own_host or host == own_host.removeprefix("www."):
+            host = ""  # moved around inside our own site
+        device = "mobile" if request.data.get("device") == "mobile" else "desktop"
+        PageView.objects.create(path=path, visitor_id=visitor, referrer=host[:100], device=device)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminAnalytics(APIView):
+    """GET /api/admin/analytics/ — numbers for today, the last 7 days and the last 30 days
+    (days are Tashkent days), views per page, and a daily series for the chart."""
+
+    PERIODS = {"today": 0, "d7": 6, "d30": 29}
+
+    def get(self, request):
+        today = timezone.localdate()
+
+        def day_start(day):
+            return timezone.make_aware(datetime.combine(day, time.min))
+
+        periods, pages = {}, {}
+        for key, back in self.PERIODS.items():
+            since = day_start(today - timedelta(days=back))
+            views = PageView.objects.filter(created_at__gte=since)
+            totals = views.aggregate(views=Count("id"), visitors=Count("visitor_id", distinct=True))
+            registrations = ExamRegistration.objects.filter(registered_at__gte=since).count()
+            visitors = totals["visitors"]
+            periods[key] = {
+                "visitors": visitors,
+                "views": totals["views"],
+                "registrations": registrations,
+                # registrations ÷ unique visitors, in percent (None while there are no visitors)
+                "conversion": round(registrations * 100 / visitors, 1) if visitors else None,
+            }
+            pages[key] = list(
+                views.values("path")
+                .annotate(views=Count("id"), visitors=Count("visitor_id", distinct=True))
+                .order_by("-views", "path")
+            )
+
+        first = today - timedelta(days=29)
+        since = day_start(first)
+        by_day_views = {
+            row["day"]: row for row in PageView.objects.filter(created_at__gte=since)
+            .annotate(day=TruncDate("created_at")).values("day")
+            .annotate(views=Count("id"), visitors=Count("visitor_id", distinct=True))
+        }
+        by_day_regs = {
+            row["day"]: row["n"] for row in ExamRegistration.objects.filter(registered_at__gte=since)
+            .annotate(day=TruncDate("registered_at")).values("day").annotate(n=Count("id"))
+        }
+        daily = []
+        for i in range(30):
+            day = first + timedelta(days=i)
+            v = by_day_views.get(day, {})
+            daily.append({
+                "date": day.isoformat(),
+                "visitors": v.get("visitors", 0),
+                "views": v.get("views", 0),
+                "registrations": by_day_regs.get(day, 0),
+            })
+        return Response({"periods": periods, "pages": pages, "daily": daily})
+
+
+# ════════════════════════════════════════════
+# MOCK EXAM BOARD — Upcoming / Taken (awaiting scores) / Completed
+# ════════════════════════════════════════════
+
+def split_name(reg):
+    first, last = reg.first_name, reg.last_name
+    if not first and not last:
+        parts = (reg.full_name or "").split(None, 1)
+        first, last = (parts[0] if parts else ""), (parts[1] if len(parts) > 1 else "")
+    return first or "", last or ""
+
+
+def board_row(reg):
+    """One student row. Never contains a password (there is none on this table)."""
+    first, last = split_name(reg)
+
+    def band(v):
+        return float(v) if v is not None else None
+
+    return {
+        "id": reg.id,
+        "ticket_no": reg.ticket_no,
+        "first_name": first,
+        "last_name": last,
+        "phone": reg.phone,
+        "exam_id": reg.exam_id,
+        "exam_title": reg.exam.title,
+        "exam_date": reg.exam.exam_date,
+        "payment_status": reg.payment_status,
+        "listening": band(reg.listening),
+        "reading": band(reg.reading),
+        "writing": band(reg.writing),
+        "speaking": band(reg.speaking),
+        "overall": band(reg.overall),
+        "results_published_at": reg.results_published_at,
+        "results_published_by": reg.results_published_by,
+    }
+
+
+def board_querysets():
+    now = timezone.now()
+    base = (
+        ExamRegistration.objects.select_related("exam")
+        .filter(exam__isnull=False).exclude(exam__status="cancelled")
+    )
+    unpublished = base.filter(results_published_at__isnull=True)
+    return {
+        "upcoming": unpublished.filter(exam__exam_date__gte=now).order_by("exam__exam_date", "registered_at", "id"),
+        "taken": unpublished.filter(exam__exam_date__lt=now).order_by("exam__exam_date", "registered_at", "id"),
+        "completed": base.filter(results_published_at__isnull=False).order_by("-results_published_at", "-id"),
+    }
+
+
+class AdminMockBoard(APIView):
+    """GET /api/admin/mock-board/?tab=upcoming|taken|completed — students for one tab, plus
+    the size of every tab."""
+
+    def get(self, request):
+        tab = request.query_params.get("tab", "upcoming")
+        tabs = board_querysets()
+        if tab not in tabs:
+            return Response({"detail": "Unknown tab."}, status=400)
+        return Response({
+            "counts": {name: qs.count() for name, qs in tabs.items()},
+            "rows": [board_row(r) for r in tabs[tab]],
+        })
+
+
+class AdminPublishResult(APIView):
+    """POST /api/admin/exam-registrations/<id>/publish/ — the «Completed» button.
+
+    Needs all four scores and an exam date that has passed. Afterwards the student sees
+    the scores in their portal, and staff see who published them and when.
+    """
+
+    def post(self, request, pk):
+        reg = get_object_or_404(ExamRegistration.objects.select_related("exam"), pk=pk)
+        if reg.results_published_at is None:
+            if None in (reg.listening, reg.reading, reg.writing, reg.speaking):
+                return Response({"detail": "Сначала сохраните все четыре балла."}, status=400)
+            if reg.exam is None or reg.exam.exam_date > timezone.now():
+                return Response({"detail": "Экзамен ещё не прошёл."}, status=400)
+            reg.results_published_at = timezone.now()
+            reg.results_published_by = request.user.email or request.user.username
+            reg.save(update_fields=["results_published_at", "results_published_by"])
+        return Response(board_row(reg))
+
+
+class AdminUnpublishResult(APIView):
+    """POST /api/admin/exam-registrations/<id>/unpublish/ — owner only: hide the result
+    again so the scores can be corrected."""
+
+    def post(self, request, pk):
+        if get_role(request.user) != "owner":
+            return Response({"detail": "Снять публикацию может только владелец."}, status=403)
+        reg = get_object_or_404(ExamRegistration.objects.select_related("exam"), pk=pk)
+        reg.results_published_at = None
+        reg.results_published_by = None
+        reg.save(update_fields=["results_published_at", "results_published_by"])
+        return Response(board_row(reg))

@@ -284,16 +284,57 @@ function renderTeachers() {
   }).join('');
 }
 
-// ════════ Gallery (hidden when there are no photos) ════════
-async function loadGallery() {
-  const { data, error } = await apiRequest('GET', 'gallery/');
-  const photos = (!error && Array.isArray(data)) ? data : [];
-  document.getElementById('gallery').hidden = photos.length === 0;
-  if (!photos.length) return;
-  document.getElementById('galleryGrid').innerHTML = photos.map(p => {
-    const size = p.size === 'tall' || p.size === 'wide' ? ' ' + p.size : '';
-    return `<div class="gallery-item${size}"><img src="${escapeHtml(p.url)}" alt="${escapeHtml(p.caption || 'Stanford Language Center')}" loading="lazy"/></div>`;
+// ════════ News, events, speaking clubs (hidden when nothing is published) ════════
+let newsPosts = [];
+async function loadNews() {
+  const { data, error } = await apiRequest('GET', 'news/');
+  newsPosts = (!error && Array.isArray(data)) ? data : [];
+  renderNews();
+}
+function renderNews() {
+  const section = document.getElementById('news');
+  const show = newsPosts.length > 0;
+  section.hidden = !show;
+  document.querySelectorAll('[data-needs="news"]').forEach(el => { el.hidden = !show; });
+  if (!show) return;
+  const grid = document.getElementById('newsGrid');
+  grid.innerHTML = newsPosts.map(n => {
+    const when = n.event_date ? new Date(n.event_date) : null;
+    const dateBadge = when
+      ? `<div class="news-date"><b>${I18N.tashkentParts(when).d}</b><small>${escapeHtml(I18N.formatMonthShort(when))}</small></div>` : '';
+    const photo = n.image_url || when
+      ? `<div class="news-photo${n.image_url ? '' : ' no-img'}">${n.image_url ? `<img src="${escapeHtml(n.image_url)}" alt="" loading="lazy"/>` : ''}${dateBadge}</div>` : '';
+    const meta = [];
+    if (n.kind && n.kind !== 'news') meta.push(`<span class="news-kind">${escapeHtml(t('news-kind-' + n.kind))}</span>`);
+    if (when) meta.push(`<span>${escapeHtml(I18N.formatWeekday(when))}, ${escapeHtml(I18N.formatTime(when))}</span>`);
+    if (n.location) meta.push(`<span>${escapeHtml(n.location)}</span>`);
+    if (!when && n.created_at) meta.push(`<span>${escapeHtml(I18N.formatDay(new Date(n.created_at), true))}</span>`);
+    return `
+      <article class="news-card">
+        ${photo}
+        <div class="news-body">
+          <div class="news-meta">${meta.join('')}</div>
+          <h3>${escapeHtml(n.title)}</h3>
+          ${n.body ? `<p class="news-text">${escapeHtml(n.body)}</p>` : ''}
+        </div>
+      </article>`;
   }).join('');
+  // «Read more» only where the text is really cut off
+  grid.querySelectorAll('.news-card').forEach(card => {
+    const text = card.querySelector('.news-text');
+    if (!text || text.scrollHeight <= text.clientHeight + 1) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'news-more';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.textContent = t('news-more');
+    btn.addEventListener('click', () => {
+      const open = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.textContent = t(open ? 'news-less' : 'news-more');
+    });
+    card.querySelector('.news-body').appendChild(btn);
+  });
 }
 
 // ════════ Start ════════
@@ -309,12 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Parts built in JS are redrawn in the new language
   I18N.onChange(() => {
     renderTeachers();
+    renderNews();
     document.querySelectorAll('.faq-item.open .faq-answer').forEach(a => { a.style.maxHeight = a.scrollHeight + 'px'; });
   });
 
   loadResults();
   loadTeachers();
-  loadGallery();
+  loadNews();
 
   let lastWidth = window.innerWidth;
   window.addEventListener('resize', () => {

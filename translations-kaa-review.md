@@ -152,104 +152,120 @@ To fix a translation, change it in `translations.js` (the `kaa` block).
 | 144 | год | jıl |
 | 145 | года | jıl |
 | 146 | лет | jıl |
-| 147 | Галерея | Galereya |
-| 148 | Наши классы и занятия. | Klaslarımız hám sabaqlarımız. |
-| 149 | Вопросы | Sorawlar |
-| 150 | Не нашли ответ — позвоните, объясним. | Juwap tappasańız — qońıraw etiń, túsindiremiz. |
-| 151 | Как понять, на какой уровень записаться? | Qaysı dárejege jazılıwdı qalay bilemen? |
-| 152 | Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS. | Sabaqlar baslanbastan aldın biypul kiris testin ótkeremiz — haqıyqıy dárejeńizdi anıqlap, Kids, General English yamasa IELTS-ke tayarlıq toparın tańlaymız. |
-| 153 | Сколько длится подготовка к IELTS? | IELTS-ke tayarlıq qansha waqıt aladı? |
-| 154 | В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас. | Ortasha 2–4 ay, baslanǵısh dárejeńiz hám maqset etken balıńızǵa baylanıslı. Kiris testinde tek siz ushın anıǵıraq boljaw beremiz. |
-| 155 | Можно ли перейти в другую группу, если не подошло время? | Waqıt sáykes kelmese, basqa toparǵa ótiwge bola ma? |
-| 156 | Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий. | Awa, sol dárejedegi basqa toparda bos orın bolsa, tólengen sabaqlarıńızdı joǵaltpay ótiwge járdem beremiz. |
-| 157 | С какого возраста можно записать ребёнка? | Balanı neshe jastan jazdırıwǵa boladı? |
-| 158 | Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными. | Kids English kursı 6 jastan 12 jasqa shekemgi balalarǵa arnalǵan. Sabaqlar qızıqlı hám túsinikli bolıwı ushın toparlar jas hám dárejege qarap dúziledi. |
-| 159 | Что если я пропущу занятие? | Sabaqtı qaldırıp ketsem ne boladı? |
-| 160 | Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию. | Qorqınıshlı hesh nárse joq — keyingi sabaqta oqıtıwshı ótilgen temanı qısqasha túsindiredi. Jiyi qaldırǵanda jeke konsultaciya usınamız. |
-| 161 | Как оплачивать занятия? | Sabaqlar ushın qalay tóleymen? |
-| 162 | Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте. | Tólem ayına bir ret, orayda naq aqsha yamasa awdarma arqalı. Tolıq maǵlıwmattı jazılıw waqtında telefon arqalı yamasa orayda aytamız. |
-| 163 | Контакты | Baylanıs |
-| 164 | Адрес | Mánzil |
-| 165 | ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан | N. Saraev kóshesi 34, 230100, Nókis, Qaraqalpaqstan Respublikası, Ózbekstan |
-| 166 | Телефоны | Telefonlar |
-| 167 | Часы работы | Jumıs waqtı |
-| 168 | Каждый день, 09:00–19:00 | Hár kúni, 09:00–19:00 |
-| 169 | Открыть в Google Maps | Google Maps-ta ashıw |
-| 170 | Языковой центр в Нукусе: IELTS, General English и курсы для детей. | Nókistegi til orayı: IELTS, General English hám balalar ushın kurslar. |
-| 171 | © 2026 Stanford Language Center, Нукус | © 2026 Stanford Language Center, Nókis |
-| 172 | IELTS CD Mock Exam — запись | IELTS CD Mock Exam — jazılıw |
-| 173 | Пробный IELTS на компьютере, как в настоящем тестовом центре. Запись — в три шага. | Kompyuterde sınaq IELTS, haqıyqıy test orayındaǵıday. Jazılıw — úsh qádemde. |
-| 174 | Данные | Maǵlıwmat |
-| 175 | Дата | Sáne |
-| 176 | Оплата | Tólem |
-| 177 | Ваши данные | Siziń maǵlıwmatlarıńız |
-| 178 | Как в паспорте или ID-карте — так они будут написаны в билете. | Pasport yamasa ID-kartadaǵıday jazıń — biletke solay jazıladı. |
-| 179 | Имя | Atıńız |
-| 180 | Фамилия | Familiyańız |
-| 181 | Пол | Jınısıńız |
-| 182 | Мужской | Er |
-| 183 | Женский | Hayal |
-| 184 | Укажите имя | Atıńızdı jazıń |
-| 185 | Укажите фамилию | Familiyańızdı jazıń |
-| 186 | Далее | Dawam etiw |
-| 187 | Назад | Artqa |
-| 188 | Выбрано: {date} | Tańlandı: {date} |
-| 189 | Выберите день | Kúndi tańlań |
-| 190 | Жёлтые дни — есть свободные места. Нажмите на день, чтобы увидеть время. | Sarı kúnlerde bos orınlar bar. Waqıttı kóriw ushın kúndi basıń. |
-| 191 | Есть места | Orın bar |
-| 192 | Мест нет | Orın joq |
-| 193 | Нет экзамена | Imtihan joq |
-| 194 | Выберите жёлтый день в календаре. | Kalendardan sarı kúndi tańlań. |
-| 195 | Время на {date} | {date} kúngi waqıtlar |
-| 196 | Свободно: {n} | Bos orın: {n} |
-| 197 | Выберите день и время экзамена | Imtihan kúni hám waqtın tańlań |
-| 198 | В ближайшие 30 дней открытых дат нет. Позвоните нам: | Jaqın 30 kúnde ashıq sáneler joq. Bizge qońıraw etiń: |
-| 199 | Загружаем расписание… | Keste júklenbekte… |
-| 200 | Не удалось загрузить даты. Обновите страницу или позвоните нам: | Sánelerdi júklew ámelge aspadı. Betti jańalań yamasa bizge qońıraw etiń: |
-| 201 | Проверьте и выберите оплату | Tekseriń hám tólew usılın tańlań |
-| 202 | Оплату подтверждает администратор. До этого в билете будет «Ожидает оплаты». | Tólemdi administrator tastıyıqlaydı. Oǵan shekem bilette «Tólem kútilmekte» dep jazıladı. |
-| 203 | Кандидат | Kandidat |
-| 204 | Экзамен | Imtihan |
-| 205 | Дата и время | Sáne hám waqıt |
-| 206 | Место | Orın |
-| 207 | К оплате | Tólewge |
-| 208 | Как вам удобнее оплатить? | Qalay tólew sizge qolaylı? |
-| 209 | Перевод в приложении Click | Click qosımshası arqalı awdarma |
-| 210 | Перевод в приложении Payme | Payme qosımshası arqalı awdarma |
-| 211 | В центре | Orayda |
-| 212 | Наличными до дня экзамена | Imtihan kúnine shekem naq aqsha menen |
-| 213 | Записаться на экзамен | Imtihanǵa jazılıw |
-| 214 | Записываем… | Jazılmaqta… |
-| 215 | Пока вы заполняли форму, места на это время закончились. Выберите другое. | Siz forma toltırıp atırǵanda bul waqıtqa orınlar tawsıldı. Basqa waqıttı tańlań. |
-| 216 | Запись на это время закрыта. Выберите другое. | Bul waqıtqa jazılıw jabıldı. Basqa waqıttı tańlań. |
-| 217 | Не удалось записаться. Позвоните нам: +998 91 303-60-01 | Jazılıw ámelge aspadı. Bizge qońıraw etiń: +998 91 303-60-01 |
-| 218 | Click | Click |
-| 219 | Payme | Payme |
-| 220 | наличные в центре | orayda naq aqsha |
-| 221 | Вы записаны | Siz jazıldıńız |
-| 222 | Ваш билет на IELTS CD Mock | IELTS CD Mock-qa biletińiz |
-| 223 | Сохраните номер билета: он нужен на входе и чтобы узнать результат. | Bilet nomerin saqlap qoyıń: ol kiriwde hám nátiyjeni biliw ushın kerek. |
-| 224 | Номер билета | Bilet nomeri |
-| 225 | Оплата | Tólem |
-| 226 | Ожидает оплаты · {method} | Tólem kútilmekte · {method} |
-| 227 | Адрес | Mánzil |
-| 228 | ул. Н. Сараева 34, Нукус | N. Saraev kóshesi 34, Nókis |
-| 229 | Распечатать | Basıp shıǵarıw |
-| 230 | Узнать результат Mock | Mock nátiyjesin biliw |
-| 231 | Введите номер билета и телефон, указанный при записи. | Bilet nomerin hám jazılǵanda kórsetken telefon nomerińizdi jazıń. |
-| 232 | Номер билета | Bilet nomeri |
-| 233 | Показать результат | Nátiyjeni kórsetiw |
-| 234 | Введите номер билета и телефон полностью | Bilet nomeri hám telefondı tolıq jazıń |
-| 235 | Результат ещё не готов. Загляните позже — обычно через несколько дней после экзамена. | Nátiyje ele tayın emes. Keyinirek qarań — ádette imtihannan bir neshe kún ótkennen soń tayın boladı. |
-| 236 | Билет с таким номером и телефоном не найден. Проверьте данные. | Bunday nomer hám telefonlı bilet tabılmadı. Maǵlıwmatlardı tekseriń. |
-| 237 | Слишком много попыток. Попробуйте через час. | Urınıwlar júdá kóp boldı. Bir saattan soń qaytadan kóriń. |
-| 238 | Не удалось проверить. Попробуйте позже. | Tekseriw ámelge aspadı. Keyinirek urınıp kóriń. |
-| 239 | {name}, ваш результат | {name}, siziń nátiyjeńiz |
-| 240 | Проверяем… | Tekserilmekte… |
-| 241 | Выберите пол | Jınısıńızdı tańlań |
-| 242 | Введите номер полностью: +998 и 9 цифр | Nomerdi tolıq jazıń: +998 hám 9 san |
-| 243 | Например, ST-2026-MOCK-0001 | Mısalı, ST-2026-MOCK-0001 |
-| 244 | Проверить другой билет | Basqa biletti tekseriw |
+| 147 | Новости | Jańalıqlar |
+| 148 | Новости и события | Jańalıqlar hám ilajlar |
+| 149 | Ближайшие мероприятия, speaking clubs и новости центра. | Jaqın ilajlar, speaking club hám orayımız jańalıqları. |
+| 150 | Новость | Jańalıq |
+| 151 | Мероприятие | Ilaj |
+| 152 | Speaking club | Speaking club |
+| 153 | Другое | Basqa |
+| 154 | Читать полностью | Tolıq oqıw |
+| 155 | Свернуть | Jıyıw |
+| 156 | Вопросы | Sorawlar |
+| 157 | Не нашли ответ — позвоните, объясним. | Juwap tappasańız — qońıraw etiń, túsindiremiz. |
+| 158 | Как понять, на какой уровень записаться? | Qaysı dárejege jazılıwdı qalay bilemen? |
+| 159 | Перед началом занятий мы проводим бесплатное вводное тестирование — определяем реальный уровень и подбираем подходящую группу, будь то Kids, General English или подготовка к IELTS. | Sabaqlar baslanbastan aldın biypul kiris testin ótkeremiz — haqıyqıy dárejeńizdi anıqlap, Kids, General English yamasa IELTS-ke tayarlıq toparın tańlaymız. |
+| 160 | Сколько длится подготовка к IELTS? | IELTS-ke tayarlıq qansha waqıt aladı? |
+| 161 | В среднем 2–4 месяца в зависимости от начального уровня и целевого балла. На вводном тестировании мы дадим более точный прогноз именно для вас. | Ortasha 2–4 ay, baslanǵısh dárejeńiz hám maqset etken balıńızǵa baylanıslı. Kiris testinde tek siz ushın anıǵıraq boljaw beremiz. |
+| 162 | Можно ли перейти в другую группу, если не подошло время? | Waqıt sáykes kelmese, basqa toparǵa ótiwge bola ma? |
+| 163 | Да, если в другой группе того же уровня есть свободные места, мы поможем перевестись без потери оплаченных занятий. | Awa, sol dárejedegi basqa toparda bos orın bolsa, tólengen sabaqlarıńızdı joǵaltpay ótiwge járdem beremiz. |
+| 164 | С какого возраста можно записать ребёнка? | Balanı neshe jastan jazdırıwǵa boladı? |
+| 165 | Курс Kids English рассчитан на детей от 6 до 12 лет. Группы формируются с учётом возраста и уровня, чтобы занятия были интересными и понятными. | Kids English kursı 6 jastan 12 jasqa shekemgi balalarǵa arnalǵan. Sabaqlar qızıqlı hám túsinikli bolıwı ushın toparlar jas hám dárejege qarap dúziledi. |
+| 166 | Что если я пропущу занятие? | Sabaqtı qaldırıp ketsem ne boladı? |
+| 167 | Ничего страшного — преподаватель кратко введёт вас в курс пройденного материала на следующем занятии. При частых пропусках рекомендуем индивидуальную консультацию. | Qorqınıshlı hesh nárse joq — keyingi sabaqta oqıtıwshı ótilgen temanı qısqasha túsindiredi. Jiyi qaldırǵanda jeke konsultaciya usınamız. |
+| 168 | Как оплачивать занятия? | Sabaqlar ushın qalay tóleymen? |
+| 169 | Оплата помесячная, наличными или переводом в центре. Подробности уточним при записи по телефону или на месте. | Tólem ayına bir ret, orayda naq aqsha yamasa awdarma arqalı. Tolıq maǵlıwmattı jazılıw waqtında telefon arqalı yamasa orayda aytamız. |
+| 170 | Контакты | Baylanıs |
+| 171 | Адрес | Mánzil |
+| 172 | ул. Н. Сараева 34, 230100, Нукус, Республика Каракалпакстан, Узбекистан | N. Saraev kóshesi 34, 230100, Nókis, Qaraqalpaqstan Respublikası, Ózbekstan |
+| 173 | Телефоны | Telefonlar |
+| 174 | Часы работы | Jumıs waqtı |
+| 175 | Каждый день, 09:00–19:00 | Hár kúni, 09:00–19:00 |
+| 176 | Открыть в Google Maps | Google Maps-ta ashıw |
+| 177 | Языковой центр в Нукусе: IELTS, General English и курсы для детей. | Nókistegi til orayı: IELTS, General English hám balalar ushın kurslar. |
+| 178 | © 2026 Stanford Language Center, Нукус | © 2026 Stanford Language Center, Nókis |
+| 179 | IELTS CD Mock Exam — запись | IELTS CD Mock Exam — jazılıw |
+| 180 | Пробный IELTS на компьютере, как в настоящем тестовом центре. Запись — в три шага. | Kompyuterde sınaq IELTS, haqıyqıy test orayındaǵıday. Jazılıw — úsh qádemde. |
+| 181 | Данные | Maǵlıwmat |
+| 182 | Дата | Sáne |
+| 183 | Оплата | Tólem |
+| 184 | Ваши данные | Siziń maǵlıwmatlarıńız |
+| 185 | Пишите имя и фамилию так, как в документе: они попадут в билет. | Atıńızdı hám familiyańızdı hújjettegidey jazıń: ol biletke jazıladı. |
+| 186 | Имя | Atıńız |
+| 187 | Фамилия | Familiyańız |
+| 188 | Пол | Jınısıńız |
+| 189 | Мужской | Er |
+| 190 | Женский | Hayal |
+| 191 | Укажите имя | Atıńızdı jazıń |
+| 192 | Укажите фамилию | Familiyańızdı jazıń |
+| 193 | Далее | Dawam etiw |
+| 194 | Назад | Artqa |
+| 195 | Выбрано: {date} | Tańlandı: {date} |
+| 196 | Выберите день | Kúndi tańlań |
+| 197 | Жёлтые дни — есть свободные места. Нажмите на день, чтобы увидеть время. | Sarı kúnlerde bos orınlar bar. Waqıttı kóriw ushın kúndi basıń. |
+| 198 | Есть места | Orın bar |
+| 199 | Мест нет | Orın joq |
+| 200 | Нет экзамена | Imtihan joq |
+| 201 | Выберите жёлтый день в календаре. | Kalendardan sarı kúndi tańlań. |
+| 202 | Время на {date} | {date} kúngi waqıtlar |
+| 203 | Свободно: {n} | Bos orın: {n} |
+| 204 | Выберите день и время экзамена | Imtihan kúni hám waqtın tańlań |
+| 205 | В ближайшие 30 дней открытых дат нет. Позвоните нам: | Jaqın 30 kúnde ashıq sáneler joq. Bizge qońıraw etiń: |
+| 206 | Загружаем расписание… | Keste júklenbekte… |
+| 207 | Не удалось загрузить даты. Обновите страницу или позвоните нам: | Sánelerdi júklew ámelge aspadı. Betti jańalań yamasa bizge qońıraw etiń: |
+| 208 | Проверьте и выберите оплату | Tekseriń hám tólew usılın tańlań |
+| 209 | Оплату подтверждает администратор. До этого в билете будет «Ожидает оплаты». | Tólemdi administrator tastıyıqlaydı. Oǵan shekem bilette «Tólem kútilmekte» dep jazıladı. |
+| 210 | Кандидат | Kandidat |
+| 211 | Экзамен | Imtihan |
+| 212 | Дата и время | Sáne hám waqıt |
+| 213 | Место | Orın |
+| 214 | К оплате | Tólewge |
+| 215 | Как вам удобнее оплатить? | Qalay tólew sizge qolaylı? |
+| 216 | Перевод в приложении Click | Click qosımshası arqalı awdarma |
+| 217 | Перевод в приложении Payme | Payme qosımshası arqalı awdarma |
+| 218 | В центре | Orayda |
+| 219 | Наличными до дня экзамена | Imtihan kúnine shekem naq aqsha menen |
+| 220 | Записаться на экзамен | Imtihanǵa jazılıw |
+| 221 | Записываем… | Jazılmaqta… |
+| 222 | Пока вы заполняли форму, места на это время закончились. Выберите другое. | Siz forma toltırıp atırǵanda bul waqıtqa orınlar tawsıldı. Basqa waqıttı tańlań. |
+| 223 | Запись на это время закрыта. Выберите другое. | Bul waqıtqa jazılıw jabıldı. Basqa waqıttı tańlań. |
+| 224 | Не удалось записаться. Позвоните нам: +998 91 303-60-01 | Jazılıw ámelge aspadı. Bizge qońıraw etiń: +998 91 303-60-01 |
+| 225 | Click | Click |
+| 226 | Payme | Payme |
+| 227 | наличные в центре | orayda naq aqsha |
+| 228 | Вы записаны | Siz jazıldıńız |
+| 229 | Ваш билет на IELTS CD Mock | IELTS CD Mock-qa biletińiz |
+| 230 | Сохраните номер билета: он нужен на входе. Результат появится в вашем кабинете, когда будет готов. | Bilet nomerin saqlap qoyıń: ol kiriwde kerek. Nátiyje tayın bolǵanda kabinetińizde payda boladı. |
+| 231 | Номер билета | Bilet nomeri |
+| 232 | Оплата | Tólem |
+| 233 | Ожидает оплаты · {method} | Tólem kútilmekte · {method} |
+| 234 | Адрес | Mánzil |
+| 235 | ул. Н. Сараева 34, Нукус | N. Saraev kóshesi 34, Nókis |
+| 236 | Распечатать | Basıp shıǵarıw |
+| 237 | Узнать результат Mock | Mock nátiyjesin biliw |
+| 238 | Введите номер билета и телефон, указанный при записи. | Bilet nomerin hám jazılǵanda kórsetken telefon nomerińizdi jazıń. |
+| 239 | Номер билета | Bilet nomeri |
+| 240 | Показать результат | Nátiyjeni kórsetiw |
+| 241 | Введите номер билета и телефон полностью | Bilet nomeri hám telefondı tolıq jazıń |
+| 242 | Результат ещё не готов. Загляните позже — обычно через несколько дней после экзамена. | Nátiyje ele tayın emes. Keyinirek qarań — ádette imtihannan bir neshe kún ótkennen soń tayın boladı. |
+| 243 | Билет с таким номером и телефоном не найден. Проверьте данные. | Bunday nomer hám telefonlı bilet tabılmadı. Maǵlıwmatlardı tekseriń. |
+| 244 | Слишком много попыток. Попробуйте через час. | Urınıwlar júdá kóp boldı. Bir saattan soń qaytadan kóriń. |
+| 245 | Не удалось проверить. Попробуйте позже. | Tekseriw ámelge aspadı. Keyinirek urınıp kóriń. |
+| 246 | {name}, ваш результат | {name}, siziń nátiyjeńiz |
+| 247 | Проверяем… | Tekserilmekte… |
+| 248 | Выберите пол | Jınısıńızdı tańlań |
+| 249 | Пароль | Parol |
+| 250 | Повторите пароль | Paroldi qaytalań |
+| 251 | Придумайте пароль. Он понадобится, чтобы войти в кабинет и увидеть результаты Mock-экзамена, поэтому обязательно запомните его. | Parol oylap tabıń. Ol kabinetke kiriw hám Mock imtihan nátiyjelerin kóriw ushın kerek boladı, sonıń ushın mıqtap esińizde saqlań. |
+| 252 | Минимум 8 символов, не только цифры | Keminde 8 belgi, tek sanlardan ibarat bolmasın |
+| 253 | Пароли не совпадают | Parollar sáykes kelmeydi |
+| 254 | На этот номер уже есть кабинет. Введите пароль, который вы задавали раньше. | Bul nomerge kabinet bar. Burın qoyǵan parolińizdi kiritiń. |
+| 255 | Вы уже записаны на этот экзамен. | Siz bul imtihanǵa aldın jazılǵansız. |
+| 256 | Чтобы увидеть результат, войдите в кабинет: номер телефона и пароль, который вы задали при записи. | Nátiyjeni kóriw ushın kabinetke kiriń: telefon nomeri hám jazılǵanda qoyǵan parolińiz. |
+| 257 | Войти в кабинет | Kabinetke kiriw |
+| 258 | Введите номер полностью: +998 и 9 цифр | Nomerdi tolıq jazıń: +998 hám 9 san |
+| 259 | Например, ST-2026-MOCK-0001 | Mısalı, ST-2026-MOCK-0001 |
+| 260 | Проверить другой билет | Basqa biletti tekseriw |
 
 ## Calendar (mock.html)
 

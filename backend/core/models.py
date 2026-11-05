@@ -56,6 +56,14 @@ EXAM_FORMAT_CHOICES = [("paper", "Paper-based"), ("computer", "Computer-delivere
 
 ROLE_CHOICES = [("owner", "Owner"), ("editor", "Editor")]
 
+# What a post on the website is. Events and clubs may have a date and a place.
+NEWS_KIND_CHOICES = [
+    ("news", "Новость"),
+    ("event", "Мероприятие"),
+    ("speaking_club", "Speaking club"),
+    ("other", "Другое"),
+]
+
 
 class StaffRole(models.Model):
     """Which admin emails may use admin.html, and whether they are owner or editor."""
@@ -69,20 +77,6 @@ class StaffRole(models.Model):
 
     def __str__(self):
         return f"{self.email} ({self.role})"
-
-
-class News(models.Model):
-    title = models.TextField()
-    body = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
-
-    class Meta:
-        db_table = "news"
-        ordering = ["-created_at"]
-        verbose_name_plural = "news"
-
-    def __str__(self):
-        return self.title
 
 
 class TrialRegistration(models.Model):
@@ -194,6 +188,15 @@ class ExamRegistration(models.Model):
     speaking = band_field(null=True, blank=True)
     overall = band_field(null=True, blank=True, editable=False)
     attended = models.BooleanField(null=True, blank=True)
+    # The student's portal account (phone + password). The password lives only on the
+    # Django user, hashed; it is never stored or returned here.
+    student = models.ForeignKey(
+        "portal.Profile", on_delete=models.SET_NULL, null=True, blank=True,
+        db_column="student_id", related_name="mock_registrations",
+    )
+    # Scores stay hidden from the student until staff press «Completed» (publish).
+    results_published_at = models.DateTimeField(null=True, blank=True)
+    results_published_by = models.TextField(null=True, blank=True)
     registered_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -203,6 +206,10 @@ class ExamRegistration(models.Model):
 
     def __str__(self):
         return f"{self.full_name} → {self.exam_id}"
+
+    @property
+    def is_published(self):
+        return self.results_published_at is not None
 
     def save(self, *args, **kwargs):
         set_overall(self, kwargs)
@@ -224,7 +231,10 @@ GALLERY_SIZE_CHOICES = [
 
 
 class GalleryPhoto(models.Model):
-    """A photo in the «Жизнь центра изнутри» section. New table, created by Django.
+    """NOT USED ANY MORE: the gallery page was removed (News covers it). The model and its
+    table stay only so no photo is lost; nothing in the site reads or writes it.
+
+    A photo in the «Жизнь центра изнутри» section. New table, created by Django.
 
     The image itself is stored in the database (already resized and compressed
     to ~200–300 KB), so no separate file storage or extra keys are needed.
@@ -277,6 +287,49 @@ class ImageMixin(models.Model):
         if not has_image:
             return None
         return f"{self.image_url_prefix}{self.pk}/image/?v={int(self.updated_at.timestamp())}"
+
+
+class News(ImageMixin):
+    """A post on the website (shown right after the first screen): news, an event,
+    a speaking club or anything else. Photo stored in the database."""
+
+    title = models.TextField()
+    body = models.TextField(null=True, blank=True)
+    kind = models.TextField(choices=NEWS_KIND_CHOICES, default="news")
+    # When an event/club takes place. Upcoming ones are shown first, soonest on top.
+    event_date = models.DateTimeField(null=True, blank=True)
+    location = models.TextField(blank=True, default="")
+    is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    image_url_prefix = "/api/news/"
+
+    class Meta:
+        db_table = "news"
+        ordering = ["-created_at"]
+        verbose_name_plural = "news"
+
+    def __str__(self):
+        return self.title
+
+
+class PageView(models.Model):
+    """One page view on the public site. Stores NO IP address, user agent or any
+    personal data: just the page, a random visitor id kept in the visitor's browser,
+    the referring site's host name and mobile/desktop."""
+
+    created_at = models.DateTimeField(default=timezone.now)
+    path = models.TextField()
+    visitor_id = models.UUIDField()
+    referrer = models.TextField(blank=True, default="")
+    device = models.TextField(default="desktop")
+
+    class Meta:
+        db_table = "analytics_pageviews"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.path} {self.created_at:%Y-%m-%d %H:%M}"
 
 
 class StudentResult(ImageMixin):
